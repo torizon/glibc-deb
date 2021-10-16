@@ -11,6 +11,8 @@ glibc (2.33-0experimental3) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-dev{,-alt}.install, debian/rules.d/build.mk:
     install an empty libpthread_nonshared.a to support broken closed source
     software.  Closes: #971273.
+  * debian/sysdeps/arm64.mk: enable Memory Tagging Extension (MTE) (heap)
+    checking on arm64.  Closes: #995269.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 23 Sep 2021 23:44:07 +0000
 

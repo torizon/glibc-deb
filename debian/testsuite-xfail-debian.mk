@@ -385,7 +385,6 @@ test-xfail-tst-pthread_kill-exited = yes
 test-xfail-tst-pthread_kill-exiting = yes
 test-xfail-tst-compathooks-on = yes
 test-xfail-tst-support-open-dev-null-range = yes
-test-xfail-tst-xreadlink = yes
 test-xfail-tst-audit14-cmp = yes
 test-xfail-tst-audit15-cmp = yes
 test-xfail-tst-audit16-cmp = yes

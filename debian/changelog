@@ -1,3 +1,11 @@
+glibc (2.32-5) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/control.in/libc: add a breaks against tinydns (<< 1:1.05-14).
+    Closes: #997912.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 Dec 2021 22:24:08 +0100
+
 glibc (2.32-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]

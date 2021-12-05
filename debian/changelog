@@ -1,4 +1,4 @@
-glibc (2.33-0experimental3) UNRELEASED; urgency=medium
+glibc (2.33-0experimental3) experimental; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.
@@ -20,7 +20,7 @@ glibc (2.33-0experimental3) UNRELEASED; urgency=medium
     gnucobol3 always invoke the compiler with _FORTIFY_SOURCE > 0, even when
     the optimizations are disabled.
 
- -- Samuel Thibault <sthibault@debian.org>  Thu, 23 Sep 2021 23:44:07 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 05 Dec 2021 19:12:47 +0100
 
 glibc (2.33-0experimental2) experimental; urgency=medium
 

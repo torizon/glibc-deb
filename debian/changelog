@@ -8,6 +8,8 @@ glibc (2.32-5) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix bad conversion from ISO-2022-JP-3 with iconv (CVE-2021-43396).
       Closes: #998622.
+  * debian/control.in/main: rename libselinux-dev build-dependency into
+    libselinux1-dev.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 Dec 2021 22:24:08 +0100
 

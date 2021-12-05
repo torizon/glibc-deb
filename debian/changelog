@@ -10,6 +10,9 @@ glibc (2.32-5) UNRELEASED; urgency=medium
       Closes: #998622.
   * debian/control.in/main: rename libselinux-dev build-dependency into
     libselinux1-dev.
+  * debian/patches/any/submitted-localedef-check-magic.patch: new patch to
+    display a proper error message for bad locale-archive files.  Closes:
+    #993772.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 Dec 2021 22:24:08 +0100
 

@@ -1,4 +1,4 @@
-glibc (2.32-5) UNRELEASED; urgency=medium
+glibc (2.32-5) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/control.in/libc: add a breaks against tinydns (<< 1:1.05-14).
@@ -14,7 +14,7 @@ glibc (2.32-5) UNRELEASED; urgency=medium
     display a proper error message for bad locale-archive files.  Closes:
     #993772.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 Dec 2021 22:24:08 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 05 Dec 2021 16:46:21 +0100
 
 glibc (2.32-4) unstable; urgency=medium
 

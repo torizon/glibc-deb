@@ -5,6 +5,9 @@ glibc (2.32-5) UNRELEASED; urgency=medium
     Closes: #997912.
   * debian/debhelper.in/libc-bin.postinst: stop replacing older versions from
     /etc/nsswitch.conf.  Closes: #998008.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix bad conversion from ISO-2022-JP-3 with iconv (CVE-2021-43396).
+      Closes: #998622.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 Dec 2021 22:24:08 +0100
 

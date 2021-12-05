@@ -1,10 +1,10 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.32/master from glibc-2.32
 
 diff --git a/NEWS b/NEWS
-index 485b8ddffa..2afe250ccf 100644
+index 485b8ddffa..b29826f4f5 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -5,6 +5,25 @@ See the end for copying conditions.
+@@ -5,6 +5,27 @@ See the end for copying conditions.
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
  
@@ -26,11 +26,13 @@ index 485b8ddffa..2afe250ccf 100644
 +  [26932] libc: sh: Multiple floating point functions defined as stubs only
 +  [27130] "rep movsb" performance issue
 +  [27177] GLIBC_TUNABLES=glibc.cpu.x86_ibt=on:glibc.cpu.x86_shstk=on doesn't work
++  [28524] Conversion from ISO-2022-JP-3 with iconv may emit spurious NULs
++  [28607] Masked signals are delivered on thread exit
 +
  Version 2.32
  
  Major new features:
-@@ -185,6 +204,14 @@ Security related changes:
+@@ -185,6 +206,14 @@ Security related changes:
    Dytrych of the Cisco Security Assessment and Penetration Team (See
    TALOS-2020-1019).
  
@@ -293,6 +295,19 @@ index e39980fb19..71867e7c1a 100644
    /* We are done mapping in the file.  We no longer need the descriptor.  */
    if (__glibc_unlikely (__close_nocancel (fd) != 0))
      {
+diff --git a/elf/dl-open.c b/elf/dl-open.c
+index 8769e47051..55b39e1bbe 100644
+--- a/elf/dl-open.c
++++ b/elf/dl-open.c
+@@ -887,7 +887,7 @@ no more namespaces available for dlmopen()"));
+       /* Avoid keeping around a dangling reference to the libc.so link
+ 	 map in case it has been cached in libc_map.  */
+       if (!args.libc_already_loaded)
+-	GL(dl_ns)[nsid].libc_map = NULL;
++	GL(dl_ns)[args.nsid].libc_map = NULL;
+ 
+       /* Remove the object from memory.  It may be in an inconsistent
+ 	 state if relocation failed, for example.  */
 diff --git a/elf/dl-tunables.c b/elf/dl-tunables.c
 index 26e6e26612..15b29bcb90 100644
 --- a/elf/dl-tunables.c
@@ -1017,24 +1032,32 @@ index 8298136b7f..d8db7b335c 100644
  "\x00\x41;-c;IBM274;UTF-8//TRANSLIT//IGNORE"
  "\x00\x41;-c;IBM275;UTF-8//TRANSLIT//IGNORE"
 diff --git a/iconvdata/Makefile b/iconvdata/Makefile
-index 4ec2741cdc..4eef07557e 100644
+index 4ec2741cdc..b67b4feeb4 100644
 --- a/iconvdata/Makefile
 +++ b/iconvdata/Makefile
-@@ -73,7 +73,8 @@ modules.so := $(addsuffix .so, $(modules))
+@@ -1,4 +1,5 @@
+ # Copyright (C) 1997-2020 Free Software Foundation, Inc.
++# Copyright (C) The GNU Toolchain Authors.
+ # This file is part of the GNU C Library.
+ 
+ # The GNU C Library is free software; you can redistribute it and/or
+@@ -73,7 +74,8 @@ modules.so := $(addsuffix .so, $(modules))
  ifeq (yes,$(build-shared))
  tests = bug-iconv1 bug-iconv2 tst-loading tst-e2big tst-iconv4 bug-iconv4 \
  	tst-iconv6 bug-iconv5 bug-iconv6 tst-iconv7 bug-iconv8 bug-iconv9 \
 -	bug-iconv10 bug-iconv11 bug-iconv12 tst-iconv-big5-hkscs-to-2ucs4
 +	bug-iconv10 bug-iconv11 bug-iconv12 tst-iconv-big5-hkscs-to-2ucs4 \
-+	bug-iconv13 bug-iconv14
++	bug-iconv13 bug-iconv14 bug-iconv15
  ifeq ($(have-thread-library),yes)
  tests += bug-iconv3
  endif
-@@ -321,6 +322,8 @@ $(objpfx)bug-iconv10.out: $(objpfx)gconv-modules \
+@@ -321,6 +323,10 @@ $(objpfx)bug-iconv10.out: $(objpfx)gconv-modules \
  			  $(addprefix $(objpfx),$(modules.so))
  $(objpfx)bug-iconv12.out: $(objpfx)gconv-modules \
  			  $(addprefix $(objpfx),$(modules.so))
 +$(objpfx)bug-iconv14.out: $(objpfx)gconv-modules \
++			  $(addprefix $(objpfx),$(modules.so))
++$(objpfx)bug-iconv15.out: $(addprefix $(objpfx), $(gconv-modules)) \
 +			  $(addprefix $(objpfx),$(modules.so))
  
  $(objpfx)iconv-test.out: run-iconv-test.sh $(objpfx)gconv-modules \
@@ -1231,6 +1254,72 @@ index 0000000000..902f140fa9
 +}
 +
 +#include <support/test-driver.c>
+diff --git a/iconvdata/bug-iconv15.c b/iconvdata/bug-iconv15.c
+new file mode 100644
+index 0000000000..cc04bd0313
+--- /dev/null
++++ b/iconvdata/bug-iconv15.c
+@@ -0,0 +1,60 @@
++/* Bug 28524: Conversion from ISO-2022-JP-3 with iconv
++   may emit spurious NUL character on state reset.
++   Copyright (C) The GNU Toolchain Authors.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <stddef.h>
++#include <iconv.h>
++#include <support/check.h>
++
++static int
++do_test (void)
++{
++  char in[] = "\x1b(I";
++  char *inbuf = in;
++  size_t inleft = sizeof (in) - 1;
++  char out[1];
++  char *outbuf = out;
++  size_t outleft = sizeof (out);
++  iconv_t cd;
++
++  cd = iconv_open ("UTF8", "ISO-2022-JP-3");
++  TEST_VERIFY_EXIT (cd != (iconv_t) -1);
++
++  /* First call to iconv should alter internal state.
++     Now, JISX0201_Kana_set is selected and
++     state value != ASCII_set.  */
++  TEST_VERIFY (iconv (cd, &inbuf, &inleft, &outbuf, &outleft) != (size_t) -1);
++
++  /* No bytes should have been added to
++     the output buffer at this point.  */
++  TEST_VERIFY (outbuf == out);
++  TEST_VERIFY (outleft == sizeof (out));
++
++  /* Second call shall emit spurious NUL character in unpatched glibc.  */
++  TEST_VERIFY (iconv (cd, NULL, NULL, &outbuf, &outleft) != (size_t) -1);
++
++  /* No characters are expected to be produced.  */
++  TEST_VERIFY (outbuf == out);
++  TEST_VERIFY (outleft == sizeof (out));
++
++  TEST_VERIFY_EXIT (iconv_close (cd) != -1);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/iconvdata/euc-kr.c b/iconvdata/euc-kr.c
 index b0d56cf3ee..1045bae926 100644
 --- a/iconvdata/euc-kr.c
@@ -1280,10 +1369,17 @@ index 49e7267ab4..521f0825b7 100644
  	++inptr;							      \
  	continue;							      \
 diff --git a/iconvdata/iso-2022-jp-3.c b/iconvdata/iso-2022-jp-3.c
-index 8c3b7e627e..62cbc54a11 100644
+index 8c3b7e627e..c7b470db61 100644
 --- a/iconvdata/iso-2022-jp-3.c
 +++ b/iconvdata/iso-2022-jp-3.c
-@@ -67,23 +67,34 @@ enum
+@@ -1,5 +1,6 @@
+ /* Conversion module for ISO-2022-JP-3.
+    Copyright (C) 1998-2020 Free Software Foundation, Inc.
++   Copyright (C) The GNU Toolchain Authors.
+    This file is part of the GNU C Library.
+    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998,
+    and Bruno Haible <bruno@clisp.org>, 2002.
+@@ -67,10 +68,15 @@ enum
    CURRENT_SEL_MASK = 7 << 3
  };
  
@@ -1303,10 +1399,7 @@ index 8c3b7e627e..62cbc54a11 100644
  
  /* Since this is a stateful encoding we have to provide code which resets
     the output state to the initial state.  This has to be done during the
-    flushing.  */
- #define EMIT_SHIFT_TO_INIT \
--  if ((data->__statep->__count & ~7) != ASCII_set)			      \
-+  if (data->__statep->__count != ASCII_set)			      \
+@@ -80,10 +86,27 @@ enum
      {									      \
        if (FROM_DIRECTION)						      \
  	{								      \
@@ -1314,20 +1407,31 @@ index 8c3b7e627e..62cbc54a11 100644
 -	     state for the input.  */					      \
 -	  data->__statep->__count &= 7;					      \
 -	  data->__statep->__count |= ASCII_set;				      \
-+	  if (__glibc_likely (outbuf + 4 <= outend))			      \
++	  uint32_t ch = data->__statep->__count >> 6;			      \
++									      \
++	  if (__glibc_unlikely (ch != 0))				      \
 +	    {								      \
-+	      /* Write out the last character.  */			      \
-+	      *((uint32_t *) outbuf) = data->__statep->__count >> 6;	      \
-+	      outbuf += sizeof (uint32_t);				      \
-+	      data->__statep->__count = ASCII_set;			\
++	      if (__glibc_likely (outbuf + 4 <= outend))		      \
++		{							      \
++		  /* Write out the last character.  */			      \
++		  put32u (outbuf, ch);					      \
++		  outbuf += 4;						      \
++		  data->__statep->__count &= 7;				      \
++		  data->__statep->__count |= ASCII_set;			      \
++		}							      \
++	      else							      \
++		/* We don't have enough room in the output buffer.  */	      \
++		status = __GCONV_FULL_OUTPUT;				      \
 +	    }								      \
 +	  else								      \
-+	    /* We don't have enough room in the output buffer.  */	      \
-+	    status = __GCONV_FULL_OUTPUT;				      \
++	    {								      \
++	      data->__statep->__count &= 7;				      \
++	      data->__statep->__count |= ASCII_set;			      \
++	    }								      \
  	}								      \
        else								      \
  	{								      \
-@@ -151,7 +162,21 @@ enum
+@@ -151,7 +174,21 @@ enum
  #define LOOPFCT			FROM_LOOP
  #define BODY \
    {									      \
@@ -1350,7 +1454,7 @@ index 8c3b7e627e..62cbc54a11 100644
  									      \
      /* Recognize escape sequences.  */					      \
      if (__glibc_unlikely (ch == ESC))					      \
-@@ -297,21 +322,25 @@ enum
+@@ -297,21 +334,25 @@ enum
  	    uint32_t u1 = __jisx0213_to_ucs_combining[ch - 1][0];	      \
  	    uint32_t u2 = __jisx0213_to_ucs_combining[ch - 1][1];	      \
  									      \
@@ -1563,6 +1667,28 @@ index 19d9cc5cfe..38221d0b2a 100644
  # define __warnattr(msg)
  # define __errordecl(name, msg) extern void name (void)
  #endif
+diff --git a/nptl/pthread_create.c b/nptl/pthread_create.c
+index 2cba3da38c..c217cda608 100644
+--- a/nptl/pthread_create.c
++++ b/nptl/pthread_create.c
+@@ -416,8 +416,6 @@ START_THREAD_DEFN
+   unwind_buf.priv.data.prev = NULL;
+   unwind_buf.priv.data.cleanup = NULL;
+ 
+-  __libc_signal_restore_set (&pd->sigmask);
+-
+   /* Allow setxid from now onwards.  */
+   if (__glibc_unlikely (atomic_exchange_acq (&pd->setxid_futex, 0) == -2))
+     futex_wake (&pd->setxid_futex, 1, FUTEX_PRIVATE);
+@@ -427,6 +425,8 @@ START_THREAD_DEFN
+       /* Store the new cleanup handler info.  */
+       THREAD_SETMEM (pd, cleanup_jmp_buf, &unwind_buf);
+ 
++      __libc_signal_restore_set (&pd->sigmask);
++
+       /* We are either in (a) or (b), and in either case we either own
+          PD already (2) or are about to own PD (1), and so our only
+ 	 restriction would be that we can't free PD until we know we
 diff --git a/nscd/netgroupcache.c b/nscd/netgroupcache.c
 index 88c69d1e9c..381aa721ef 100644
 --- a/nscd/netgroupcache.c
@@ -3318,7 +3444,7 @@ index 309d0f39b2..c8d3051af8 100644
  }
  
 diff --git a/support/Makefile b/support/Makefile
-index 93faafddf9..4154863511 100644
+index 93faafddf9..3d3aff5ff9 100644
 --- a/support/Makefile
 +++ b/support/Makefile
 @@ -35,6 +35,8 @@ libsupport-routines = \
@@ -3330,6 +3456,14 @@ index 93faafddf9..4154863511 100644
    resolv_test \
    set_fortify_handler \
    support-xfstat \
+@@ -133,6 +135,7 @@ libsupport-routines = \
+   xpthread_join \
+   xpthread_key_create \
+   xpthread_key_delete \
++  xpthread_kill \
+   xpthread_mutex_consistent \
+   xpthread_mutex_destroy \
+   xpthread_mutex_init \
 diff --git a/support/capture_subprocess.h b/support/capture_subprocess.h
 index 9808750f80..421f657678 100644
 --- a/support/capture_subprocess.h
@@ -3877,6 +4011,51 @@ index 36e3a77af2..4a25828111 100644
  int
  support_process_wait (struct support_subprocess *proc)
  {
+diff --git a/support/xpthread_kill.c b/support/xpthread_kill.c
+new file mode 100644
+index 0000000000..111a75d85e
+--- /dev/null
++++ b/support/xpthread_kill.c
+@@ -0,0 +1,26 @@
++/* pthread_kill with error checking.
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <signal.h>
++#include <support/xthread.h>
++
++void
++xpthread_kill (pthread_t thr, int signo)
++{
++  xpthread_check_return ("pthread_kill", pthread_kill (thr, signo));
++}
+diff --git a/support/xthread.h b/support/xthread.h
+index 05f8d4a7d9..cb1fc30da0 100644
+--- a/support/xthread.h
++++ b/support/xthread.h
+@@ -75,6 +75,8 @@ void xpthread_attr_setstacksize (pthread_attr_t *attr,
+ void xpthread_attr_setguardsize (pthread_attr_t *attr,
+ 				 size_t guardsize);
+ 
++void xpthread_kill (pthread_t thr, int signo);
++
+ /* Set the stack size in ATTR to a small value, but still large enough
+    to cover most internal glibc stack usage.  */
+ void support_set_small_thread_stack_size (pthread_attr_t *attr);
 diff --git a/sysdeps/aarch64/dl-bti.c b/sysdeps/aarch64/dl-bti.c
 index 196e462520..cf7624aaa2 100644
 --- a/sysdeps/aarch64/dl-bti.c
@@ -5163,6 +5342,69 @@ index 8a53a1088f..362a2b713c 100644
      return true;
  #endif
    return false;
+diff --git a/sysdeps/pthread/Makefile b/sysdeps/pthread/Makefile
+index 920d875420..bf9b7f7223 100644
+--- a/sysdeps/pthread/Makefile
++++ b/sysdeps/pthread/Makefile
+@@ -107,6 +107,7 @@ tests += tst-cnd-basic tst-mtx-trylock tst-cnd-broadcast \
+ 	 tst-unload \
+ 	 tst-unwind-thread \
+ 	 tst-pt-vfork1 tst-pt-vfork2 tst-vfork1x tst-vfork2x \
++	 tst-pthread-exit-signal \
+ 
+ 
+ # Files which must not be linked with libpthread.
+diff --git a/sysdeps/pthread/tst-pthread-exit-signal.c b/sysdeps/pthread/tst-pthread-exit-signal.c
+new file mode 100644
+index 0000000000..b4526fe663
+--- /dev/null
++++ b/sysdeps/pthread/tst-pthread-exit-signal.c
+@@ -0,0 +1,45 @@
++/* Test that pending signals are not delivered on thread exit (bug 28607).
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++/* Due to bug 28607, pthread_kill (or pthread_cancel) restored the
++   signal mask during during thread exit, triggering the delivery of a
++   blocked pending signal (SIGUSR1 in this test).  */
++
++#include <support/xthread.h>
++#include <support/xsignal.h>
++
++static void *
++threadfunc (void *closure)
++{
++  sigset_t sigmask;
++  sigfillset (&sigmask);
++  xpthread_sigmask (SIG_SETMASK, &sigmask, NULL);
++  xpthread_kill (pthread_self (), SIGUSR1);
++  pthread_exit (NULL);
++  return NULL;
++}
++
++static int
++do_test (void)
++{
++  pthread_t thr = xpthread_create (NULL, threadfunc, NULL);
++  xpthread_join (thr);
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/sysdeps/s390/configure b/sysdeps/s390/configure
 index fa46e9e351..e7f576338d 100644
 --- a/sysdeps/s390/configure

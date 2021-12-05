@@ -1,10 +1,10 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.33/master from glibc-2.33
 
 diff --git a/NEWS b/NEWS
-index 71f5d20324..979a012dba 100644
+index 71f5d20324..6091d5bd82 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -5,6 +5,36 @@ See the end for copying conditions.
+@@ -5,6 +5,39 @@ See the end for copying conditions.
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
  
@@ -37,6 +37,9 @@ index 71f5d20324..979a012dba 100644
 +  [27706] select fails to update timeout on error
 +  [27744] Support different libpthread/ld.so load orders for gdb -p
 +  [27892] powerpc: scv ABI error handling fails to check IS_ERR_VALUE
++  [28607] Masked signals are delivered on thread exit
++  [28524] Conversion from ISO-2022-JP-3 with iconv may emit spurious NULs
++  [28532] powerpc64[le]: CFI for assembly templated syscalls is incorrect
 +
  Version 2.33
  
@@ -745,6 +748,19 @@ index 3a5e13c739..d3820e0063 100644
 +_Noreturn void _dl_print_diagnostics (char **environ) attribute_hidden;
 +
  #endif /* _DL_MAIN */
+diff --git a/elf/dl-open.c b/elf/dl-open.c
+index ab7aaa345e..1b965457c4 100644
+--- a/elf/dl-open.c
++++ b/elf/dl-open.c
+@@ -881,7 +881,7 @@ no more namespaces available for dlmopen()"));
+       /* Avoid keeping around a dangling reference to the libc.so link
+ 	 map in case it has been cached in libc_map.  */
+       if (!args.libc_already_loaded)
+-	GL(dl_ns)[nsid].libc_map = NULL;
++	GL(dl_ns)[args.nsid].libc_map = NULL;
+ 
+       /* Remove the object from memory.  It may be in an inconsistent
+ 	 state if relocation failed, for example.  */
 diff --git a/elf/dl-tunable-types.h b/elf/dl-tunable-types.h
 index 3fcc0806f5..39bf738d93 100644
 --- a/elf/dl-tunable-types.h
@@ -1845,6 +1861,151 @@ index 4f3f7ee4e3..9f66c52885 100644
  glibc.malloc.mmap_threshold: 0x0 (min: 0x0, max: 0x[f]+)
  glibc.malloc.mxfast: 0x0 (min: 0x0, max: 0x[f]+)
  glibc.malloc.perturb: 0 (min: 0, max: 255)
+diff --git a/iconvdata/Makefile b/iconvdata/Makefile
+index 55c527a5f7..2612d25579 100644
+--- a/iconvdata/Makefile
++++ b/iconvdata/Makefile
+@@ -1,4 +1,5 @@
+ # Copyright (C) 1997-2021 Free Software Foundation, Inc.
++# Copyright (C) The GNU Toolchain Authors.
+ # This file is part of the GNU C Library.
+ 
+ # The GNU C Library is free software; you can redistribute it and/or
+@@ -74,7 +75,7 @@ ifeq (yes,$(build-shared))
+ tests = bug-iconv1 bug-iconv2 tst-loading tst-e2big tst-iconv4 bug-iconv4 \
+ 	tst-iconv6 bug-iconv5 bug-iconv6 tst-iconv7 bug-iconv8 bug-iconv9 \
+ 	bug-iconv10 bug-iconv11 bug-iconv12 tst-iconv-big5-hkscs-to-2ucs4 \
+-	bug-iconv13 bug-iconv14
++	bug-iconv13 bug-iconv14 bug-iconv15
+ ifeq ($(have-thread-library),yes)
+ tests += bug-iconv3
+ endif
+@@ -324,6 +325,8 @@ $(objpfx)bug-iconv12.out: $(objpfx)gconv-modules \
+ 			  $(addprefix $(objpfx),$(modules.so))
+ $(objpfx)bug-iconv14.out: $(objpfx)gconv-modules \
+ 			  $(addprefix $(objpfx),$(modules.so))
++$(objpfx)bug-iconv15.out: $(addprefix $(objpfx), $(gconv-modules)) \
++			  $(addprefix $(objpfx),$(modules.so))
+ 
+ $(objpfx)iconv-test.out: run-iconv-test.sh $(objpfx)gconv-modules \
+ 			 $(addprefix $(objpfx),$(modules.so)) \
+diff --git a/iconvdata/bug-iconv15.c b/iconvdata/bug-iconv15.c
+new file mode 100644
+index 0000000000..cc04bd0313
+--- /dev/null
++++ b/iconvdata/bug-iconv15.c
+@@ -0,0 +1,60 @@
++/* Bug 28524: Conversion from ISO-2022-JP-3 with iconv
++   may emit spurious NUL character on state reset.
++   Copyright (C) The GNU Toolchain Authors.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <stddef.h>
++#include <iconv.h>
++#include <support/check.h>
++
++static int
++do_test (void)
++{
++  char in[] = "\x1b(I";
++  char *inbuf = in;
++  size_t inleft = sizeof (in) - 1;
++  char out[1];
++  char *outbuf = out;
++  size_t outleft = sizeof (out);
++  iconv_t cd;
++
++  cd = iconv_open ("UTF8", "ISO-2022-JP-3");
++  TEST_VERIFY_EXIT (cd != (iconv_t) -1);
++
++  /* First call to iconv should alter internal state.
++     Now, JISX0201_Kana_set is selected and
++     state value != ASCII_set.  */
++  TEST_VERIFY (iconv (cd, &inbuf, &inleft, &outbuf, &outleft) != (size_t) -1);
++
++  /* No bytes should have been added to
++     the output buffer at this point.  */
++  TEST_VERIFY (outbuf == out);
++  TEST_VERIFY (outleft == sizeof (out));
++
++  /* Second call shall emit spurious NUL character in unpatched glibc.  */
++  TEST_VERIFY (iconv (cd, NULL, NULL, &outbuf, &outleft) != (size_t) -1);
++
++  /* No characters are expected to be produced.  */
++  TEST_VERIFY (outbuf == out);
++  TEST_VERIFY (outleft == sizeof (out));
++
++  TEST_VERIFY_EXIT (iconv_close (cd) != -1);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/iconvdata/iso-2022-jp-3.c b/iconvdata/iso-2022-jp-3.c
+index c8ba88cdc9..5fc0c0f739 100644
+--- a/iconvdata/iso-2022-jp-3.c
++++ b/iconvdata/iso-2022-jp-3.c
+@@ -1,5 +1,6 @@
+ /* Conversion module for ISO-2022-JP-3.
+    Copyright (C) 1998-2021 Free Software Foundation, Inc.
++   Copyright (C) The GNU Toolchain Authors.
+    This file is part of the GNU C Library.
+    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1998,
+    and Bruno Haible <bruno@clisp.org>, 2002.
+@@ -81,20 +82,31 @@ enum
+    the output state to the initial state.  This has to be done during the
+    flushing.  */
+ #define EMIT_SHIFT_TO_INIT \
+-  if (data->__statep->__count != ASCII_set)			      \
++  if ((data->__statep->__count & ~7) != ASCII_set)			      \
+     {									      \
+       if (FROM_DIRECTION)						      \
+ 	{								      \
+-	  if (__glibc_likely (outbuf + 4 <= outend))			      \
++	  uint32_t ch = data->__statep->__count >> 6;			      \
++									      \
++	  if (__glibc_unlikely (ch != 0))				      \
+ 	    {								      \
+-	      /* Write out the last character.  */			      \
+-	      *((uint32_t *) outbuf) = data->__statep->__count >> 6;	      \
+-	      outbuf += sizeof (uint32_t);				      \
+-	      data->__statep->__count = ASCII_set;			\
++	      if (__glibc_likely (outbuf + 4 <= outend))		      \
++		{							      \
++		  /* Write out the last character.  */			      \
++		  put32u (outbuf, ch);					      \
++		  outbuf += 4;						      \
++		  data->__statep->__count &= 7;				      \
++		  data->__statep->__count |= ASCII_set;			      \
++		}							      \
++	      else							      \
++		/* We don't have enough room in the output buffer.  */	      \
++		status = __GCONV_FULL_OUTPUT;				      \
+ 	    }								      \
+ 	  else								      \
+-	    /* We don't have enough room in the output buffer.  */	      \
+-	    status = __GCONV_FULL_OUTPUT;				      \
++	    {								      \
++	      data->__statep->__count &= 7;				      \
++	      data->__statep->__count |= ASCII_set;			      \
++	    }								      \
+ 	}								      \
+       else								      \
+ 	{								      \
 diff --git a/include/time.h b/include/time.h
 index caf2af5e74..e0636132a6 100644
 --- a/include/time.h
@@ -2340,7 +2501,7 @@ index e5efa2e62d..79be1bc70f 100644
  
  extern void __pthread_cleanup_push_defer (struct _pthread_cleanup_buffer *buffer,
 diff --git a/nptl/pthread_create.c b/nptl/pthread_create.c
-index 6c645aff48..f13d8e44a4 100644
+index 6c645aff48..337a7dcba6 100644
 --- a/nptl/pthread_create.c
 +++ b/nptl/pthread_create.c
 @@ -51,6 +51,14 @@ static td_thr_events_t __nptl_threads_events __attribute_used__;
@@ -2358,6 +2519,24 @@ index 6c645aff48..f13d8e44a4 100644
  /* Number of threads running.  */
  unsigned int __nptl_nthreads = 1;
  
+@@ -426,8 +434,6 @@ START_THREAD_DEFN
+   unwind_buf.priv.data.prev = NULL;
+   unwind_buf.priv.data.cleanup = NULL;
+ 
+-  __libc_signal_restore_set (&pd->sigmask);
+-
+   /* Allow setxid from now onwards.  */
+   if (__glibc_unlikely (atomic_exchange_acq (&pd->setxid_futex, 0) == -2))
+     futex_wake (&pd->setxid_futex, 1, FUTEX_PRIVATE);
+@@ -437,6 +443,8 @@ START_THREAD_DEFN
+       /* Store the new cleanup handler info.  */
+       THREAD_SETMEM (pd, cleanup_jmp_buf, &unwind_buf);
+ 
++      __libc_signal_restore_set (&pd->sigmask);
++
+       /* We are either in (a) or (b), and in either case we either own
+          PD already (2) or are about to own PD (1), and so our only
+ 	 restriction would be that we can't free PD until we know we
 diff --git a/nptl/pthread_once.c b/nptl/pthread_once.c
 index 28d97097c7..7645da222a 100644
 --- a/nptl/pthread_once.c
@@ -3315,7 +3494,7 @@ index 7607abc818..25a85c9097 100644
  
  /*
 diff --git a/support/Makefile b/support/Makefile
-index bb9889efb4..fc5d9d4c79 100644
+index bb9889efb4..3c0eb200c2 100644
 --- a/support/Makefile
 +++ b/support/Makefile
 @@ -67,6 +67,8 @@ libsupport-routines = \
@@ -3327,6 +3506,14 @@ index bb9889efb4..fc5d9d4c79 100644
    support_set_small_thread_stack_size \
    support_shared_allocate \
    support_small_stack_thread_attribute \
+@@ -139,6 +141,7 @@ libsupport-routines = \
+   xpthread_join \
+   xpthread_key_create \
+   xpthread_key_delete \
++  xpthread_kill \
+   xpthread_mutex_consistent \
+   xpthread_mutex_destroy \
+   xpthread_mutex_init \
 diff --git a/support/capture_subprocess.h b/support/capture_subprocess.h
 index 8969d4a99a..4be430f099 100644
 --- a/support/capture_subprocess.h
@@ -3760,6 +3947,51 @@ index 28cc44d9f1..94498d3901 100644
  
  	  if (WIFEXITED (status))
  	    exit (WEXITSTATUS (status));
+diff --git a/support/xpthread_kill.c b/support/xpthread_kill.c
+new file mode 100644
+index 0000000000..111a75d85e
+--- /dev/null
++++ b/support/xpthread_kill.c
+@@ -0,0 +1,26 @@
++/* pthread_kill with error checking.
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <signal.h>
++#include <support/xthread.h>
++
++void
++xpthread_kill (pthread_t thr, int signo)
++{
++  xpthread_check_return ("pthread_kill", pthread_kill (thr, signo));
++}
+diff --git a/support/xthread.h b/support/xthread.h
+index c2086db347..1ba3f133ad 100644
+--- a/support/xthread.h
++++ b/support/xthread.h
+@@ -75,6 +75,8 @@ void xpthread_attr_setstacksize (pthread_attr_t *attr,
+ void xpthread_attr_setguardsize (pthread_attr_t *attr,
+ 				 size_t guardsize);
+ 
++void xpthread_kill (pthread_t thr, int signo);
++
+ /* Return the stack size used on support_set_small_thread_stack_size.  */
+ size_t support_small_thread_stack_size (void);
+ /* Set the stack size in ATTR to a small value, but still large enough
 diff --git a/sysdeps/generic/ldsodefs.h b/sysdeps/generic/ldsodefs.h
 index aab7245e93..d552a7886b 100644
 --- a/sysdeps/generic/ldsodefs.h
@@ -3862,10 +4094,43 @@ index ecb729da6b..ca96397a4a 100644
  # define lll_futex_syscall(nargs, futexp, op, ...)                      \
    ({                                                                    \
 diff --git a/sysdeps/powerpc/powerpc64/sysdep.h b/sysdeps/powerpc/powerpc64/sysdep.h
-index c57bb1c05d..1ea4c3b917 100644
+index c57bb1c05d..83fdc8e83e 100644
 --- a/sysdeps/powerpc/powerpc64/sysdep.h
 +++ b/sysdeps/powerpc/powerpc64/sysdep.h
-@@ -398,8 +398,9 @@ LT_LABELSUFFIX(name,_name_end): ; \
+@@ -275,12 +275,14 @@ LT_LABELSUFFIX(name,_name_end): ; \
+ /* Allocate frame and save register */
+ #define NVOLREG_SAVE \
+     stdu r1,-SCV_FRAME_SIZE(r1); \
++    cfi_adjust_cfa_offset(SCV_FRAME_SIZE); \
+     std r31,SCV_FRAME_NVOLREG_SAVE(r1); \
+-    cfi_adjust_cfa_offset(SCV_FRAME_SIZE);
++    cfi_rel_offset(r31,SCV_FRAME_NVOLREG_SAVE);
+ 
+ /* Restore register and destroy frame */
+ #define NVOLREG_RESTORE	\
+     ld r31,SCV_FRAME_NVOLREG_SAVE(r1); \
++    cfi_restore(r31); \
+     addi r1,r1,SCV_FRAME_SIZE; \
+     cfi_adjust_cfa_offset(-SCV_FRAME_SIZE);
+ 
+@@ -331,13 +333,13 @@ LT_LABELSUFFIX(name,_name_end): ; \
+ 
+ #define DO_CALL_SCV \
+     mflr r9; \
+-    std r9,FRAME_LR_SAVE(r1); \
+-    cfi_offset(lr,FRAME_LR_SAVE); \
++    std r9,SCV_FRAME_SIZE+FRAME_LR_SAVE(r1);   \
++    cfi_rel_offset(lr,SCV_FRAME_SIZE+FRAME_LR_SAVE); \
+     .machine "push"; \
+     .machine "power9"; \
+     scv 0; \
+     .machine "pop"; \
+-    ld r9,FRAME_LR_SAVE(r1); \
++    ld r9,SCV_FRAME_SIZE+FRAME_LR_SAVE(r1);      \
+     mtlr r9; \
+     cfi_restore(lr);
+ 
+@@ -398,8 +400,9 @@ LT_LABELSUFFIX(name,_name_end): ; \
  #endif
  
  #define RET_SCV \
@@ -3878,10 +4143,18 @@ index c57bb1c05d..1ea4c3b917 100644
  
  #define RET_SC \
 diff --git a/sysdeps/pthread/Makefile b/sysdeps/pthread/Makefile
-index eeb64f9fb0..53b65ef349 100644
+index eeb64f9fb0..2df947cb0d 100644
 --- a/sysdeps/pthread/Makefile
 +++ b/sysdeps/pthread/Makefile
-@@ -231,7 +231,7 @@ generated += $(objpfx)tst-atfork2.mtrace \
+@@ -108,6 +108,7 @@ tests += tst-cnd-basic tst-mtx-trylock tst-cnd-broadcast \
+ 	 tst-unload \
+ 	 tst-unwind-thread \
+ 	 tst-pt-vfork1 tst-pt-vfork2 tst-vfork1x tst-vfork2x \
++	 tst-pthread-exit-signal \
+ 
+ 
+ # Files which must not be linked with libpthread.
+@@ -231,7 +232,7 @@ generated += $(objpfx)tst-atfork2.mtrace \
  
  tests-internal += tst-cancel25 tst-robust8
  
@@ -3890,7 +4163,7 @@ index eeb64f9fb0..53b65ef349 100644
  
  modules-names += tst-join7mod
  
-@@ -242,6 +242,8 @@ endif
+@@ -242,6 +243,8 @@ endif
  
  CFLAGS-tst-oncex3.c += -fexceptions
  CFLAGS-tst-oncex4.c += -fexceptions
@@ -3913,6 +4186,57 @@ index 0000000000..9b4d98f3f1
 +++ b/sysdeps/pthread/tst-oncey4.c
 @@ -0,0 +1 @@
 +#include "tst-once4.c"
+diff --git a/sysdeps/pthread/tst-pthread-exit-signal.c b/sysdeps/pthread/tst-pthread-exit-signal.c
+new file mode 100644
+index 0000000000..b4526fe663
+--- /dev/null
++++ b/sysdeps/pthread/tst-pthread-exit-signal.c
+@@ -0,0 +1,45 @@
++/* Test that pending signals are not delivered on thread exit (bug 28607).
++   Copyright (C) 2021 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++/* Due to bug 28607, pthread_kill (or pthread_cancel) restored the
++   signal mask during during thread exit, triggering the delivery of a
++   blocked pending signal (SIGUSR1 in this test).  */
++
++#include <support/xthread.h>
++#include <support/xsignal.h>
++
++static void *
++threadfunc (void *closure)
++{
++  sigset_t sigmask;
++  sigfillset (&sigmask);
++  xpthread_sigmask (SIG_SETMASK, &sigmask, NULL);
++  xpthread_kill (pthread_self (), SIGUSR1);
++  pthread_exit (NULL);
++  return NULL;
++}
++
++static int
++do_test (void)
++{
++  pthread_t thr = xpthread_create (NULL, threadfunc, NULL);
++  xpthread_join (thr);
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/sysdeps/riscv/rv64/rvd/libm-test-ulps b/sysdeps/riscv/rv64/rvd/libm-test-ulps
 index 5b6f121ac5..a0085bcdbf 100644
 --- a/sysdeps/riscv/rv64/rvd/libm-test-ulps
@@ -4070,7 +4394,7 @@ index dfe007a774..e6df624919 100644
  EOF
  dnl test, if assembler supports S390 arch13 zarch instructions as default
 diff --git a/sysdeps/s390/dl-procinfo.c b/sysdeps/s390/dl-procinfo.c
-index 0c334a2551..c174e27b35 100644
+index 0c334a2551..155f0bd99e 100644
 --- a/sysdeps/s390/dl-procinfo.c
 +++ b/sysdeps/s390/dl-procinfo.c
 @@ -46,12 +46,13 @@
@@ -4078,19 +4402,19 @@ index 0c334a2551..c174e27b35 100644
    ._dl_s390_cap_flags
  #else
 -PROCINFO_CLASS const char _dl_s390_cap_flags[19][9]
-+PROCINFO_CLASS const char _dl_s390_cap_flags[21][9]
++PROCINFO_CLASS const char _dl_s390_cap_flags[23][9]
  #endif
  #ifndef PROCINFO_DECL
  = {
       "esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp", "edat", "etf3eh",
 -     "highgprs", "te", "vx", "vxd", "vxe", "gs", "vxe2", "vxp", "sort", "dflt"
 +     "highgprs", "te", "vx", "vxd", "vxe", "gs", "vxe2", "vxp", "sort", "dflt",
-+     "vxp2", "nnpa"
++     "vxp2", "nnpa", "pcimio", "sie"
    }
  #endif
  #if !defined SHARED || defined PROCINFO_DECL
 diff --git a/sysdeps/s390/dl-procinfo.h b/sysdeps/s390/dl-procinfo.h
-index 9e1a8c7ba9..2d9c305808 100644
+index 9e1a8c7ba9..e4e3e334a5 100644
 --- a/sysdeps/s390/dl-procinfo.h
 +++ b/sysdeps/s390/dl-procinfo.h
 @@ -21,7 +21,7 @@
@@ -4098,19 +4422,34 @@ index 9e1a8c7ba9..2d9c305808 100644
  #include <ldsodefs.h>
  
 -#define _DL_HWCAP_COUNT 19
-+#define _DL_HWCAP_COUNT 21
++#define _DL_HWCAP_COUNT 23
  
  #define _DL_PLATFORMS_COUNT	10
  
-@@ -61,6 +61,8 @@ enum
+@@ -61,6 +61,10 @@ enum
    HWCAP_S390_VXRS_PDE = 1 << 16,
    HWCAP_S390_SORT = 1 << 17,
    HWCAP_S390_DFLT = 1 << 18,
 +  HWCAP_S390_VXRS_PDE2 = 1 << 19,
 +  HWCAP_S390_NNPA = 1 << 20,
++  HWCAP_S390_PCI_MIO = 1 << 21,
++  HWCAP_S390_SIE = 1 << 22,
  };
  
  #define HWCAP_IMPORTANT (HWCAP_S390_ZARCH | HWCAP_S390_LDISP \
+diff --git a/sysdeps/s390/memmem-arch13.S b/sysdeps/s390/memmem-arch13.S
+index c5c8d8c97e..58df8cdb14 100644
+--- a/sysdeps/s390/memmem-arch13.S
++++ b/sysdeps/s390/memmem-arch13.S
+@@ -41,7 +41,7 @@ ENTRY(MEMMEM_ARCH13)
+ #  error The arch13 variant of memmem needs the z13 variant of memmem!
+ # endif
+ 	clgfi	%r5,9
+-	jh	MEMMEM_Z13
++	jgh	MEMMEM_Z13
+ 
+ 	aghik	%r0,%r5,-1		/* vll needs highest index.  */
+ 	bc	4,0(%r14)		/* cc==1: return if needle-len == 0.  */
 diff --git a/sysdeps/s390/memmove.c b/sysdeps/s390/memmove.c
 index f88ea79d97..1a7d3369f2 100644
 --- a/sysdeps/s390/memmove.c
@@ -4138,6 +4477,19 @@ index 4b170e4459..2ef38b72dd 100644
  				MEMMOVE_ARCH13)
  # endif
  # if HAVE_MEMMOVE_Z13
+diff --git a/sysdeps/s390/strstr-arch13.S b/sysdeps/s390/strstr-arch13.S
+index c7183e627c..222a6de91a 100644
+--- a/sysdeps/s390/strstr-arch13.S
++++ b/sysdeps/s390/strstr-arch13.S
+@@ -49,7 +49,7 @@ ENTRY(STRSTR_ARCH13)
+ #  error The arch13 variant of strstr needs the z13 variant of strstr!
+ # endif
+ 	clgfi	%r4,9
+-	jh	STRSTR_Z13
++	jgh	STRSTR_Z13
+ 
+ 	/* In case of a partial match, the vstrs instruction returns the index
+ 	   of the partial match in a vector-register.  Then we have to
 diff --git a/sysdeps/unix/sysv/linux/aarch64/cpu-features.c b/sysdeps/unix/sysv/linux/aarch64/cpu-features.c
 index fe52b6308e..db6aa3516c 100644
 --- a/sysdeps/unix/sysv/linux/aarch64/cpu-features.c
@@ -4387,15 +4739,29 @@ index cc575a0cdd..1714e1cc5f 100644
    return retval;
  }
 diff --git a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
-index 696616e779..e9bd3684db 100644
+index 696616e779..00e73a3e3b 100644
 --- a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
 +++ b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
-@@ -46,3 +46,5 @@
+@@ -22,6 +22,11 @@
+ 
+ /*
+  * The following must match the kernels asm/elf.h.
++ * Note: The kernel commit 511ad531afd4090625def4d9aba1f5227bd44b8e
++ * "s390/hwcaps: shorten HWCAP defines" has shortened the prefix of the macros
++ * from "HWCAP_S390_" to "HWCAP_".  For compatibility reasons, we do not
++ * change the prefix in public glibc header file.
++ *
+  * Note that these are *not* the same as the STORE FACILITY LIST bits.
+  */
+ #define HWCAP_S390_ESAN3        1
+@@ -46,3 +51,7 @@
  #define HWCAP_S390_VXRS_PDE     65536
  #define HWCAP_S390_SORT         131072
  #define HWCAP_S390_DFLT         262144
 +#define HWCAP_S390_VXRS_PDE2    524288
 +#define HWCAP_S390_NNPA         1048576
++#define HWCAP_S390_PCI_MIO      2097152
++#define HWCAP_S390_SIE          4194304
 diff --git a/sysdeps/unix/sysv/linux/select.c b/sysdeps/unix/sysv/linux/select.c
 index 415aa87d3c..dc16a816ed 100644
 --- a/sysdeps/unix/sysv/linux/select.c

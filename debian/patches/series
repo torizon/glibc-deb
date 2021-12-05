@@ -111,6 +111,7 @@ any/submitted-bits-fcntl_h-at.diff
 any/submitted-nptl-invalid-td.patch
 any/local-ldconfig-multiarch.diff
 any/local-disable-libnss-db.diff
+any/local-revert-bz13979.diff
 any/unsubmitted-ldso-machine-mismatch.diff
 any/local-ldconfig-ignore-ld.so.diff
 any/local-bootstrap-headers.diff

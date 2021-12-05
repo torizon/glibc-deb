@@ -105,6 +105,24 @@ glibc (2.33-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 Sep 2021 07:03:55 +0200
 
+glibc (2.32-5) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/control.in/libc: add a breaks against tinydns (<< 1:1.05-14).
+    Closes: #997912.
+  * debian/debhelper.in/libc-bin.postinst: stop replacing older versions from
+    /etc/nsswitch.conf.  Closes: #998008.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix bad conversion from ISO-2022-JP-3 with iconv (CVE-2021-43396).
+      Closes: #998622.
+  * debian/control.in/main: rename libselinux-dev build-dependency into
+    libselinux1-dev.
+  * debian/patches/any/submitted-localedef-check-magic.patch: new patch to
+    display a proper error message for bad locale-archive files.  Closes:
+    #993772.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 05 Dec 2021 16:46:21 +0100
+
 glibc (2.32-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]

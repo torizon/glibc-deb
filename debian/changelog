@@ -1,3 +1,10 @@
+glibc (2.33-0experimental4) UNRELEASED; urgency=medium
+
+  * debian/control.in/libc: drop ${locale-compat:Depends} leftover from
+    Provides.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 09 Dec 2021 23:58:50 +0100
+
 glibc (2.33-0experimental3) experimental; urgency=medium
 
   [ Samuel Thibault ]

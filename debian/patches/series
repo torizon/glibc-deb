@@ -119,4 +119,4 @@ any/submitted-resolv-unaligned.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/submitted-localedef-check-magic.patch
+any/git-localedef-check-magic.patch

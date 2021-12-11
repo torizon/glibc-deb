@@ -1,3 +1,44 @@
+glibc (2.34-0experimental0) UNRELEASED; urgency=medium
+
+  * New upstream release:
+    - Treat 'W' as a distinct character in sv_SE locale.  Closes: #511357.
+    - Fix a deadlock between pthread_create and ctors.  Closes: #903514,
+      #904544, #906516.
+    - Add y2106 support for mips64.  Closes: #983769.
+    - debian/symbols.wildcard: add 2.34.
+    - debian/libc6.symbols.common, debian/libc6.1.symbols.alpha,
+      debian/libc0.1.symbols.common, debian/libc0.3.symbols.hurd-i386: add
+      libc_malloc_debug.so.0.
+    - debian/patches/arm/local-sigaction.diff: rebased.
+    - debian/patches/hppa/git-fcntl.h-update.diff: upstreamed.
+    - debian/patches/hurd-i386/git-tiocflush.diff: upstreamed.
+    - debian/patches/hurd-i386/git-eintr.diff: upstreamed.
+    - debian/patches/hurd-i386/local-enable-ldconfig.diff: rebased.
+    - debian/patches/hurd-i386/local-clock_gettime_MONOTONIC.diff: rebased.
+    - debian/patches/hurd-i386/local-fix-nss.diff: rebased.
+    - debian/patches/all/submitted-po-fr-fixes.diff: rebased.
+    - debian/patches/any/local-ldso-disable-hwcap.diff: rebased.
+    - debian/patches/any/submitted-nptl-invalid-td.patch: rebased.
+    - debian/debhelper.in/libc-udeb.install{,.hurd-i386}: adjust paths
+      following the drop of the version number from the soname.
+    - debian/rules.d/build.mk: do not create symlink for ld.so.
+    - debian/rules.d/debhelper.mk: Stop making libpthread.so.0 executable and
+      strip it differently now that it is an empty library.
+    - debian/rules.d/debhelper.mk, debian/debhelper.in/libc.fixperms,
+      debian/debhelper.in/libc-alt.fixperms,
+      debian/debhelper.in/libc-otherbuild.fixperm: Use dh_fixperms to keep
+      ld.so and libc.so.6 executable now that they have a version independent
+      name.
+    - debian/rules.d/debhelper.mk, debian/debhelper.in/libc.postrm,
+      debian/debhelper.in/libc-otherbuild.lintian-overrides,
+      debian/debhelper.in/libc.lintian-overrides: change RTLD_SO to only
+      contain the basename instead of the absolute path.
+    - debhelper.in/libc.lintian-overrides, debhelper.in/libc.lintian-overrides,
+      debhelper.in/libc-otherbuild.lintian-overrides: update for the new
+      library naming.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 Dec 2021 21:40:06 +0100
+
 glibc (2.33-1) unstable; urgency=medium
 
   * Upload to unstable.

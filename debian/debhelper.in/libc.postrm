@@ -17,8 +17,8 @@ if [ "$1" = remove ]; then
             target="$(dpkg-query -L LIBC-${ARCH} 2>/dev/null | grep -E '/lib.*/ld-[0-9.]+\.so$' || true)"
             ;;
     esac
-    if [ -f "$target" ] && ! [ -f RTLD_SO ] ; then
-        ln -sf ${target#$(dirname RTLD_SO)/} RTLD_SO
+    if [ -f "$target" ] && ! [ -f RTLDDIR/RTLD_SO ] ; then
+        ln -sf ${target#RTLDDIR/} RTLDDIR/RTLD_SO
     fi
 fi
 

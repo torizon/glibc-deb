@@ -37,29 +37,12 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_ARCH_REGULAR_PACKAGES) $(DEB_INDEP_REGUL
 	$(call xx,extra_pkg_install)
 
 ifeq ($(filter nostrip,$(DEB_BUILD_OPTIONS)),)
-	# libpthread must be stripped specially; GDB needs the
-	# non-dynamic symbol table in order to load the thread
-	# debugging library.  We keep a full copy of the symbol
-	# table in libc6-dbg but basic thread debugging should
-	# work even without that package installed.
 	if test "$(NOSTRIP_$(curpass))" != 1; then					\
 	  if test "$(DEBUG_$(curpass))" = 1; then					\
-	    dh_strip -p$(curpass) -Xlibpthread $(DH_STRIP_DEBUG_PACKAGE);		\
-	    for f in $$(find debian/$(curpass) -name libpthread-\*.so) ; do		\
-	      dbgfile=$$(LC_ALL=C readelf -n $$f | sed -e '/Build ID:/!d'		\
-	        -e "s#^.*Build ID: \([0-9a-f]\{2\}\)\([0-9a-f]\+\)#\1/\2.debug#") ;	\
-	      dbgpath=debian/$(libc)-dbg/usr/lib/debug/.build-id/$$dbgfile ;		\
-	      mkdir -p $$(dirname $$dbgpath) ;						\
-	      $(DEB_HOST_GNU_TYPE)-objcopy --only-keep-debug $$f $$dbgpath ;		\
-	      $(DEB_HOST_GNU_TYPE)-objcopy --add-gnu-debuglink=$$dbgpath $$f ;		\
-	    done ;									\
+	    dh_strip -p$(curpass) $(DH_STRIP_DEBUG_PACKAGE);				\
 	  else										\
-	    dh_strip -p$(curpass) -Xlibpthread;						\
+	    dh_strip -p$(curpass);							\
 	  fi ;										\
-	  for f in $$(find debian/$(curpass) -name libpthread-\*.so) ; do		\
-	    $(DEB_HOST_GNU_TYPE)-strip --strip-debug --remove-section=.comment		\
-	                               --remove-section=.note $$f ;			\
-	  done ;									\
 	  for f in $$(find debian/$(curpass) -name \*crt\*.o) ; do			\
 	    $(DEB_HOST_GNU_TYPE)-strip --strip-debug --remove-section=.comment		\
 	                               --remove-section=.note $$f ;			\
@@ -68,15 +51,12 @@ ifeq ($(filter nostrip,$(DEB_BUILD_OPTIONS)),)
 endif
 
 	dh_compress -p$(curpass)
-	dh_fixperms -p$(curpass) -Xpt_chown
+	# Keep the setuid on pt_chown (non-Linux only).
+	# libc.so prints useful version information when executed.
+	dh_fixperms -p$(curpass) -Xpt_chown -Xlibc.so.
 	# Use this instead of -X to dh_fixperms so that we can use
 	# an unescaped regular expression.  ld.so must be executable;
-	# libc.so and NPTL's libpthread.so print useful version
-	# information when executed.
-	find debian/$(curpass) -type f \( -regex '.*/ld.*so' \
-		-o -regex '.*/libpthread-.*so' \
-		-o -regex '.*/libc-.*so' \) \
-		-exec chmod a+x '{}' ';'
+	find debian/$(curpass) -type f -regex '.*/ld.*\.so\.[0-9]' -exec chmod a+x '{}' ';'
 	dh_makeshlibs -Xgconv/ -p$(curpass) -V "$(call xx,shlib_dep)"
 	# Add relevant udeb: lines in shlibs files
 	sh ./debian/shlibs-add-udebs $(curpass)
@@ -113,10 +93,6 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_UDEB_PACKAGES)): debhelper $(patsubst %,
 
 	dh_compress -p$(curpass)
 	dh_fixperms -p$(curpass)
-	find debian/$(curpass) -type f \( -regex '.*/ld.*so' \
-		-o -regex '.*/libpthread-.*so' \
-		-o -regex '.*/libc-.*so' \) \
-		-exec chmod a+x '{}' ';'
 	dh_installdeb -p$(curpass)
 	# dh_shlibdeps -p$(curpass)
 	dh_gencontrol -p$(curpass)
@@ -215,7 +191,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	slibdir=$(call xx,slibdir) ; \
 	rtlddir=$(call xx,rtlddir) ; \
 	curpass=$(curpass) ; \
-	rtld_so=`LANG=C LC_ALL=C readelf -l debian/tmp-$$curpass/usr/bin/iconv | grep "interpreter" | sed -e 's/.*interpreter: \(.*\)]/\1/g'`; \
+	rtld_so=`LANG=C LC_ALL=C readelf -l debian/tmp-$$curpass/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
 	case "$$curpass:$$slibdir" in \
 	  libc:*) \
 	    templates="libc libc-dev libc-udeb" \
@@ -272,6 +248,7 @@ clean::
 	rm -f debian/*.templates
 	rm -f debian/*.dirs
 	rm -f debian/*.docs
+	rm -f debian/*.fixperms
 	rm -f debian/*.doc-base
 	rm -f debian/*.generated
 	rm -f debian/*.lintian-overrides

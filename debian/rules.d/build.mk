@@ -333,15 +333,6 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	      sed -i '/RTLDLIST=/s,=\(.*\),="\1 /lib/ld-linux.so.3",' debian/tmp-$(curpass)/usr/bin/ldd;; \
 	  esac; \
 	fi
-
-	# Create the ld.so symlink in the slibdir directory, otherwise it will get
-	# created later by ldconfig, leading to a dangling symlink when the package
-	# is removed
-	ld_so="$$(ls debian/tmp-$(curpass)/$(call xx,slibdir)/ld-*.so)" ; \
-	soname="$$(LANG=C LC_ALL=C readelf -d $$ld_so | grep 'Library soname:' | sed -e 's/.*Library soname: \[\(.*\)\]/\1/g')" ; \
-	target="$$(basename $$ld_so)" ; \
-	link_name="debian/tmp-$(curpass)/$(call xx,slibdir)/$$soname" ; \
-	ln -sf $$target $$link_name
 	
 	$(call xx,extra_install)
 endif

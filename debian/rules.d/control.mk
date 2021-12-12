@@ -15,7 +15,7 @@ $(patsubst %,debian/control.in/%,$(libc_packages)) :: debian/control.in/% : debi
 	    -e "s%@libc-dev-conflict@%$(foreach arch,$(filter-out $*,$(libc_packages)),$(arch)-dev,)%g" \
 	    < $< > $@
 
-GPP_CROSS_DEP = $(foreach a,$(libc0_1_archs) $(libc0_1_archs) $(libc6_archs) $(libc6_1_archs),g++-10-$(shell dpkg-architecture -f -a$(a) -qDEB_HOST_GNU_TYPE | tr _ -) [$(a)] <cross>,)
+GPP_CROSS_DEP = $(foreach a,$(libc0_1_archs) $(libc0_1_archs) $(libc6_archs) $(libc6_1_archs),g++$(DEB_GCC_VERSION)-$(shell dpkg-architecture -f -a$(a) -qDEB_HOST_GNU_TYPE | tr _ -) [$(a)] <cross>,)
 
 debian/control: $(stamp)control
 $(stamp)control: debian/rules.d/control.mk $(control_deps) debian/tests/control.in

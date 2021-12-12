@@ -36,6 +36,8 @@ glibc (2.34-0experimental0) UNRELEASED; urgency=medium
     - debhelper.in/libc.lintian-overrides, debhelper.in/libc.lintian-overrides,
       debhelper.in/libc-otherbuild.lintian-overrides: update for the new
       library naming.
+  * debian/control.in/main, debian/rules.d/control.mk, debian/rules: build
+    with GCC 11.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 Dec 2021 21:40:06 +0100
 

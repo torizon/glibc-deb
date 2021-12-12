@@ -1,11 +1,12 @@
-glibc (2.33-0experimental4) UNRELEASED; urgency=medium
+glibc (2.33-1) unstable; urgency=medium
 
+  * Upload to unstable.
   * debian/control.in/libc: drop ${locale-compat:Depends} leftover from
     Provides.
   * debian/patches/any/submitted-localedef-check-magic.patch: rename into
     git-localedef-check-magic.patch.
 
- -- Aurelien Jarno <aurel32@debian.org>  Thu, 09 Dec 2021 23:58:50 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 12 Dec 2021 12:04:30 +0100
 
 glibc (2.33-0experimental3) experimental; urgency=medium
 

@@ -42,6 +42,8 @@ glibc (2.34-0experimental0) UNRELEASED; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.
+  * debian/patches/hurd-i386/tg-glibc-2.24-restore-malloc-hook.diff: Drop
+    patch.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 Dec 2021 21:40:06 +0100
 

@@ -1,5 +1,6 @@
 glibc (2.34-0experimental0) UNRELEASED; urgency=medium
 
+  [ Aurelien Jarno ]
   * New upstream release:
     - Treat 'W' as a distinct character in sv_SE locale.  Closes: #511357.
     - Fix a deadlock between pthread_create and ctors.  Closes: #903514,
@@ -38,6 +39,9 @@ glibc (2.34-0experimental0) UNRELEASED; urgency=medium
       library naming.
   * debian/control.in/main, debian/rules.d/control.mk, debian/rules: build
     with GCC 11.
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update hurd tests.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 Dec 2021 21:40:06 +0100
 

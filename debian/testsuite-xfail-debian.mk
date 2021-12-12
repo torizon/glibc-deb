@@ -272,6 +272,7 @@ test-xfail-tst-audit12 = yes
 test-xfail-tst-audit14 = yes
 test-xfail-tst-audit15 = yes
 test-xfail-tst-audit16 = yes
+test-xfail-tst-audit18 = yes
 test-xfail-tst-auditmany = yes
 
 # We always put LD_ORIGIN_PATH in the environment

@@ -272,6 +272,7 @@ test-xfail-tst-audit12 = yes
 test-xfail-tst-audit14 = yes
 test-xfail-tst-audit15 = yes
 test-xfail-tst-audit16 = yes
+test-xfail-tst-audit17 = yes
 test-xfail-tst-audit18 = yes
 test-xfail-tst-auditmany = yes
 
@@ -376,10 +377,7 @@ test-xfail-tst-wait3 = yes
 test-xfail-tst-mqueue10 = yes
 test-xfail-tst-closefrom = yes
 test-xfail-tst-spawn5 = yes
-
-# fixed in 2.34
-test-xfail-tst-res_hconf_reorder = yes
-test-xfail-tst-canon-bz26341 = yes
+test-xfail-tst-nss-compat1 = yes
 
 # new in 2.35
 test-xfail-tst-pthread_kill-exited = yes

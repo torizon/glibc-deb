@@ -365,6 +365,7 @@ test-xfail-tst-reload2 = yes
 
 # fixed in 2.33
 test-xfail-tst-spawn4-compat = yes
+test-xfail-test-fesetexcept-traps = yes
 
 # new in 2.34
 test-xfail-tst-cpu-features-cpuinfo-static = yes

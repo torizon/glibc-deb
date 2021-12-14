@@ -378,6 +378,7 @@ test-xfail-tst-mqueue10 = yes
 test-xfail-tst-closefrom = yes
 test-xfail-tst-spawn5 = yes
 test-xfail-tst-nss-compat1 = yes
+test-xfail-test-fesetexcept-traps = yes
 
 # new in 2.35
 test-xfail-tst-pthread_kill-exited = yes

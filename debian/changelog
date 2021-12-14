@@ -1,5 +1,6 @@
 glibc (2.34-0experimental1) UNRELEASED; urgency=medium
 
+  * debian/testsuite-xfail-debian.mk: Update hurd tests.
   * debian/patches/hurd-i386/git-machrules-chk_fail.diff: Fix static link.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 13 Dec 2021 23:20:44 +0000

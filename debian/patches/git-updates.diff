@@ -2450,6 +2450,19 @@ index 9c15259236..fcbbf69748 100644
     for the link map L with !do_add, then this function will not raise
     an exception, otherwise it is possible that it encounters a memory
     allocation failure.  */
+diff --git a/sysdeps/hppa/fpu/libm-test-ulps b/sysdeps/hppa/fpu/libm-test-ulps
+index 90e16a7269..3d60fc25a1 100644
+--- a/sysdeps/hppa/fpu/libm-test-ulps
++++ b/sysdeps/hppa/fpu/libm-test-ulps
+@@ -1104,7 +1104,7 @@ float: 8
+ ldouble: 1
+ 
+ Function: "tgamma_downward":
+-double: 8
++double: 9
+ float: 7
+ 
+ Function: "tgamma_towardzero":
 diff --git a/sysdeps/mach/getsysstats.c b/sysdeps/mach/getsysstats.c
 index 1267f39da2..cc8023f979 100644
 --- a/sysdeps/mach/getsysstats.c

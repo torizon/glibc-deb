@@ -139,10 +139,6 @@ test-xfail-tst-signal3 = yes
 test-xfail-tst-timer4 = yes
 test-xfail-tst-waitid = yes
 test-xfail-tst-writev = yes
-
-# There is not support for protection key on Alpha yet, and there is a
-# disagreement between kernel and glibc how to report that.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -160,9 +156,6 @@ endif
 # arm64
 ######################################################################
 ifeq ($(config-machine)-$(config-os),aarch64-linux-gnu)
-# There is not support for protection key on ARM64 yet, and there is a
-# disagreement between kernel and glibc how to report that.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -170,9 +163,6 @@ endif
 # armel
 ######################################################################
 ifeq ($(config-machine)-$(config-os),arm-linux-gnueabi)
-# There is not support for protection key on ARM yet, and there is a
-# disagreement between kernel and glibc how to report that.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -180,9 +170,6 @@ endif
 # armhf
 ######################################################################
 ifeq ($(config-machine)-$(config-os),arm-linux-gnueabihf)
-# There is not support for protection key on ARM yet, and there is a
-# disagreement between kernel and glibc how to report that.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -802,10 +789,6 @@ test-xfail-test-float32-float64-sub = yes
 # the conversion and a new qNaN is generated.
 test-xfail-tst-strfrom = yes
 test-xfail-tst-strfrom-locale = yes
-
-# There is not support for protection key on MIPS yet, and there is a
-# disagreement between kernel and glibc how to report that.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -847,9 +830,6 @@ endif
 # ppc64el
 ######################################################################
 ifeq ($(config-machine)-$(config-os),powerpc64le-linux-gnu)
-# The glibc implementation of pkey_get and pkey_set are the stub
-# implementations.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -861,10 +841,6 @@ test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-mqueue5 = yes
 test-xfail-tst-waitid = yes
-
-# The glibc implementation of pkey_get and pkey_set are the stub
-# implementations.
-test-xfail-tst-pkey = yes
 endif
 
 
@@ -876,10 +852,6 @@ test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-mqueue5 = yes
 test-xfail-tst-waitid = yes
-
-# The glibc implementation of pkey_get and pkey_set are the stub
-# implementations.
-test-xfail-tst-pkey = yes
 endif
 
 

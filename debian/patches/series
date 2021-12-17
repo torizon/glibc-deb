@@ -22,7 +22,6 @@ alpha/submitted-fts64.diff
 alpha/submitted-makecontext.diff
 
 arm/local-sigaction.diff
-arm/local-vfp-sysdeps.diff
 arm/unsubmitted-ldso-multilib.diff
 arm/local-arm-futex.diff
 

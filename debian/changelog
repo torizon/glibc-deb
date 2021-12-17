@@ -1,7 +1,12 @@
 glibc (2.34-0experimental1) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.
   * debian/patches/hurd-i386/git-machrules-chk_fail.diff: Fix static link.
+
+  [ Aurelien Jarno ]
+  * debian/patches/arm/local-vfp-sysdeps.diff: drop, causes issues with GCC
+    11, the other compilers have probably been fixed during the last 9 years.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 13 Dec 2021 23:20:44 +0000
 

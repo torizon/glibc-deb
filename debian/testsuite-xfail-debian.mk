@@ -6,10 +6,6 @@ test-xfail-tst-cpuclock2 = yes
 test-xfail-tst-cputimer1 = yes
 test-xfail-tst-timer = yes
 
-# This is an upstream regression on multiple architectures
-# see https://sourceware.org/bugzilla/show_bug.cgi?id=19303
-test-xfail-tst-cancel24-static = yes
-
 # Due to the nature of this test, it's very sensitive to system load
 # in that, strangely, it wants more, not less.  Given that's hard to
 # control, we'll just let it fail

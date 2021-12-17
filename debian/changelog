@@ -11,6 +11,8 @@ glibc (2.34-0experimental1) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: whitelist failing new test on mips*.
   * debian/testsuite-xfail-debian.mk: drop whitelist for kernel bug #889817
     now that oldstable and newer kernels are fixed.
+  * debian/testsuite-xfail-debian.mk: drop whitelist for tst-cancel24-static,
+    fixed since glibc 2.25.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 13 Dec 2021 23:20:44 +0000
 

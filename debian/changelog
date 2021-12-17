@@ -1,4 +1,4 @@
-glibc (2.34-0experimental1) UNRELEASED; urgency=medium
+glibc (2.34-0experimental1) experimental; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.
@@ -16,7 +16,7 @@ glibc (2.34-0experimental1) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: drop whitelist for test-xfail-tst-pkey,
     fixed since glibc 2.31.
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 13 Dec 2021 23:20:44 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 18 Dec 2021 00:15:36 +0100
 
 glibc (2.34-0experimental0) experimental; urgency=medium
 

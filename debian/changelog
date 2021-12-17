@@ -9,6 +9,8 @@ glibc (2.34-0experimental1) UNRELEASED; urgency=medium
   * debian/patches/arm/local-vfp-sysdeps.diff: drop, causes issues with GCC
     11, the other compilers have probably been fixed during the last 9 years.
   * debian/testsuite-xfail-debian.mk: whitelist failing new test on mips*.
+  * debian/testsuite-xfail-debian.mk: drop whitelist for kernel bug #889817
+    now that oldstable and newer kernels are fixed.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 13 Dec 2021 23:20:44 +0000
 

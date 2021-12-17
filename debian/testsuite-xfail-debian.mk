@@ -167,10 +167,6 @@ ifeq ($(config-machine)-$(config-os),aarch64-linux-gnu)
 # There is not support for protection key on ARM64 yet, and there is a
 # disagreement between kernel and glibc how to report that.
 test-xfail-tst-pkey = yes
-
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
 endif
 
 
@@ -841,9 +837,6 @@ endif
 # O32 mips*
 ######################################################################
 ifneq (,$(filter $(config-machine)-$(config-os), mips64-linux-gnu mips64el-linux-gnu))
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-thread-exit-clobber = yes
 endif
 
 
@@ -851,9 +844,6 @@ endif
 # N64 mips*
 ######################################################################
 ifneq (,$(filter $(config-machine)-$(config-os), mips64-linux-gnuabi64 mips64el-linux-gnuabi64))
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
 endif
 
 
@@ -861,10 +851,6 @@ endif
 # ppc64el
 ######################################################################
 ifeq ($(config-machine)-$(config-os),powerpc64le-linux-gnu)
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
-
 # The glibc implementation of pkey_get and pkey_set are the stub
 # implementations.
 test-xfail-tst-pkey = yes
@@ -879,10 +865,6 @@ test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-mqueue5 = yes
 test-xfail-tst-waitid = yes
-
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
 
 # The glibc implementation of pkey_get and pkey_set are the stub
 # implementations.
@@ -944,10 +926,6 @@ endif
 ifeq ($(config-machine)-$(config-os),s390x-linux-gnu)
 test-xfail-tst-protected1a = yes
 test-xfail-tst-protected1b = yes
-
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
 endif
 
 
@@ -998,10 +976,6 @@ test-xfail-tst-protected1b = yes
 test-xfail-tst-realloc = yes
 test-xfail-tst-waitid = yes
 test-xfail-test-float64x-float128-mul=yes
-
-# In some conditions the kernel might not provide a heap, causing
-# some tests to fail. See bug#889817 for details.
-test-xfail-tst-malloc-usable-tunables = yes
 endif
 
 

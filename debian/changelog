@@ -5,6 +5,7 @@ glibc (2.34-0experimental1) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/git-machrules-chk_fail.diff: Fix static link.
 
   [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch.
   * debian/patches/arm/local-vfp-sysdeps.diff: drop, causes issues with GCC
     11, the other compilers have probably been fixed during the last 9 years.
 

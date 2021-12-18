@@ -3638,6 +3638,19 @@ index c7183e627c..222a6de91a 100644
  
  	/* In case of a partial match, the vstrs instruction returns the index
  	   of the partial match in a vector-register.  Then we have to
+diff --git a/sysdeps/sparc/fpu/libm-test-ulps b/sysdeps/sparc/fpu/libm-test-ulps
+index c2e4649524..f34bbe6c59 100644
+--- a/sysdeps/sparc/fpu/libm-test-ulps
++++ b/sysdeps/sparc/fpu/libm-test-ulps
+@@ -1346,7 +1346,7 @@ float: 8
+ ldouble: 4
+ 
+ Function: "tgamma_downward":
+-double: 8
++double: 9
+ float: 7
+ ldouble: 5
+ 
 diff --git a/sysdeps/unix/sysv/linux/aarch64/arch-syscall.h b/sysdeps/unix/sysv/linux/aarch64/arch-syscall.h
 index e9eb707d0a..bedab1abba 100644
 --- a/sysdeps/unix/sysv/linux/aarch64/arch-syscall.h

@@ -1,6 +1,10 @@
 glibc (2.34-0experimental2) UNRELEASED; urgency=medium
 
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debhelper.in/libc.lintian-overrides, debhelper.in/libc.lintian-overrides,
+    debhelper.in/libc-otherbuild.lintian-overrides: use wildcards to match the
+    dynamic linker name. This changes the overrides files to be identical on
+    all architectures and make them multiarch installable.  Closes: #1001967.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 19 Dec 2021 00:24:07 +0100
 

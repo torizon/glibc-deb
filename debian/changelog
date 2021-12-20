@@ -1,3 +1,11 @@
+glibc (2.34-0experimental3) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/testsuite-xfail-debian.mk: whitelist again test-xfail-tst-pkey on
+    powerpc, as 32-bit protection key support on powerpc is unclear.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 20 Dec 2021 21:34:33 +0100
+
 glibc (2.34-0experimental2) experimental; urgency=medium
 
   * debian/patches/git-updates.diff: update from upstream stable branch.

@@ -852,6 +852,9 @@ test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-mqueue5 = yes
 test-xfail-tst-waitid = yes
+
+# The 32-bit protection key behavior is somewhat unclear on 32-bit powerpc.
+test-xfail-tst-pkey = yes
 endif
 
 

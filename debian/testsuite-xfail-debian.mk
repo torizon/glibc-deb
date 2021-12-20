@@ -205,6 +205,12 @@ test-xfail-tst-cond25 = yes
 # See https://sourceware.org/bugzilla/show_bug.cgi?id=24914
 test-xfail-tst-minsigstksz-1 = yes
 test-xfail-tst-xsigstack = yes
+
+# See https://sourceware.org/bugzilla/show_bug.cgi?id=27654
+test-xfail-tst-readdir64-compat = yes
+
+# https://www.spinics.net/lists/linux-parisc/msg15397.html
+test-xfail-tst-minsigstksz-5 = yes
 endif
 
 

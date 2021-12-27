@@ -375,6 +375,10 @@ test-xfail-tst-audit16-cmp = yes
 test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
+test-xfail-tst-rtld-run-static = yes
+
+# want /proc/self/fd
+test-xfail-tst-close_range = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes

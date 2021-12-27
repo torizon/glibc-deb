@@ -227,6 +227,7 @@ tests-unsupported += tst-malloc-thread-fail
 tests-unsupported += tst-malloc-thread-fail-malloc-check
 tests-unsupported += tst-malloc-thread-fail-mcheck
 tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb1
+tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb2
 tests-unsupported += tst-dynarray-fail
 
 # We don't provide /proc/cpuinfo yet

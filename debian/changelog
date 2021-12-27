@@ -9,6 +9,9 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
     optimized build to slibdir, as we do not have a symlink from rtlddir to
     slibdir anymore.
 
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update hurd tests.
+
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 20 Dec 2021 21:34:33 +0100
 
 glibc (2.34-0experimental2) experimental; urgency=medium

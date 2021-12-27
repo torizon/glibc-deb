@@ -376,6 +376,8 @@ test-xfail-tst-audit14-cmp = yes
 test-xfail-tst-audit15-cmp = yes
 test-xfail-tst-audit16-cmp = yes
 test-xfail-tst-sched_getaffinity = yes
+test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
+test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes

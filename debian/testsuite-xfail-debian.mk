@@ -327,9 +327,6 @@ test-xfail-tst-nss-files-hosts-long = yes
 # wants pthread_barrierattr_setpshared
 test-xfail-tst-pututxline-cache = yes
 test-xfail-tst-pututxline-lockfail = yes
-test-xfail-tst-mallocfork2 = yes
-test-xfail-tst-mallocfork2-mcheck = yes
-test-xfail-tst-mallocfork2-malloc-check = yes
 
 # wants /proc/self/fd
 test-xfail-tst-updwtmpx = yes
@@ -381,6 +378,10 @@ test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes
+# upstreamed in 2.35
+test-xfail-tst-mallocfork2 = yes
+test-xfail-tst-mallocfork2-mcheck = yes
+test-xfail-tst-mallocfork2-malloc-check = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes

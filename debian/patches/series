@@ -34,6 +34,7 @@ hurd-i386/git-get_errlist.diff
 hurd-i386/git-msync.diff
 hurd-i386/git-htl-init_sigset.diff
 hurd-i386/git-machrules-chk_fail.diff
+hurd-i386/git-random-getrandom.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

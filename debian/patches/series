@@ -39,6 +39,7 @@ hurd-i386/git-AT_NO_AUTOMOUNT.diff
 hurd-i386/git-get_errlist.diff
 hurd-i386/git-msync.diff
 hurd-i386/git-htl-init_sigset.diff
+hurd-i386/git-lib-map.diff
 hurd-i386/git-large-text.diff
 
 hurd-i386/local-enable-ldconfig.diff

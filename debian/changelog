@@ -13,6 +13,7 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: Update hurd tests.
   * debian/patches/hurd-i386/git-random-getrandom.diff: Fix random translator
     startup.
+  * debian/control: Break hurd << 1:0.9.git20211230-2 accordingly.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 20 Dec 2021 21:34:33 +0100
 

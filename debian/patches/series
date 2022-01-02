@@ -43,6 +43,7 @@ hurd-i386/git-lib-map.diff
 hurd-i386/git-large-text.diff
 hurd-i386/git-get_dtable.diff
 hurd-i386/git-auth-leak.diff
+hurd-i386/git-nuke_ports_on_exec.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

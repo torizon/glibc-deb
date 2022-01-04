@@ -254,14 +254,12 @@ test-xfail-tst-audit2 = yes
 test-xfail-tst-audit3 = yes
 test-xfail-tst-audit8 = yes
 test-xfail-tst-audit9 = yes
-test-xfail-tst-audit11 = yes
-test-xfail-tst-audit12 = yes
 test-xfail-tst-audit14 = yes
 test-xfail-tst-audit15 = yes
 test-xfail-tst-audit16 = yes
 test-xfail-tst-audit17 = yes
 test-xfail-tst-audit18 = yes
-test-xfail-tst-auditmany = yes
+test-xfail-tst-audit20 = yes
 
 # We always put LD_ORIGIN_PATH in the environment
 test-xfail-tst-execvpe5 = yes
@@ -311,8 +309,6 @@ test-xfail-tst-dynarray-fail-mem = yes
 test-xfail-test-errno = yes
 
 # new in 2.27
-test-xfail-tst-gmon-static = yes
-test-xfail-tst-gmon-static-gprof = yes
 test-xfail-tst-tls1-static-non-pie = yes
 test-xfail-tst-libc_dlvsym-static = yes
 test-xfail-tst-libc_dlvsym = yes
@@ -382,6 +378,11 @@ test-xfail-tst-close_range = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes
+test-xfail-tst-gmon-static = yes
+test-xfail-tst-gmon-static-gprof = yes
+test-xfail-tst-audit11 = yes
+test-xfail-tst-audit12 = yes
+test-xfail-tst-auditmany = yes
 # upstreamed in 2.35
 test-xfail-tst-mallocfork2 = yes
 test-xfail-tst-mallocfork2-mcheck = yes

@@ -4738,6 +4738,22 @@ index cc575a0cdd..1714e1cc5f 100644
  
    return retval;
  }
+diff --git a/sysdeps/unix/sysv/linux/powerpc/syscall.S b/sysdeps/unix/sysv/linux/powerpc/syscall.S
+index d6ec87f006..d06e776ca4 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/syscall.S
++++ b/sysdeps/unix/sysv/linux/powerpc/syscall.S
+@@ -27,7 +27,11 @@ ENTRY (syscall)
+ 	mr   r8,r9
+ #if !IS_IN(rtld) && (defined(__PPC64__) || defined(__powerpc64__))
+ 	CHECK_SCV_SUPPORT r9 0f
++	stdu r1,-SCV_FRAME_SIZE(r1)
++	cfi_adjust_cfa_offset(SCV_FRAME_SIZE)
+ 	DO_CALL_SCV
++	addi r1,r1,SCV_FRAME_SIZE
++	cfi_adjust_cfa_offset(-SCV_FRAME_SIZE)
+ 	RET_SCV
+ 	b 1f
+ #endif
 diff --git a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
 index 696616e779..00e73a3e3b 100644
 --- a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h

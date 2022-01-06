@@ -1,4 +1,4 @@
-glibc (2.33-2) UNRELEASED; urgency=medium
+glibc (2.33-2) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/unsubmitted-getaux_at_secure.diff: Fix according
@@ -16,7 +16,7 @@ glibc (2.33-2) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix syscall() on ppc64 with POWER9 CPUs.  Closes: #1003201.
 
- -- Samuel Thibault <sthibault@debian.org>  Sun, 12 Dec 2021 13:00:14 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 06 Jan 2022 22:32:53 +0100
 
 glibc (2.33-1) unstable; urgency=medium
 

@@ -1,8 +1,20 @@
-Index: glibc-2.33/hurd/hurdexec.c
-===================================================================
---- glibc-2.33.orig/hurd/hurdexec.c
-+++ glibc-2.33/hurd/hurdexec.c
-@@ -238,6 +238,14 @@ retry:
+Committed for 2.35
+
+commit 0e298448aad6fabf455923e72e0d1a3c56e9ab9e
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Sun Jan 2 04:08:11 2022 +0100
+
+    hurd: Fix auth port leak
+    
+    If access() was used before exec, _hurd_id.rid_auth would cache an
+    "effective" auth port.  We do not want this to leak into the executed
+    program.
+
+diff --git a/hurd/hurdexec.c b/hurd/hurdexec.c
+index 3dc61431d5..5b27f1861b 100644
+--- a/hurd/hurdexec.c
++++ b/hurd/hurdexec.c
+@@ -229,6 +229,14 @@ retry:
       reflects that our whole ID set differs from what we've set it to.  */
    __mutex_lock (&_hurd_id.lock);
    err = _hurd_check_ids ();
@@ -17,7 +29,7 @@ Index: glibc-2.33/hurd/hurdexec.c
    if (err == 0 && ((_hurd_id.aux.nuids >= 2 && _hurd_id.gen.nuids >= 1
  		    && _hurd_id.aux.uids[1] != _hurd_id.gen.uids[0])
  		   || (_hurd_id.aux.ngids >= 2 && _hurd_id.gen.ngids >= 1
-@@ -253,11 +261,6 @@ retry:
+@@ -244,11 +252,6 @@ retry:
        _hurd_id.aux.uids[1] = _hurd_id.gen.uids[0];
        _hurd_id.aux.gids[1] = _hurd_id.gen.gids[0];
        _hurd_id.valid = 0;

@@ -333,7 +333,18 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	      sed -i '/RTLDLIST=/s,=\(.*\),="\1 /lib/ld-linux.so.3",' debian/tmp-$(curpass)/usr/bin/ldd;; \
 	  esac; \
 	fi
-	
+
+	# Move the dynamic linker into the slibdir location and replace it with
+	# a symlink. This is needed for TCC which is not able to find the
+	# dynamic linker if it is not in a lib directory.
+	rtld_so=`LANG=C LC_ALL=C readelf -l debian/tmp-$(curpass)/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
+	rtlddir=$(call xx,rtlddir) ; \
+	slibdir=$(call xx,slibdir) ; \
+	if [ "$$rtlddir" != "$$slibdir" ] ; then \
+	  mv debian/tmp-$(curpass)$$rtlddir/$$rtld_so debian/tmp-$(curpass)$$slibdir ; \
+	  ln -s $$slibdir/$$rtld_so debian/tmp-$(curpass)$$rtlddir/$$rtld_so ; \
+	fi
+
 	$(call xx,extra_install)
 endif
 	touch $@

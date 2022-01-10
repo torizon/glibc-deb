@@ -6,6 +6,9 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: whitelist dirent/tst-readdir64-compat
     and signal/tst-minsigstksz-5.  Closes: #1002041.
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/rules.d/build.mk: Move the dynamic linker into the slibdir location
+    and replace it with a symlink. This is needed for TCC which is not able to
+    find the dynamic linker if it is not in a lib directory.
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.

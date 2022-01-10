@@ -4142,6 +4142,18 @@ index c57bb1c05d..83fdc8e83e 100644
      neg r3,r3;
  
  #define RET_SC \
+diff --git a/sysdeps/powerpc/powerpc64/tst-ucontext-ppc64-vscr.c b/sysdeps/powerpc/powerpc64/tst-ucontext-ppc64-vscr.c
+index 28c87fcef7..d3fc4ab589 100644
+--- a/sysdeps/powerpc/powerpc64/tst-ucontext-ppc64-vscr.c
++++ b/sysdeps/powerpc/powerpc64/tst-ucontext-ppc64-vscr.c
+@@ -50,6 +50,7 @@ do_test (void)
+   /* Set SAT bit in VSCR register.  */
+   asm volatile (".machine push;\n"
+ 		".machine \"power5\";\n"
++		".machine altivec;\n"
+ 		"vspltisb %0,0;\n"
+ 		"vspltisb %1,-1;\n"
+ 		"vpkuwus %0,%0,%1;\n"
 diff --git a/sysdeps/pthread/Makefile b/sysdeps/pthread/Makefile
 index eeb64f9fb0..2df947cb0d 100644
 --- a/sysdeps/pthread/Makefile

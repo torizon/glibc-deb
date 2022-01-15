@@ -232,6 +232,8 @@ tests-unsupported += tst-dynarray-fail
 
 # We don't provide /proc/cpuinfo yet
 test-xfail-test-multiarch = yes
+test-xfail-tst-cpu-features-cpuinfo = yes
+test-xfail-tst-cpu-features-cpuinfo-static = yes
 
 # Need actual porting
 test-xfail-exe = yes
@@ -255,8 +257,13 @@ test-xfail-tst-audit3 = yes
 test-xfail-tst-audit8 = yes
 test-xfail-tst-audit9 = yes
 test-xfail-tst-audit14 = yes
+test-xfail-tst-audit14-cmp = yes
+test-xfail-tst-audit14a = yes
+test-xfail-tst-audit14a-cmp = yes
 test-xfail-tst-audit15 = yes
+test-xfail-tst-audit15-cmp = yes
 test-xfail-tst-audit16 = yes
+test-xfail-tst-audit16-cmp = yes
 test-xfail-tst-audit17 = yes
 test-xfail-tst-audit18 = yes
 test-xfail-tst-audit20 = yes
@@ -270,7 +277,6 @@ test-xfail-tst-sprofil = yes
 # Missing RT signals.
 # And without rt_sigqueueinfo thread_expire_timer can't pass the si_code = SI_TIMER
 test-xfail-tst-timer4 = yes
-test-xfail-tst-timer5 = yes
 
 # This generates GiBs of data instead of sparse files, putting build box on its knees
 tests-unsupported += test-lfs
@@ -278,6 +284,16 @@ tests-unsupported += test-lfs
 # Needs LFS support
 #test-xfail-test-lfs = yes
 test-xfail-tst-tzset = yes
+
+# want /proc/self/fd
+test-xfail-tst-if_index-long = yes
+test-xfail-tst-support_descriptors = yes
+test-xfail-tst-updwtmpx = yes
+test-xfail-tst-lchmod = yes
+test-xfail-tst-closefrom = yes
+test-xfail-tst-close_range = yes
+test-xfail-tst-support-open-dev-null-range = yes
+test-xfail-tst-spawn5 = yes
 
 # new in 2.22
 test-xfail-tst-prelink = yes
@@ -301,7 +317,6 @@ test-xfail-tst-wait4 = yes
 test-xfail-tst-posix_fallocate64 = yes
 test-xfail-tst-posix_fadvise = yes
 test-xfail-tst-posix_fadvise64 = yes
-test-xfail-tst-vfork3 = yes
 
 # new in 2.26
 test-xfail-tst-malloc-tcache-leak = yes
@@ -310,72 +325,42 @@ test-xfail-test-errno = yes
 
 # new in 2.27
 test-xfail-tst-tls1-static-non-pie = yes
-test-xfail-tst-libc_dlvsym-static = yes
-test-xfail-tst-libc_dlvsym = yes
-
-# want /proc/self/fd
-test-xfail-tst-if_index-long = yes
-test-xfail-tst-support_descriptors = yes
-
-# new in 2.30
-test-xfail-tst-nss-files-hosts-long = yes
 
 # wants pthread_barrierattr_setpshared
 test-xfail-tst-pututxline-cache = yes
 test-xfail-tst-pututxline-lockfail = yes
-
-# wants /proc/self/fd
-test-xfail-tst-updwtmpx = yes
-test-xfail-tst-lchmod = yes
 
 # new in 2.32
 # Assumes some linuxish strings
 test-xfail-tst-strerror = yes
 # We always have several threads
 test-xfail-tst-single_threaded-pthread = yes
+# known to be fixed by the siginfo patch by fixing the returned value
+# #  But for dlsym errors it still returns 9 instead of 127...
 test-xfail-tst-latepthread = yes
 test-xfail-tst-initfinilazyfail = yes
 
 # new in 2.33
-test-xfail-tst-cpu-features-cpuinfo = yes
-test-xfail-tst-cpu-features-support = yes
 # Mach misses getting adjtime without privileges
 test-xfail-tst-adjtime = yes
 test-xfail-tst-join15 = yes
-test-xfail-tst-reload1 = yes
-test-xfail-tst-reload2 = yes
 
 # fixed in 2.33
 test-xfail-tst-spawn4-compat = yes
-test-xfail-test-fesetexcept-traps = yes
 
 # new in 2.34
-test-xfail-tst-cpu-features-cpuinfo-static = yes
 test-xfail-test-cxa_atexit-race2 = yes
 test-xfail-tst-itimer = yes
-test-xfail-tst-timespec_getres = yes
 test-xfail-tst-wait3 = yes
 test-xfail-tst-mqueue10 = yes
-test-xfail-tst-closefrom = yes
-test-xfail-tst-spawn5 = yes
-test-xfail-tst-nss-compat1 = yes
 test-xfail-test-fesetexcept-traps = yes
 
 # new in 2.35
-test-xfail-tst-pthread_kill-exited = yes
-test-xfail-tst-pthread_kill-exiting = yes
 test-xfail-tst-compathooks-on = yes
-test-xfail-tst-support-open-dev-null-range = yes
-test-xfail-tst-audit14-cmp = yes
-test-xfail-tst-audit15-cmp = yes
-test-xfail-tst-audit16-cmp = yes
 test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 test-xfail-tst-rtld-run-static = yes
-
-# want /proc/self/fd
-test-xfail-tst-close_range = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes
@@ -384,10 +369,17 @@ test-xfail-tst-gmon-static-gprof = yes
 test-xfail-tst-audit11 = yes
 test-xfail-tst-audit12 = yes
 test-xfail-tst-auditmany = yes
+test-xfail-tst-timespec_getres = yes
 # upstreamed in 2.35
 test-xfail-tst-mallocfork2 = yes
 test-xfail-tst-mallocfork2-mcheck = yes
 test-xfail-tst-mallocfork2-malloc-check = yes
+test-xfail-tst-nss-compat1 = yes
+test-xfail-tst-reload1 = yes
+test-xfail-tst-reload2 = yes
+test-xfail-tst-nss-files-hosts-long = yes
+test-xfail-tst-vfork3 = yes
+test-xfail-tst-timer5 = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes

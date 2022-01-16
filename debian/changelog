@@ -3,6 +3,8 @@ glibc (2.33-3) UNRELEASED; urgency=medium
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-ttydefaults.diff: New patch to fix default
     character for termio cc[VSTATE].
+  * debian/patches/hurd-i386/git-const.diff: Constify RPCs server-side.
+    - debian/control: Bump mig build-dep accordingly.
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:

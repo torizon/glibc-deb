@@ -8,7 +8,7 @@ glibc (2.33-3) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
-    - Fix FTBFS on ppc64el with recent binutils snapshots.
+    - Fix FTBFS on ppc64el with recent binutils snapshots.  Closes: #1003847.
 
   [ Gunnar Hjalmarsson ]
   * debian/local/usr_sbin/update-locale: tweak validation of args to

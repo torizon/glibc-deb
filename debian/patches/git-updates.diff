@@ -225,6 +225,152 @@ index be88c48e6d..cdfd7b4d2f 100644
  
      # Set value of a tunable.
      __tunable_get_val;
+diff --git a/elf/dl-cache.c b/elf/dl-cache.c
+index 32f3bef5ea..2b8da8650d 100644
+--- a/elf/dl-cache.c
++++ b/elf/dl-cache.c
+@@ -269,81 +269,77 @@ search_cache (const char *string_table, uint32_t string_table_size,
+ 	      if (_dl_cache_check_flags (flags)
+ 		  && _dl_cache_verify_ptr (lib->value, string_table_size))
+ 		{
+-		  if (best == NULL || flags == GLRO (dl_correct_cache_id))
+-		    {
+-		      /* Named/extension hwcaps get slightly different
+-			 treatment: We keep searching for a better
+-			 match.  */
+-		      bool named_hwcap = false;
++		  /* Named/extension hwcaps get slightly different
++		     treatment: We keep searching for a better
++		     match.  */
++		  bool named_hwcap = false;
+ 
+-		      if (entry_size >= sizeof (struct file_entry_new))
+-			{
+-			  /* The entry is large enough to include
+-			     HWCAP data.  Check it.  */
+-			  struct file_entry_new *libnew
+-			    = (struct file_entry_new *) lib;
++		  if (entry_size >= sizeof (struct file_entry_new))
++		    {
++		      /* The entry is large enough to include
++			 HWCAP data.  Check it.  */
++		      struct file_entry_new *libnew
++			= (struct file_entry_new *) lib;
+ 
+ #ifdef SHARED
+-			  named_hwcap = dl_cache_hwcap_extension (libnew);
+-			  if (named_hwcap
+-			      && !dl_cache_hwcap_isa_level_compatible (libnew))
+-			    continue;
++		      named_hwcap = dl_cache_hwcap_extension (libnew);
++		      if (named_hwcap
++			  && !dl_cache_hwcap_isa_level_compatible (libnew))
++			continue;
+ #endif
+ 
+-			  /* The entries with named/extension hwcaps
+-			     have been exhausted.  Return the best
+-			     match encountered so far if there is
+-			     one.  */
+-			  if (!named_hwcap && best != NULL)
+-			    break;
++		      /* The entries with named/extension hwcaps have
++			 been exhausted (they are listed before all
++			 other entries).  Return the best match
++			 encountered so far if there is one.  */
++		      if (!named_hwcap && best != NULL)
++			break;
+ 
+-			  if ((libnew->hwcap & hwcap_exclude) && !named_hwcap)
+-			    continue;
+-			  if (GLRO (dl_osversion)
+-			      && libnew->osversion > GLRO (dl_osversion))
+-			    continue;
+-			  if (_DL_PLATFORMS_COUNT
+-			      && (libnew->hwcap & _DL_HWCAP_PLATFORM) != 0
+-			      && ((libnew->hwcap & _DL_HWCAP_PLATFORM)
+-				  != platform))
+-			    continue;
++		      if ((libnew->hwcap & hwcap_exclude) && !named_hwcap)
++			continue;
++		      if (GLRO (dl_osversion)
++			  && libnew->osversion > GLRO (dl_osversion))
++			continue;
++		      if (_DL_PLATFORMS_COUNT
++			  && (libnew->hwcap & _DL_HWCAP_PLATFORM) != 0
++			  && ((libnew->hwcap & _DL_HWCAP_PLATFORM)
++			      != platform))
++			continue;
+ 
+ #ifdef SHARED
+-			  /* For named hwcaps, determine the priority
+-			     and see if beats what has been found so
+-			     far.  */
+-			  if (named_hwcap)
+-			    {
+-			      uint32_t entry_priority
+-				= glibc_hwcaps_priority (libnew->hwcap);
+-			      if (entry_priority == 0)
+-				/* Not usable at all.  Skip.  */
+-				continue;
+-			      else if (best == NULL
+-				       || entry_priority < best_priority)
+-				/* This entry is of higher priority
+-				   than the previous one, or it is the
+-				   first entry.  */
+-				best_priority = entry_priority;
+-			      else
+-				/* An entry has already been found,
+-				   but it is a better match.  */
+-				continue;
+-			    }
+-#endif /* SHARED */
++		      /* For named hwcaps, determine the priority and
++			 see if beats what has been found so far.  */
++		      if (named_hwcap)
++			{
++			  uint32_t entry_priority
++			    = glibc_hwcaps_priority (libnew->hwcap);
++			  if (entry_priority == 0)
++			    /* Not usable at all.  Skip.  */
++			    continue;
++			  else if (best == NULL
++				   || entry_priority < best_priority)
++			    /* This entry is of higher priority
++			       than the previous one, or it is the
++			       first entry.  */
++			    best_priority = entry_priority;
++			  else
++			    /* An entry has already been found,
++			       but it is a better match.  */
++			    continue;
+ 			}
++#endif /* SHARED */
++		    }
+ 
+-		      best = string_table + lib->value;
++		  best = string_table + lib->value;
+ 
+-		      if (flags == GLRO (dl_correct_cache_id)
+-			  && !named_hwcap)
+-			/* We've found an exact match for the shared
+-			   object and no general `ELF' release.  Stop
+-			   searching, but not if a named (extension)
+-			   hwcap is used.  In this case, an entry with
+-			   a higher priority may come up later.  */
+-			break;
+-		    }
++		  if (!named_hwcap && flags == _DL_CACHE_DEFAULT_ID)
++		    /* With named hwcaps, we need to keep searching to
++		       see if we find a better match.  A better match
++		       is also possible if the flags of the current
++		       entry do not match the expected cache flags.
++		       But if the flags match, no better entry will be
++		       found.  */
++		    break;
+ 		}
+ 	    }
+ 	  while (++middle <= right);
 diff --git a/elf/dl-diagnostics-cpu.c b/elf/dl-diagnostics-cpu.c
 new file mode 100644
 index 0000000000..f7d149764b
@@ -4478,6 +4624,22 @@ index ecb729da6b..ca96397a4a 100644
  
  # define lll_futex_syscall(nargs, futexp, op, ...)                      \
    ({                                                                    \
+diff --git a/sysdeps/powerpc/Makefile b/sysdeps/powerpc/Makefile
+index d1c71a0ca4..06491b0ef6 100644
+--- a/sysdeps/powerpc/Makefile
++++ b/sysdeps/powerpc/Makefile
+@@ -62,11 +62,6 @@ ifeq ($(subdir),misc)
+ sysdep_headers += sys/platform/ppc.h
+ tests += test-gettimebase
+ tests += tst-set_ppr
+-
+-# This test is expected to run and exit with EXIT_UNSUPPORTED on
+-# processors that do not implement the Power ISA 2.06 or greater.
+-# But the test makes use of instructions from Power ISA 2.06 and 2.07.
+-CFLAGS-tst-set_ppr.c += -Wa,-many
+ endif
+ 
+ ifeq ($(subdir),wcsmbs)
 diff --git a/sysdeps/powerpc/powerpc64/sysdep.h b/sysdeps/powerpc/powerpc64/sysdep.h
 index c57bb1c05d..83fdc8e83e 100644
 --- a/sysdeps/powerpc/powerpc64/sysdep.h
@@ -4539,6 +4701,20 @@ index 28c87fcef7..d3fc4ab589 100644
  		"vspltisb %0,0;\n"
  		"vspltisb %1,-1;\n"
  		"vpkuwus %0,%0,%1;\n"
+diff --git a/sysdeps/powerpc/tst-set_ppr.c b/sysdeps/powerpc/tst-set_ppr.c
+index 7684f5d6ea..e80da15320 100644
+--- a/sysdeps/powerpc/tst-set_ppr.c
++++ b/sysdeps/powerpc/tst-set_ppr.c
+@@ -44,7 +44,8 @@ get_thread_priority (void)
+ {
+   /* Read the PPR.  */
+   ppr_t ppr;
+-  asm volatile (MFPPR" %0" : "=r"(ppr));
++  asm volatile (".machine push; .machine power7; "MFPPR" %0; .machine pop"
++		: "=r"(ppr));
+   /* Return the thread priority value.  */
+   return EXTRACT_THREAD_PRIORITY (ppr);
+ }
 diff --git a/sysdeps/pthread/Makefile b/sysdeps/pthread/Makefile
 index eeb64f9fb0..2df947cb0d 100644
 --- a/sysdeps/pthread/Makefile

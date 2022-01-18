@@ -9,6 +9,10 @@ glibc (2.33-3) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix FTBFS on ppc64el with recent binutils snapshots.  Closes: #1003847.
+    - Fix crashes in bzero/memset on i386 with SSE2 when the cache size cannot
+      be determined.  Closes: #1003574, #1003610.
+    - Fix a buffer overflow in sunrpc svcunix_create (CVE-2022-23218).
+    - Fix a buffer overflow in sunrpc clnt_create (CVE-2022-23219).
 
   [ Gunnar Hjalmarsson ]
   * debian/local/usr_sbin/update-locale: tweak validation of args to

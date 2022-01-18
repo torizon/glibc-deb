@@ -101,6 +101,28 @@ glibc (2.34-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 12 Dec 2021 23:52:06 +0100
 
+glibc (2.33-3) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-ttydefaults.diff: New patch to fix default
+    character for termio cc[VSTATE].
+  * debian/patches/hurd-i386/git-const.diff: Constify RPCs server-side.
+    - debian/control: Bump mig build-dep accordingly.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix FTBFS on ppc64el with recent binutils snapshots.  Closes: #1003847.
+    - Fix crashes in bzero/memset on i386 with SSE2 when the cache size cannot
+      be determined.  Closes: #1003574, #1003610.
+    - Fix a buffer overflow in sunrpc svcunix_create (CVE-2022-23218).
+    - Fix a buffer overflow in sunrpc clnt_create (CVE-2022-23219).
+
+  [ Gunnar Hjalmarsson ]
+  * debian/local/usr_sbin/update-locale: tweak validation of args to
+    update-locale().
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 18 Jan 2022 19:06:44 +0100
+
 glibc (2.33-2) unstable; urgency=medium
 
   [ Samuel Thibault ]

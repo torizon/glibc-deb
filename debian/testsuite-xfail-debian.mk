@@ -306,9 +306,6 @@ test-xfail-tst-spawn2 = yes
 test-xfail-tst-preadvwritev64 = yes
 test-xfail-tst-preadwrite64 = yes
 
-# happens on linux-i386 too
-test-xfail-annexc = yes
-
 # needs sigwaitinfo
 test-xfail-tst-waitid = yes
 test-xfail-tst-wait4 = yes
@@ -352,7 +349,6 @@ test-xfail-tst-spawn4-compat = yes
 test-xfail-test-cxa_atexit-race2 = yes
 test-xfail-tst-itimer = yes
 test-xfail-tst-wait3 = yes
-test-xfail-tst-mqueue10 = yes
 test-xfail-test-fesetexcept-traps = yes
 
 # new in 2.35
@@ -360,7 +356,6 @@ test-xfail-tst-compathooks-on = yes
 test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
-test-xfail-tst-rtld-run-static = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes
@@ -380,6 +375,7 @@ test-xfail-tst-reload2 = yes
 test-xfail-tst-nss-files-hosts-long = yes
 test-xfail-tst-vfork3 = yes
 test-xfail-tst-timer5 = yes
+test-xfail-tst-mqueue10 = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes

@@ -46,6 +46,8 @@ hurd-i386/git-auth-leak.diff
 hurd-i386/git-nuke_ports_on_exec.diff
 hurd-i386/git-ttydefaults.diff
 hurd-i386/git-const.diff
+hurd-i386/git-pthread_kill_exited.diff
+hurd-i386/git-reply_bogus.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

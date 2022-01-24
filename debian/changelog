@@ -101,6 +101,26 @@ glibc (2.34-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 12 Dec 2021 23:52:06 +0100
 
+glibc (2.33-4) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix FTBFS on powerpc and ppc64 with recent binutils snapshots.
+    - Fix autopkgtest on armhf.
+    - Fix an unexpected return value from realpath() for too long results
+      (CVE-2021-3998).
+    - Fix a an off-by-one buffer overflow/underflow in getcwd()
+      (CVE-2021-3999).
+    - debian/patches/any/local-ldso-disable-hwcap.diff: rebase.
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-pthread_kill_exited.diff: Fix pthread_kill on
+    exiting/ted thread.
+  * debian/patches/hurd-i386/git-reply_bogus.diff: Fix cleaning the reply
+    port.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 25 Jan 2022 00:13:12 +0100
+
 glibc (2.33-3) unstable; urgency=medium
 
   [ Samuel Thibault ]

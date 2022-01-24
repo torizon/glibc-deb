@@ -1,4 +1,4 @@
-glibc (2.33-4) UNRELEASED; urgency=medium
+glibc (2.33-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
@@ -16,7 +16,7 @@ glibc (2.33-4) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/git-reply_bogus.diff: Fix cleaning the reply
     port.
 
- -- Aurelien Jarno <aurel32@debian.org>  Tue, 18 Jan 2022 23:18:21 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 25 Jan 2022 00:13:12 +0100
 
 glibc (2.33-3) unstable; urgency=medium
 

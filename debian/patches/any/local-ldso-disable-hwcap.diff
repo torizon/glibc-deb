@@ -73,15 +73,15 @@
  
    while (left <= right)
      {
-@@ -302,6 +310,8 @@
- 			  if (GLRO (dl_osversion)
- 			      && libnew->osversion > GLRO (dl_osversion))
- 			    continue;
-+			  if (disable_hwcap && libnew->hwcap != 0)
-+			    continue;
- 			  if (_DL_PLATFORMS_COUNT
- 			      && (libnew->hwcap & _DL_HWCAP_PLATFORM) != 0
- 			      && ((libnew->hwcap & _DL_HWCAP_PLATFORM)
+@@ -300,6 +308,8 @@
+ 		      if (GLRO (dl_osversion)
+ 			  && libnew->osversion > GLRO (dl_osversion))
+ 			continue;
++		      if (disable_hwcap && libnew->hwcap != 0)
++			continue;
+ 		      if (_DL_PLATFORMS_COUNT
+ 			  && (libnew->hwcap & _DL_HWCAP_PLATFORM) != 0
+ 			  && ((libnew->hwcap & _DL_HWCAP_PLATFORM)
 --- a/sysdeps/alpha/ldsodefs.h
 +++ b/sysdeps/alpha/ldsodefs.h
 @@ -37,6 +37,8 @@

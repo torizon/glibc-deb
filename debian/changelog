@@ -8,6 +8,7 @@ glibc (2.33-4) UNRELEASED; urgency=medium
       (CVE-2021-3998).
     - Fix a an off-by-one buffer overflow/underflow in getcwd()
       (CVE-2021-3999).
+    - debian/patches/any/local-ldso-disable-hwcap.diff: rebase.
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-pthread_kill_exited.diff: Fix pthread_kill on

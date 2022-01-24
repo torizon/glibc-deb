@@ -4,6 +4,10 @@ glibc (2.33-4) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix FTBFS on powerpc and ppc64 with recent binutils snapshots.
     - Fix autopkgtest on armhf.
+    - Fix an unexpected return value from realpath() for too long results
+      (CVE-2021-3998).
+    - Fix a an off-by-one buffer overflow/underflow in getcwd()
+      (CVE-2021-3999).
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-pthread_kill_exited.diff: Fix pthread_kill on

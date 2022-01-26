@@ -5572,6 +5572,19 @@ index 472eab700d..9531641f82 100644
  endif
  
  ifeq ($(subdir),elf)
+diff --git a/sysdeps/unix/sysv/linux/aarch64/clone.S b/sysdeps/unix/sysv/linux/aarch64/clone.S
+index c9e63bae48..fe04bce6b6 100644
+--- a/sysdeps/unix/sysv/linux/aarch64/clone.S
++++ b/sysdeps/unix/sysv/linux/aarch64/clone.S
+@@ -47,6 +47,8 @@ ENTRY(__clone)
+ 	/* Sanity check args.  */
+ 	mov	x0, #-EINVAL
+ 	cbz	x10, .Lsyscall_error
++	/* Align sp.  */
++	and	x1, x1, -16
+ 	cbz	x1, .Lsyscall_error
+ 
+ 	/* Do the system call.  */
 diff --git a/sysdeps/unix/sysv/linux/aarch64/cpu-features.c b/sysdeps/unix/sysv/linux/aarch64/cpu-features.c
 index fe52b6308e..db6aa3516c 100644
 --- a/sysdeps/unix/sysv/linux/aarch64/cpu-features.c

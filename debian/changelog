@@ -1,3 +1,10 @@
+glibc (2.33-5) UNRELEASED; urgency=medium
+
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix build failure on hppa and ia64.  Closes: #1004390.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 26 Jan 2022 18:55:36 +0100
+
 glibc (2.33-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]

@@ -4858,10 +4858,10 @@ index 28cc44d9f1..94498d3901 100644
  	    exit (WEXITSTATUS (status));
 diff --git a/support/xclone.c b/support/xclone.c
 new file mode 100644
-index 0000000000..924d2b8754
+index 0000000000..243eee8b23
 --- /dev/null
 +++ b/support/xclone.c
-@@ -0,0 +1,50 @@
+@@ -0,0 +1,49 @@
 +/* Auxiliary functions to issue the clone syscall.
 +   Copyright (C) 2021 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
@@ -4894,15 +4894,14 @@ index 0000000000..924d2b8754
 +# ifdef __ia64__
 +  extern int __clone2 (int (*fn) (void *arg), void *stack, size_t stack_size,
 +		       int flags, void *arg, ...);
-+  r = __clone2 (f, stack, stack_size, flags, arg, /* ptid */ NULL,
-+		/* tls */ NULL, /* ctid  */ ctid);
++  r = __clone2 (fn, stack, stack_size, flags, arg, /* ptid */ NULL,
++		/* tls */ NULL, /* ctid  */ NULL);
 +# else
 +#  if _STACK_GROWS_DOWN
 +  r = clone (fn, stack + stack_size, flags, arg, /* ptid */ NULL,
 +	     /* tls */ NULL, /* ctid */  NULL);
 +#  elif _STACK_GROWS_UP
-+  r = clone (fn, stack, flags, arg, /* ptid */ NULL, /* tls */ NULL,
-+	     &ctid);
++  r = clone (fn, stack, flags, arg, /* ptid */ NULL, /* tls */ NULL, NULL);
 +#  endif
 +# endif
 +

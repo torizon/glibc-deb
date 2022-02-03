@@ -267,6 +267,13 @@ test-xfail-tst-audit16-cmp = yes
 test-xfail-tst-audit17 = yes
 test-xfail-tst-audit18 = yes
 test-xfail-tst-audit20 = yes
+test-xfail-tst-audit23 = yes
+test-xfail-tst-audit24a = yes
+test-xfail-tst-audit24b = yes
+test-xfail-tst-audit24c = yes
+test-xfail-tst-audit24d = yes
+test-xfail-tst-audit25a = yes
+test-xfail-tst-audit25b = yes
 
 # We always put LD_ORIGIN_PATH in the environment
 test-xfail-tst-execvpe5 = yes
@@ -356,6 +363,8 @@ test-xfail-tst-compathooks-on = yes
 test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
+test-xfail-tst-p_align3 = yes
+test-xfail-tst-spawn6 = yes
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes

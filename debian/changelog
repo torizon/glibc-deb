@@ -1,4 +1,4 @@
-glibc (2.33-6) UNRELEASED; urgency=medium
+glibc (2.33-6) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/pthread_once.diff: Fix pthread_key safety.
@@ -11,7 +11,7 @@ glibc (2.33-6) UNRELEASED; urgency=medium
     - Fix an overflow bug in wcsncmp_avx2 and wcsncmp_evex
     - Fix a race condition in __opensock
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 14 Feb 2022 19:32:28 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 15 Feb 2022 12:21:20 +0100
 
 glibc (2.33-5) unstable; urgency=medium
 

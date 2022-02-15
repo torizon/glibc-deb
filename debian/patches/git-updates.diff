@@ -74,10 +74,10 @@ index 68663d984e..2fa0884b4e 100644
  endif  # build-shared
  endif  # +link
 diff --git a/NEWS b/NEWS
-index 3c610744c9..c063c78b15 100644
+index 3c610744c9..aef051122e 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -4,6 +4,58 @@ See the end for copying conditions.
+@@ -4,6 +4,68 @@ See the end for copying conditions.
  
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
@@ -114,6 +114,10 @@ index 3c610744c9..c063c78b15 100644
 +  [28310] Do not use affinity mask for sysconf (_SC_NPROCESSORS_CONF)
 +  [28338] undefined behavior in __tzfile_compute with oddball TZif file
 +  [28340] ld.so crashes while loading a DSO with a read-only dynamic section
++  [28349] libc: Segfault for ping -R on qemux86 caused by recvmsg()
++  [28350] libc: ping receives SIGABRT on lib32-qemux86-64 caused by
++    recvmsg()
++  [28353] Race condition in __opensock
 +  [28357] deadlock between pthread_create and ELF constructors
 +  [28361] nptl: Avoid setxid deadlock with blocked signals in thread exit
 +  [28407] pthread_kill assumes that kill and tgkill are equivalent
@@ -127,11 +131,17 @@ index 3c610744c9..c063c78b15 100644
 +  [28704] elf/tst-cpu-features-cpuinfo fails for KVM guests on some AMD systems
 +  [28707] assert in tzfile.c __tzfile_read striking with truncated timezones
 +  [28744] A64FX string functions are selected without SVE HWCAP
++  [28755] overflow bug in wcsncmp_avx2 and wcsncmp_evex
 +  [28771] %ebx optimization macros are incompatible with .altmacro
 +  [28768] CVE-2022-23218: Buffer overflow in sunrpc svcunix_create
 +  [28769] CVE-2021-3999: Off-by-one buffer overflow/underflow in getcwd()
 +  [28770] CVE-2021-3998: Unexpected return value from realpath() for too long results
 +  [28784] x86: crash in 32bit memset-sse2.s when the cache size can not be determined
++  [28850] linux: __get_nprocs_sched reads uninitialized memory from the stack
++  [28860] build: --enable-kernel=5.1.0 build fails because of missing
++    __convert_scm_timestamps
++  [28865] linux: _SC_NPROCESSORS_CONF and _SC_NPROCESSORS_ONLN are inaccurate
++    without /sys and /proc
 +
  
  Version 2.34
@@ -262,28 +272,861 @@ index f0405b7186..4898e16c9f 100644
      tests.run()
  
 diff --git a/elf/Makefile b/elf/Makefile
-index d05f410592..118d579c42 100644
+index d05f410592..af4ccb978c 100644
 --- a/elf/Makefile
 +++ b/elf/Makefile
-@@ -224,7 +224,7 @@ tests += restest1 preloadtest loadfail multiload origtest resolvfail \
- 	 tst-tls-ie tst-tls-ie-dlmopen argv0test \
- 	 tst-glibc-hwcaps tst-glibc-hwcaps-prepend tst-glibc-hwcaps-mask \
- 	 tst-tls20 tst-tls21 tst-dlmopen-dlerror tst-dlmopen-gethostbyname \
+@@ -21,21 +21,62 @@ subdir		:= elf
+ 
+ include ../Makeconfig
+ 
+-headers		= elf.h bits/elfclass.h link.h bits/link.h
+-routines	= $(all-dl-routines) dl-support dl-iteratephdr \
+-		  dl-addr dl-addr-obj enbl-secure dl-profstub \
+-		  dl-origin dl-libc dl-sym dl-sysdep dl-error \
+-		  dl-reloc-static-pie libc_early_init rtld_static_init
++headers = \
++  bits/elfclass.h \
++  bits/link.h \
++  elf.h \
++  link.h \
++  # headers
++
++routines = \
++  $(all-dl-routines) \
++  dl-addr \
++  dl-addr-obj \
++  dl-error \
++  dl-iteratephdr \
++  dl-libc \
++  dl-origin \
++  dl-profstub \
++  dl-reloc-static-pie \
++  dl-support \
++  dl-sym \
++  dl-sysdep \
++  enbl-secure \
++  libc_early_init \
++  rtld_static_init \
++  # routines
+ 
+ # The core dynamic linking functions are in libc for the static and
+ # profiled libraries.
+-dl-routines	= $(addprefix dl-,load lookup object reloc deps \
+-				  runtime init fini debug misc \
+-				  version profile tls origin scope \
+-				  execstack open close trampoline \
+-				  exception sort-maps lookup-direct \
+-				  call-libc-early-init write \
+-				  thread_gscope_wait tls_init_tp)
++dl-routines = \
++  dl-call-libc-early-init \
++  dl-close \
++  dl-debug \
++  dl-deps \
++  dl-exception \
++  dl-execstack \
++  dl-fini \
++  dl-init \
++  dl-load \
++  dl-lookup \
++  dl-lookup-direct \
++  dl-misc \
++  dl-object \
++  dl-open \
++  dl-origin \
++  dl-profile \
++  dl-reloc \
++  dl-runtime \
++  dl-scope \
++  dl-sort-maps \
++  dl-thread_gscope_wait \
++  dl-tls \
++  dl-tls_init_tp \
++  dl-trampoline \
++  dl-version \
++  dl-write \
++  # dl-routines
++
+ ifeq (yes,$(use-ldconfig))
+ dl-routines += dl-cache
+ endif
+@@ -58,16 +99,39 @@ endif
+ 
+ all-dl-routines = $(dl-routines) $(sysdep-dl-routines)
+ # But they are absent from the shared libc, because that code is in ld.so.
+-elide-routines.os = $(all-dl-routines) dl-support enbl-secure dl-origin \
+-		    dl-sysdep dl-exception dl-reloc-static-pie \
+-		    thread_gscope_wait rtld_static_init
++elide-routines.os = \
++  $(all-dl-routines) \
++  dl-exception \
++  dl-origin \
++  dl-reloc-static-pie \
++  dl-support \
++  dl-sysdep \
++  enbl-secure \
++  rtld_static_init \
++  thread_gscope_wait \
++  # elide-routines.os
+ 
+ # ld.so uses those routines, plus some special stuff for being the program
+ # interpreter and operating independent of libc.
+-rtld-routines	= rtld $(all-dl-routines) dl-sysdep dl-environ dl-minimal \
+-  dl-error-minimal dl-conflict dl-hwcaps dl-hwcaps_split dl-hwcaps-subdirs \
+-  dl-usage dl-diagnostics dl-diagnostics-kernel dl-diagnostics-cpu \
+-  dl-mutex
++rtld-routines = \
++  $(all-dl-routines) \
++  dl-compat \
++  dl-conflict \
++  dl-diagnostics \
++  dl-diagnostics-cpu \
++  dl-diagnostics-kernel \
++  dl-environ \
++  dl-error-minimal \
++  dl-hwcaps \
++  dl-hwcaps-subdirs \
++  dl-hwcaps_split \
++  dl-minimal \
++  dl-mutex \
++  dl-sysdep \
++  dl-usage \
++  rtld \
++  # rtld-routines
++
+ all-rtld-routines = $(rtld-routines) $(sysdep-rtld-routines)
+ 
+ CFLAGS-dl-runtime.c += -fexceptions -fasynchronous-unwind-tables
+@@ -102,8 +166,16 @@ ld-map		= $(common-objpfx)ld.map
+ endif
+ 
+ ifeq (yes,$(build-shared))
+-extra-objs	= $(all-rtld-routines:%=%.os) sofini.os interp.os
+-generated	+= librtld.os dl-allobjs.os ld.so ldd
++extra-objs = \
++  $(all-rtld-routines:%=%.os) \
++  sofini.os \
++  interp.os \
++  # extra-objs
++generated += \
++  dl-allobjs.os \
++  ld.so ldd \
++  librtld.os \
++  # generated
+ install-others	= $(inst_rtlddir)/$(rtld-installed-name)
+ install-bin-script = ldd
+ endif
+@@ -121,8 +193,15 @@ others-static	+= ldconfig
+ others		+= ldconfig
+ install-rootsbin += ldconfig
+ 
+-ldconfig-modules := cache readlib xmalloc xstrdup chroot_canon static-stubs \
+-  stringtable
++ldconfig-modules := \
++  cache \
++  chroot_canon \
++  readlib \
++  static-stubs \
++  stringtable \
++  xmalloc \
++  xstrdup \
++  # ldconfig-modules
+ extra-objs	+= $(ldconfig-modules:=.o)
+ others-extras   = $(ldconfig-modules)
+ endif
+@@ -156,23 +235,36 @@ $(inst_auditdir)/sotruss-lib.so: $(objpfx)sotruss-lib.so $(+force)
+ 	$(do-install-program)
+ endif
+ 
+-tests-static-normal := tst-array1-static tst-array5-static \
+-	       tst-dl-iter-static \
+-	       tst-tlsalign-static tst-tlsalign-extern-static \
+-	       tst-linkall-static tst-env-setuid tst-env-setuid-tunables \
+-	       tst-single_threaded-static tst-single_threaded-pthread-static \
+-	       tst-dst-static tst-getauxval-static
+-
+-tests-static-internal := tst-tls1-static tst-tls2-static \
+-	       tst-ptrguard1-static tst-stackguard1-static \
+-	       tst-tls1-static-non-pie
++tests-static-normal := \
++  tst-array1-static \
++  tst-array5-static \
++  tst-dl-iter-static \
++  tst-dst-static \
++  tst-env-setuid \
++  tst-env-setuid-tunables \
++  tst-getauxval-static \
++  tst-linkall-static \
++  tst-single_threaded-pthread-static \
++  tst-single_threaded-static \
++  tst-tlsalign-extern-static \
++  tst-tlsalign-static \
++  # tests-static-normal
++
++tests-static-internal := \
++  tst-ptrguard1-static \
++  tst-stackguard1-static \
++  tst-tls1-static \
++  tst-tls1-static-non-pie \
++  tst-tls2-static \
++  # tests-static-internal
+ 
+ CRT-tst-tls1-static-non-pie := $(csu-objpfx)crt1.o
+ tst-tls1-static-non-pie-no-pie = yes
+ 
+ tests-container := \
+-			  tst-ldconfig-bad-aux-cache \
+-			  tst-ldconfig-ld_so_conf-update
++  tst-ldconfig-bad-aux-cache \
++  tst-ldconfig-ld_so_conf-update \
++  # tests-container
+ 
+ ifeq (no,$(build-hardcoded-path-in-tests))
+ # This is an ld.so.cache test, and RPATH/RUNPATH in the executable
+@@ -180,70 +272,215 @@ ifeq (no,$(build-hardcoded-path-in-tests))
+ tests-container += tst-glibc-hwcaps-prepend-cache
+ endif
+ 
+-tests := tst-tls9 tst-leaks1 \
+-	tst-array1 tst-array2 tst-array3 tst-array4 tst-array5 \
+-	tst-auxv tst-stringtable
+-tests-internal := tst-tls1 tst-tls2 $(tests-static-internal)
++tests := \
++  tst-array1 \
++  tst-array2 \
++  tst-array3 \
++  tst-array4 \
++  tst-array5 \
++  tst-auxv \
++  tst-leaks1 \
++  tst-stringtable \
++  tst-tls9 \
++  # tests
++
++tests-internal := \
++  $(tests-static-internal) \
++  tst-tls1 \
++  tst-tls2 \
++  # tests-internal
++
+ tests-static := $(tests-static-normal) $(tests-static-internal)
+ 
+ ifeq (yes,$(build-shared))
+-tests-static += tst-tls9-static tst-single_threaded-static-dlopen
++tests-static += \
++  tst-single_threaded-static-dlopen \
++  tst-tls9-static \
++  # tests-static
++
+ static-dlopen-environment = \
+   LD_LIBRARY_PATH=$(ld-library-path):$(common-objpfx)dlfcn
+ tst-tls9-static-ENV = $(static-dlopen-environment)
+ tst-single_threaded-static-dlopen-ENV = $(static-dlopen-environment)
+ 
+-tests += restest1 preloadtest loadfail multiload origtest resolvfail \
+-	 constload1 order noload filter \
+-	 reldep reldep2 reldep3 reldep4 nodelete nodelete2 \
+-	 nodlopen nodlopen2 lateglobal initfirst global \
+-	 restest2 next dblload dblunload reldep5 reldep6 reldep7 reldep8 \
+-	 tst-tls4 tst-tls5 \
+-	 tst-tls10 tst-tls11 tst-tls12 tst-tls13 tst-tls14 tst-tls15 \
+-	 tst-tls16 tst-tls17 tst-tls18 tst-tls19 tst-tls-dlinfo \
+-	 tst-align tst-align2 \
+-	 tst-dlmodcount tst-dlopenrpath tst-deep1 \
+-	 tst-dlmopen1 tst-dlmopen3 \
+-	 unload3 unload4 unload5 unload6 unload7 unload8 tst-global1 order2 \
+-	 tst-audit1 tst-audit2 tst-audit8 tst-audit9 \
+-	 tst-addr1 tst-thrlock \
+-	 tst-unique1 tst-unique2 $(if $(CXX),tst-unique3 tst-unique4 \
+-	 tst-nodelete tst-dlopen-nodelete-reloc) \
+-	 tst-initorder tst-initorder2 tst-relsort1 tst-null-argv \
+-	 tst-tlsalign tst-tlsalign-extern tst-nodelete-opened \
+-	 tst-nodelete2 tst-audit11 tst-audit12 tst-dlsym-error tst-noload \
+-	 tst-latepthread tst-tls-manydynamic tst-nodelete-dlclose \
+-	 tst-debug1 tst-main1 tst-absolute-sym tst-absolute-zero tst-big-note \
+-	 tst-unwind-ctor tst-unwind-main tst-audit13 \
+-	 tst-sonamemove-link tst-sonamemove-dlopen tst-dlopen-tlsmodid \
+-	 tst-dlopen-self tst-auditmany tst-initfinilazyfail tst-dlopenfail \
+-	 tst-dlopenfail-2 \
+-	 tst-filterobj tst-filterobj-dlopen tst-auxobj tst-auxobj-dlopen \
+-	 tst-audit14 tst-audit15 tst-audit16 tst-audit17 \
+-	 tst-single_threaded tst-single_threaded-pthread \
+-	 tst-tls-ie tst-tls-ie-dlmopen argv0test \
+-	 tst-glibc-hwcaps tst-glibc-hwcaps-prepend tst-glibc-hwcaps-mask \
+-	 tst-tls20 tst-tls21 tst-dlmopen-dlerror tst-dlmopen-gethostbyname \
 -	 tst-dl-is_dso
-+	 tst-dl-is_dso tst-ro-dynamic
- #	 reldep9
- tests-internal += loadtest unload unload2 circleload1 \
- 	 neededtest neededtest2 neededtest3 neededtest4 \
-@@ -357,7 +357,7 @@ modules-names = testobj1 testobj2 testobj3 testobj4 testobj5 testobj6 \
- 		libmarkermod4-1 libmarkermod4-2 libmarkermod4-3 libmarkermod4-4 \
- 		tst-tls20mod-bad tst-tls21mod tst-dlmopen-dlerror-mod \
- 		tst-auxvalmod \
+-#	 reldep9
+-tests-internal += loadtest unload unload2 circleload1 \
+-	 neededtest neededtest2 neededtest3 neededtest4 \
+-	 tst-tls3 tst-tls6 tst-tls7 tst-tls8 tst-dlmopen2 \
+-	 tst-ptrguard1 tst-stackguard1 \
+-	 tst-create_format1 tst-tls-surplus tst-dl-hwcaps_split
+-tests-container += tst-pldd tst-dlopen-tlsmodid-container \
+-  tst-dlopen-self-container tst-preload-pthread-libc
+-test-srcs = tst-pathopt
++tests += \
++  argv0test \
++  constload1 \
++  dblload \
++  dblunload \
++  filter \
++  global \
++  initfirst \
++  lateglobal \
++  loadfail \
++  multiload \
++  next \
++  nodelete \
++  nodelete2 \
++  nodlopen \
++  nodlopen2 \
++  noload \
++  order \
++  order2 \
++  origtest \
++  preloadtest \
++  reldep \
++  reldep2 \
++  reldep3 \
++  reldep4 \
++  reldep5 \
++  reldep6 \
++  reldep7 \
++  reldep8 \
++  resolvfail \
++  restest1 \
++  restest2 \
++  tst-absolute-sym \
++  tst-absolute-zero \
++  tst-addr1 \
++  tst-align \
++  tst-align2 \
++  tst-audit1 \
++  tst-audit2 \
++  tst-audit8 \
++  tst-audit9 \
++  tst-audit11 \
++  tst-audit12 \
++  tst-audit13 \
++  tst-audit14 \
++  tst-audit15 \
++  tst-audit16 \
++  tst-audit17 \
++  tst-auditmany \
++  tst-auxobj \
++  tst-auxobj-dlopen \
++  tst-big-note \
++  tst-debug1 \
++  tst-deep1 \
++  tst-dl-is_dso \
++  tst-dlmodcount \
++  tst-dlmopen1 \
++  tst-dlmopen3 \
++  tst-dlmopen-dlerror \
++  tst-dlmopen-gethostbyname \
++  tst-dlopenfail \
++  tst-dlopenfail-2 \
++  tst-dlopenrpath \
++  tst-dlopen-self \
++  tst-dlopen-tlsmodid \
++  tst-dlsym-error \
++  tst-filterobj \
++  tst-filterobj-dlopen \
++  tst-glibc-hwcaps \
++  tst-glibc-hwcaps-mask \
++  tst-glibc-hwcaps-prepend \
++  tst-global1 \
++  tst-initfinilazyfail \
++  tst-initorder \
++  tst-initorder2 \
++  tst-latepthread \
++  tst-main1 \
++  tst-nodelete2 \
++  tst-nodelete-dlclose \
++  tst-nodelete-opened \
++  tst-noload \
++  tst-null-argv \
++  tst-relsort1 \
++  tst-ro-dynamic \
++  tst-single_threaded \
++  tst-single_threaded-pthread \
++  tst-sonamemove-dlopen \
++  tst-sonamemove-link \
++  tst-thrlock \
++  tst-tls10 \
++  tst-tls11 \
++  tst-tls12 \
++  tst-tls13 \
++  tst-tls14 \
++  tst-tls15 \
++  tst-tls16 \
++  tst-tls17 \
++  tst-tls18 \
++  tst-tls19 \
++  tst-tls20 \
++  tst-tls21 \
++  tst-tls4 \
++  tst-tls5 \
++  tst-tlsalign \
++  tst-tlsalign-extern \
++  tst-tls-dlinfo \
++  tst-tls-ie \
++  tst-tls-ie-dlmopen \
++  tst-tls-manydynamic \
++  tst-unique1 \
++  tst-unique2 \
++  tst-unwind-ctor \
++  tst-unwind-main \
++  unload3 \
++  unload4 \
++  unload5 \
++  unload6 \
++  unload7 \
++  unload8 \
++  # tests
++tests-cxx = \
++  tst-dlopen-nodelete-reloc \
++  tst-nodelete \
++  tst-unique3 \
++  tst-unique4 \
++  # tests-cxx
++
++tests += $(if $(CXX),$(tests-cxx))
++tests-internal += \
++  circleload1 \
++  loadtest \
++  neededtest \
++  neededtest2 \
++  neededtest3 \
++  neededtest4 \
++  tst-create_format1 \
++  tst-dl-hwcaps_split \
++  tst-dlmopen2 \
++  tst-ptrguard1 \
++  tst-stackguard1 \
++  tst-tls-surplus \
++  tst-tls3 \
++  tst-tls6 \
++  tst-tls7 \
++  tst-tls8 \
++  unload \
++  unload2 \
++  # tests-internal
++
++tests-container += \
++  tst-dlopen-self-container \
++  tst-dlopen-tlsmodid-container \
++  tst-pldd \
++  tst-preload-pthread-libc \
++  # tests-container
++
++test-srcs = \
++  tst-pathopt \
++  # tests-srcs
++
+ selinux-enabled := $(shell cat /selinux/enforce 2> /dev/null)
++
+ ifneq ($(selinux-enabled),1)
+-tests-execstack-yes = tst-execstack tst-execstack-needed tst-execstack-prog
++tests-execstack-yes = \
++  tst-execstack \
++  tst-execstack-needed \
++  tst-execstack-prog \
++  # tests-execstack-yes
+ endif
+ endif
+ tests += $(tests-execstack-$(have-z-execstack))
+ ifeq ($(run-built-tests),yes)
+-tests-special += $(objpfx)tst-leaks1-mem.out \
+-		 $(objpfx)noload-mem.out \
+-		 $(objpfx)tst-ldconfig-X.out $(objpfx)tst-rtld-help.out
++tests-special += \
++  $(objpfx)noload-mem.out \
++  $(objpfx)tst-ldconfig-X.out \
++  $(objpfx)tst-leaks1-mem.out \
++  $(objpfx)tst-rtld-help.out \
++  # tests-special
+ endif
+ tlsmod17a-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+ tlsmod18a-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
+@@ -260,104 +497,278 @@ tst-tls-many-dynamic-modules-dep = \
+ tst-tls-many-dynamic-modules-dep-bad-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+ tst-tls-many-dynamic-modules-dep-bad = \
+   $(foreach n,$(tst-tls-many-dynamic-modules-dep-bad-suffixes),tst-tls-manydynamic$(n)mod-dep-bad)
+-extra-test-objs += $(tlsmod17a-modules:=.os) $(tlsmod18a-modules:=.os) \
+-		   tst-tlsalign-vars.o
+-test-extras += tst-tlsmod17a tst-tlsmod18a tst-tlsalign-vars
+-modules-names = testobj1 testobj2 testobj3 testobj4 testobj5 testobj6 \
+-		testobj1_1 failobj constload2 constload3 unloadmod \
+-		dep1 dep2 dep3 dep4 vismod1 vismod2 vismod3 \
+-		nodelmod1 nodelmod2 nodelmod3 nodelmod4 \
+-		nodel2mod1 nodel2mod2 nodel2mod3 \
+-		nodlopenmod nodlopenmod2 filtmod1 filtmod2 \
+-		reldepmod1 reldepmod2 reldepmod3 reldepmod4 nextmod1 nextmod2 \
+-		reldep4mod1 reldep4mod2 reldep4mod3 reldep4mod4 \
+-		neededobj1 neededobj2 neededobj3 neededobj4 \
+-		neededobj5 neededobj6 firstobj globalmod1 \
+-		unload2mod unload2dep ltglobmod1 ltglobmod2 pathoptobj \
+-		dblloadmod1 dblloadmod2 dblloadmod3 reldepmod5 reldepmod6 \
+-		reldep6mod0 reldep6mod1 reldep6mod2 reldep6mod3 reldep6mod4 \
+-		reldep7mod1 reldep7mod2 \
+-		tst-tlsmod1 tst-tlsmod2 tst-tlsmod3 tst-tlsmod4 \
+-		tst-tlsmod5 tst-tlsmod6 tst-tlsmod7 tst-tlsmod8 \
+-		tst-tlsmod9 tst-tlsmod10 tst-tlsmod11 tst-tlsmod12 \
+-		tst-tlsmod13 tst-tlsmod13a tst-tlsmod14a tst-tlsmod14b \
+-		tst-tlsmod15a tst-tlsmod15b tst-tlsmod16a tst-tlsmod16b \
+-		$(tlsmod17a-modules) tst-tlsmod17b $(tlsmod18a-modules) \
+-		tst-tls19mod1 tst-tls19mod2 tst-tls19mod3 \
+-		circlemod1 circlemod1a circlemod2 circlemod2a \
+-		circlemod3 circlemod3a \
+-		reldep8mod1 reldep8mod2 reldep8mod3 \
+-		reldep9mod1 reldep9mod2 reldep9mod3 \
+-		tst-alignmod tst-alignmod2 \
+-		$(modules-execstack-$(have-z-execstack)) \
+-		tst-dlopenrpathmod tst-deep1mod1 tst-deep1mod2 tst-deep1mod3 \
+-		tst-dlmopen1mod tst-auditmod1 \
+-		unload3mod1 unload3mod2 unload3mod3 unload3mod4 \
+-		unload4mod1 unload4mod2 unload4mod3 unload4mod4 \
+-		unload6mod1 unload6mod2 unload6mod3 \
+-		unload7mod1 unload7mod2 \
+-		unload8mod1 unload8mod1x unload8mod2 unload8mod3 \
+-		order2mod1 order2mod2 order2mod3 order2mod4 \
+-		tst-unique1mod1 tst-unique1mod2 \
+-		tst-unique2mod1 tst-unique2mod2 \
+-		tst-auditmod9a tst-auditmod9b \
+-		$(if $(CXX),tst-unique3lib tst-unique3lib2 tst-unique4lib \
+-		  tst-nodelete-uniquemod tst-nodelete-rtldmod \
+-		  tst-nodelete-zmod \
+-                  tst-dlopen-nodelete-reloc-mod1 \
+-		  tst-dlopen-nodelete-reloc-mod2 \
+-	          tst-dlopen-nodelete-reloc-mod3 \
+-		  tst-dlopen-nodelete-reloc-mod4 \
+-		  tst-dlopen-nodelete-reloc-mod5 \
+-	          tst-dlopen-nodelete-reloc-mod6 \
+-	          tst-dlopen-nodelete-reloc-mod7 \
+-	          tst-dlopen-nodelete-reloc-mod8 \
+-	          tst-dlopen-nodelete-reloc-mod9 \
+-	          tst-dlopen-nodelete-reloc-mod10 \
+-	          tst-dlopen-nodelete-reloc-mod11 \
+-	          tst-dlopen-nodelete-reloc-mod12 \
+-	          tst-dlopen-nodelete-reloc-mod13 \
+-	          tst-dlopen-nodelete-reloc-mod14 \
+-	          tst-dlopen-nodelete-reloc-mod15 \
+-	          tst-dlopen-nodelete-reloc-mod16 \
+-		  tst-dlopen-nodelete-reloc-mod17) \
+-		tst-initordera1 tst-initorderb1 \
+-		tst-initordera2 tst-initorderb2 \
+-		tst-initordera3 tst-initordera4 \
+-		tst-initorder2a tst-initorder2b tst-initorder2c \
+-		tst-initorder2d \
+-		tst-relsort1mod1 tst-relsort1mod2 tst-array2dep \
+-		tst-array5dep tst-null-argv-lib \
+-		tst-tlsalign-lib tst-nodelete-opened-lib tst-nodelete2mod \
+-		tst-audit11mod1 tst-audit11mod2 tst-auditmod11 \
+-		tst-audit12mod1 tst-audit12mod2 tst-audit12mod3 tst-auditmod12 \
+-		tst-latepthreadmod $(tst-tls-many-dynamic-modules) \
+-		$(tst-tls-many-dynamic-modules-dep) \
+-		$(tst-tls-many-dynamic-modules-dep-bad) \
+-		tst-nodelete-dlclose-dso tst-nodelete-dlclose-plugin \
+-		tst-main1mod tst-absolute-sym-lib \
+-		tst-absolute-zero-lib tst-big-note-lib tst-unwind-ctor-lib \
+-		tst-audit13mod1 tst-sonamemove-linkmod1 \
+-		tst-sonamemove-runmod1 tst-sonamemove-runmod2 \
+-		tst-auditmanymod1 tst-auditmanymod2 tst-auditmanymod3 \
+-		tst-auditmanymod4 tst-auditmanymod5 tst-auditmanymod6 \
+-		tst-auditmanymod7 tst-auditmanymod8 tst-auditmanymod9 \
+-		tst-initlazyfailmod tst-finilazyfailmod \
+-		tst-dlopenfailmod1 tst-dlopenfaillinkmod tst-dlopenfailmod2 \
+-		tst-dlopenfailmod3 tst-dlopenfailnodelmod tst-ldconfig-ld-mod \
+-		tst-filterobj-flt tst-filterobj-aux tst-filterobj-filtee \
+-		tst-auditlogmod-1 tst-auditlogmod-2 tst-auditlogmod-3 \
+-		tst-single_threaded-mod1 tst-single_threaded-mod2 \
+-		tst-single_threaded-mod3 tst-single_threaded-mod4 \
+-		tst-tls-ie-mod0 tst-tls-ie-mod1 tst-tls-ie-mod2 \
+-		tst-tls-ie-mod3 tst-tls-ie-mod4 tst-tls-ie-mod5 \
+-		tst-tls-ie-mod6 libmarkermod1-1 libmarkermod1-2 libmarkermod1-3 \
+-		libmarkermod2-1 libmarkermod2-2 \
+-		libmarkermod3-1 libmarkermod3-2 libmarkermod3-3 \
+-		libmarkermod4-1 libmarkermod4-2 libmarkermod4-3 libmarkermod4-4 \
+-		tst-tls20mod-bad tst-tls21mod tst-dlmopen-dlerror-mod \
+-		tst-auxvalmod \
 -		tst-dlmopen-gethostbyname-mod \
-+		tst-dlmopen-gethostbyname-mod tst-ro-dynamic-mod \
++extra-test-objs += \
++  $(tlsmod17a-modules:=.os) \
++  $(tlsmod18a-modules:=.os) \
++  tst-tlsalign-vars.o \
++  # extra-test-objs
++test-extras += \
++  tst-tlsalign-vars \
++  tst-tlsmod17a \
++  tst-tlsmod18a \
++  # test-extras
++modules-names = \
++  circlemod1 \
++  circlemod1a \
++  circlemod2 \
++  circlemod2a \
++  circlemod3 \
++  circlemod3a \
++  constload2 \
++  constload3 \
++  dblloadmod1 \
++  dblloadmod2 \
++  dblloadmod3 \
++  dep1 \
++  dep2 \
++  dep3 \
++  dep4 \
++  failobj \
++  filtmod1 \
++  filtmod2 \
++  firstobj \
++  globalmod1 \
++  libmarkermod1-1 \
++  libmarkermod1-2 \
++  libmarkermod1-3 \
++  libmarkermod2-1 \
++  libmarkermod2-2 \
++  libmarkermod3-1 \
++  libmarkermod3-2 \
++  libmarkermod3-3 \
++  libmarkermod4-1 \
++  libmarkermod4-2 \
++  libmarkermod4-3 \
++  libmarkermod4-4 \
++  ltglobmod1 \
++  ltglobmod2 \
++  neededobj1 \
++  neededobj2 \
++  neededobj3 \
++  neededobj4 \
++  neededobj5 \
++  neededobj6 \
++  nextmod1 \
++  nextmod2 \
++  nodel2mod1 \
++  nodel2mod2 \
++  nodel2mod3 \
++  nodelmod1 \
++  nodelmod2 \
++  nodelmod3 \
++  nodelmod4 \
++  nodlopenmod \
++  nodlopenmod2 \
++  order2mod1 \
++  order2mod2 \
++  order2mod3 \
++  order2mod4 \
++  pathoptobj \
++  reldep4mod1 \
++  reldep4mod2 \
++  reldep4mod3 \
++  reldep4mod4 \
++  reldep6mod0 \
++  reldep6mod1 \
++  reldep6mod2 \
++  reldep6mod3 \
++  reldep6mod4 \
++  reldep7mod1 \
++  reldep7mod2 \
++  reldep8mod1 \
++  reldep8mod2 \
++  reldep8mod3 \
++  reldep9mod1 \
++  reldep9mod2 \
++  reldep9mod3 \
++  reldepmod1 \
++  reldepmod2 \
++  reldepmod3 \
++  reldepmod4 \
++  reldepmod5 \
++  reldepmod6 \
++  testobj1 \
++  testobj1_1 \
++  testobj2 \
++  testobj3 \
++  testobj4 \
++  testobj5 \
++  testobj6 \
++  tst-absolute-sym-lib \
++  tst-absolute-zero-lib \
++  tst-alignmod \
++  tst-alignmod2 \
++  tst-array2dep \
++  tst-array5dep \
++  tst-audit11mod1 \
++  tst-audit11mod2 \
++  tst-audit12mod1 \
++  tst-audit12mod2 \
++  tst-audit12mod3 \
++  tst-audit13mod1 \
++  tst-auditlogmod-1 \
++  tst-auditlogmod-2 \
++  tst-auditlogmod-3 \
++  tst-auditmanymod1 \
++  tst-auditmanymod2 \
++  tst-auditmanymod3 \
++  tst-auditmanymod4 \
++  tst-auditmanymod5 \
++  tst-auditmanymod6 \
++  tst-auditmanymod7 \
++  tst-auditmanymod8 \
++  tst-auditmanymod9 \
++  tst-auditmod1 \
++  tst-auditmod9a \
++  tst-auditmod9b \
++  tst-auditmod11 \
++  tst-auditmod12 \
++  tst-auxvalmod \
++  tst-big-note-lib \
++  tst-deep1mod1 \
++  tst-deep1mod2 \
++  tst-deep1mod3 \
++  tst-dlmopen1mod \
++  tst-dlmopen-dlerror-mod \
++  tst-dlmopen-gethostbyname-mod \
++  tst-dlopenfaillinkmod \
++  tst-dlopenfailmod1 \
++  tst-dlopenfailmod2 \
++  tst-dlopenfailmod3 \
++  tst-dlopenfailnodelmod \
++  tst-dlopenrpathmod \
++  tst-filterobj-aux \
++  tst-filterobj-filtee \
++  tst-filterobj-flt \
++  tst-finilazyfailmod \
++  tst-initlazyfailmod \
++  tst-initorder2a \
++  tst-initorder2b \
++  tst-initorder2c \
++  tst-initorder2d \
++  tst-initordera1 \
++  tst-initordera2 \
++  tst-initordera3 \
++  tst-initordera4 \
++  tst-initorderb1 \
++  tst-initorderb2 \
++  tst-latepthreadmod \
++  tst-ldconfig-ld-mod \
++  tst-main1mod \
++  tst-nodelete2mod \
++  tst-nodelete-dlclose-dso \
++  tst-nodelete-dlclose-plugin \
++  tst-nodelete-opened-lib \
++  tst-null-argv-lib \
++  tst-relsort1mod1 \
++  tst-relsort1mod2 \
++  tst-ro-dynamic-mod \
++  tst-single_threaded-mod1 \
++  tst-single_threaded-mod2 \
++  tst-single_threaded-mod3 \
++  tst-single_threaded-mod4 \
++  tst-sonamemove-linkmod1 \
++  tst-sonamemove-runmod1 \
++  tst-sonamemove-runmod2 \
++  tst-tls19mod1 \
++  tst-tls19mod2 \
++  tst-tls19mod3 \
++  tst-tls20mod-bad \
++  tst-tls21mod \
++  tst-tlsalign-lib \
++  tst-tls-ie-mod0 \
++  tst-tls-ie-mod1 \
++  tst-tls-ie-mod2 \
++  tst-tls-ie-mod3 \
++  tst-tls-ie-mod4 \
++  tst-tls-ie-mod5 \
++  tst-tls-ie-mod6 \
++  tst-tlsmod1 \
++  tst-tlsmod10 \
++  tst-tlsmod11 \
++  tst-tlsmod12 \
++  tst-tlsmod13 \
++  tst-tlsmod13a \
++  tst-tlsmod14a \
++  tst-tlsmod14b \
++  tst-tlsmod15a \
++  tst-tlsmod15b \
++  tst-tlsmod16a \
++  tst-tlsmod16b \
++  tst-tlsmod17b \
++  tst-tlsmod2 \
++  tst-tlsmod3 \
++  tst-tlsmod4 \
++  tst-tlsmod5 \
++  tst-tlsmod6 \
++  tst-tlsmod7 \
++  tst-tlsmod8 \
++  tst-tlsmod9 \
++  tst-unique1mod1 \
++  tst-unique1mod2 \
++  tst-unique2mod1 \
++  tst-unique2mod2 \
++  tst-unwind-ctor-lib \
++  unload2dep \
++  unload2mod \
++  unload3mod1 \
++  unload3mod2 \
++  unload3mod3 \
++  unload3mod4 \
++  unload4mod1 \
++  unload4mod2 \
++  unload4mod3 \
++  unload4mod4 \
++  unload6mod1 \
++  unload6mod2 \
++  unload6mod3 \
++  unload7mod1 \
++  unload7mod2 \
++  unload8mod1 \
++  unload8mod1x \
++  unload8mod2 \
++  unload8mod3 \
++  unloadmod \
++  vismod1 \
++  vismod2 \
++  vismod3 \
++# modules-names
++
++modules-names-cxx = \
++  tst-dlopen-nodelete-reloc-mod1 \
++  tst-dlopen-nodelete-reloc-mod10 \
++  tst-dlopen-nodelete-reloc-mod11 \
++  tst-dlopen-nodelete-reloc-mod12 \
++  tst-dlopen-nodelete-reloc-mod13 \
++  tst-dlopen-nodelete-reloc-mod14 \
++  tst-dlopen-nodelete-reloc-mod15 \
++  tst-dlopen-nodelete-reloc-mod16 \
++  tst-dlopen-nodelete-reloc-mod17 \
++  tst-dlopen-nodelete-reloc-mod2 \
++  tst-dlopen-nodelete-reloc-mod3 \
++  tst-dlopen-nodelete-reloc-mod4 \
++  tst-dlopen-nodelete-reloc-mod5 \
++  tst-dlopen-nodelete-reloc-mod6 \
++  tst-dlopen-nodelete-reloc-mod7 \
++  tst-dlopen-nodelete-reloc-mod8 \
++  tst-dlopen-nodelete-reloc-mod9 \
++  tst-nodelete-rtldmod \
++  tst-nodelete-uniquemod \
++  tst-nodelete-zmod \
++  tst-unique3lib \
++  tst-unique3lib2 \
++  tst-unique4lib \
++  # modules-names-cxx
++
++modules-names += \
++  $(if $(CXX),$(modules-names-cxx)) \
++  $(modules-execstack-$(have-z-execstack)) \
++  $(tlsmod17a-modules) \
++  $(tlsmod18a-modules) \
++  $(tst-tls-many-dynamic-modules) \
++  $(tst-tls-many-dynamic-modules-dep) \
++  $(tst-tls-many-dynamic-modules-dep-bad) \
++  # modules-names
  
  # Most modules build with _ISOMAC defined, but those filtered out
  # depend on internal headers.
-@@ -399,8 +399,9 @@ endif
+@@ -399,41 +810,77 @@ endif
  modules-execstack-yes = tst-execstack-mod
  extra-test-objs += $(addsuffix .os,$(strip $(modules-names)))
  
@@ -295,7 +1138,165 @@ index d05f410592..118d579c42 100644
  
  tests += $(tests-static)
  
-@@ -1906,3 +1907,10 @@ $(objpfx)tst-getauxval-static.out: $(objpfx)tst-auxvalmod.so
+ ifeq (yes,$(have-ifunc))
+-tests-ifuncstatic := ifuncmain1static ifuncmain1picstatic \
+-		ifuncmain2static ifuncmain2picstatic \
+-		ifuncmain4static ifuncmain4picstatic \
+-		ifuncmain5static ifuncmain5picstatic \
+-		ifuncmain7static ifuncmain7picstatic
++tests-ifuncstatic := \
++  ifuncmain1static \
++  ifuncmain1picstatic \
++  ifuncmain2static \
++  ifuncmain2picstatic \
++  ifuncmain4static \
++  ifuncmain4picstatic \
++  ifuncmain5static \
++  ifuncmain5picstatic \
++  ifuncmain7static \
++  ifuncmain7picstatic \
++  # tests-ifuncstatic
+ ifeq (yes,$(have-gcc-ifunc))
+ tests-ifuncstatic += ifuncmain9static ifuncmain9picstatic
+ endif
+ tests-static += $(tests-ifuncstatic)
+ tests-internal += $(tests-ifuncstatic)
+ ifeq (yes,$(build-shared))
+-tests += tst-ifunc-fault-lazy tst-ifunc-fault-bindnow
++tests += \
++  tst-ifunc-fault-bindnow \
++  tst-ifunc-fault-lazy \
++  # tests
+ # Note: sysdeps/x86_64/ifuncmain8.c uses ifuncmain8.
+ tests-internal += \
+-	 ifuncmain1 ifuncmain1pic ifuncmain1vis ifuncmain1vispic \
+-	 ifuncmain1staticpic \
+-	 ifuncmain2 ifuncmain2pic ifuncmain3 ifuncmain4 \
+-	 ifuncmain5 ifuncmain5pic ifuncmain5staticpic \
+-	 ifuncmain7 ifuncmain7pic
++  ifuncmain1 \
++  ifuncmain1pic \
++  ifuncmain1staticpic \
++  ifuncmain1vis \
++  ifuncmain1vispic \
++  ifuncmain2 \
++  ifuncmain2pic \
++  ifuncmain3 \
++  ifuncmain4 \
++  ifuncmain5 \
++  ifuncmain5pic \
++  ifuncmain5staticpic \
++  ifuncmain7 \
++  ifuncmain7pic \
++  # tests-internal
+ ifeq (yes,$(have-gcc-ifunc))
+-tests-internal += ifuncmain9 ifuncmain9pic
++tests-internal += \
++  ifuncmain9 \
++  ifuncmain9pic \
++  # tests-internal
+ endif
+-ifunc-test-modules = ifuncdep1 ifuncdep1pic ifuncdep2 ifuncdep2pic \
+-		     ifuncdep5 ifuncdep5pic
++ifunc-test-modules = \
++  ifuncdep1 \
++  ifuncdep1pic \
++  ifuncdep2 \
++  ifuncdep2pic \
++  ifuncdep5 \
++  ifuncdep5pic \
++  # ifunc-test-modules
+ extra-test-objs += $(ifunc-test-modules:=.o)
+ test-internal-extras += $(ifunc-test-modules)
+ ifeq (yes,$(have-fpie))
+-ifunc-pie-tests = ifuncmain1pie ifuncmain1vispie ifuncmain1staticpie \
+-		  ifuncmain5pie ifuncmain6pie ifuncmain7pie
++ifunc-pie-tests = \
++  ifuncmain1pie \
++  ifuncmain1staticpie \
++  ifuncmain1vispie \
++  ifuncmain5pie \
++  ifuncmain6pie \
++  ifuncmain7pie \
++  # ifunc-pie-tests
+ ifeq (yes,$(have-gcc-ifunc))
+ ifunc-pie-tests += ifuncmain9pie
+ endif
+@@ -443,30 +890,50 @@ endif
+ tests-internal += $(ifunc-pie-tests)
+ tests-pie += $(ifunc-pie-tests)
+ endif
+-modules-names += ifuncmod1 ifuncmod3 ifuncmod5 ifuncmod6
++modules-names += \
++  ifuncmod1 \
++  ifuncmod3 \
++  ifuncmod5 \
++  ifuncmod6 \
++  # module-names
+ endif
+ endif
+ 
+ ifeq (yes,$(build-shared))
+ ifeq ($(run-built-tests),yes)
+-tests-special += $(objpfx)tst-pathopt.out $(objpfx)tst-rtld-load-self.out \
+-		 $(objpfx)tst-rtld-preload.out $(objpfx)argv0test.out \
+-		 $(objpfx)tst-rtld-help.out
++tests-special += \
++  $(objpfx)argv0test.out \
++  $(objpfx)tst-pathopt.out \
++  $(objpfx)tst-rtld-help.out \
++  $(objpfx)tst-rtld-load-self.out \
++  $(objpfx)tst-rtld-preload.out \
++  # tests-special
+ endif
+-tests-special += $(objpfx)check-textrel.out $(objpfx)check-execstack.out \
+-		 $(objpfx)check-wx-segment.out \
+-		 $(objpfx)check-localplt.out $(objpfx)check-initfini.out
++tests-special += \
++  $(objpfx)check-execstack.out \
++  $(objpfx)check-initfini.out \
++  $(objpfx)check-localplt.out \
++  $(objpfx)check-textrel.out \
++  $(objpfx)check-wx-segment.out \
++  # tests-special
+ endif
+ 
+ ifeq ($(run-built-tests),yes)
+-tests-special += $(objpfx)order-cmp.out $(objpfx)tst-array1-cmp.out \
+-		 $(objpfx)tst-array1-static-cmp.out \
+-		 $(objpfx)tst-array2-cmp.out $(objpfx)tst-array3-cmp.out \
+-		 $(objpfx)tst-array4-cmp.out $(objpfx)tst-array5-cmp.out \
+-		 $(objpfx)tst-array5-static-cmp.out $(objpfx)order2-cmp.out \
+-		 $(objpfx)tst-initorder-cmp.out \
+-		 $(objpfx)tst-initorder2-cmp.out $(objpfx)tst-unused-dep.out \
+-		 $(objpfx)tst-unused-dep-cmp.out
++tests-special += \
++  $(objpfx)order-cmp.out \
++  $(objpfx)order2-cmp.out \
++  $(objpfx)tst-array1-cmp.out \
++  $(objpfx)tst-array1-static-cmp.out \
++  $(objpfx)tst-array2-cmp.out \
++  $(objpfx)tst-array3-cmp.out \
++  $(objpfx)tst-array4-cmp.out \
++  $(objpfx)tst-array5-cmp.out \
++  $(objpfx)tst-array5-static-cmp.out \
++  $(objpfx)tst-initorder-cmp.out \
++  $(objpfx)tst-initorder2-cmp.out \
++  $(objpfx)tst-unused-dep-cmp.out \
++  $(objpfx)tst-unused-dep.out \
++  # tests-special
+ endif
+ 
+ check-abi: $(objpfx)check-abi-ld.out
+@@ -548,6 +1015,7 @@ rtld-stubbed-symbols = \
+   free \
+   malloc \
+   realloc \
++  # rtld-stubbed-symbols
+ 
+ ifeq ($(have-ssp),yes)
+ # rtld is not built with the stack protector, so these references will
+@@ -1906,3 +2374,10 @@ $(objpfx)tst-getauxval-static.out: $(objpfx)tst-auxvalmod.so
  tst-getauxval-static-ENV = LD_LIBRARY_PATH=$(objpfx):$(common-objpfx)
  
  $(objpfx)tst-dlmopen-gethostbyname.out: $(objpfx)tst-dlmopen-gethostbyname-mod.so
@@ -306,6 +1307,20 @@ index d05f410592..118d579c42 100644
 +	$(LINK.o) -nostdlib -nostartfiles -shared -o $@ \
 +		-Wl,--script=tst-ro-dynamic-mod.map \
 +		$(objpfx)tst-ro-dynamic-mod.os
+diff --git a/elf/Versions b/elf/Versions
+index 775aab62af..2af210b8f7 100644
+--- a/elf/Versions
++++ b/elf/Versions
+@@ -48,6 +48,9 @@ ld {
+     # stack canary
+     __stack_chk_guard;
+   }
++  GLIBC_2.34 {
++    __rtld_version_placeholder;
++  }
+   GLIBC_PRIVATE {
+     # Those are in the dynamic linker, but used by libc.so.
+     __libc_enable_secure;
 diff --git a/elf/dl-close.c b/elf/dl-close.c
 index f39001cab9..cd7b9c9fe8 100644
 --- a/elf/dl-close.c
@@ -330,6 +1345,44 @@ index f39001cab9..cd7b9c9fe8 100644
  #ifdef SHARED
    /* Auditing checkpoint: we have deleted all objects.  */
    if (__glibc_unlikely (do_audit))
+diff --git a/elf/dl-compat.c b/elf/dl-compat.c
+new file mode 100644
+index 0000000000..cc560c5159
+--- /dev/null
++++ b/elf/dl-compat.c
+@@ -0,0 +1,32 @@
++/* Placeholder compatibility symbols.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <shlib-compat.h>
++#include <sys/cdefs.h>
++
++/* GLIBC_2.34 placeholder for future symbol moves.  */
++
++void
++attribute_compat_text_section
++__attribute_used__
++__rtld_version_placeholder_1 (void)
++{
++}
++
++compat_symbol (ld, __rtld_version_placeholder_1,
++               __rtld_version_placeholder, GLIBC_2_34);
 diff --git a/elf/dl-load.c b/elf/dl-load.c
 index 650e4edc35..0976977fbd 100644
 --- a/elf/dl-load.c
@@ -1116,6 +2169,34 @@ index 4af16cb596..c46aced9f7 100644
  /* Information used by audit modules.  For most link maps, this data
     immediate follows the link map in memory.  For the dynamic linker,
     it is allocated separately.  See link_map_audit_state in
+diff --git a/include/sys/socket.h b/include/sys/socket.h
+index a1d749f9fa..6e4cf5077f 100644
+--- a/include/sys/socket.h
++++ b/include/sys/socket.h
+@@ -98,15 +98,21 @@ extern int __sendmmsg (int __fd, struct mmsghdr *__vmessages,
+ libc_hidden_proto (__sendmmsg)
+ #endif
+ 
+-/* Receive a message as described by MESSAGE from socket FD.
+-   Returns the number of bytes read or -1 for errors.  */
+ extern ssize_t __libc_recvmsg (int __fd, struct msghdr *__message,
+ 			       int __flags);
+ extern ssize_t __recvmsg (int __fd, struct msghdr *__message,
+ 			  int __flags) attribute_hidden;
+ #if __TIMESIZE == 64
++# define __libc_recvmsg64 __libc_recvmsg
++# define __recvmsg64  __recvmsg
+ # define __recvmmsg64 __recvmmsg
+ #else
++extern ssize_t __libc_recvmsg64 (int __fd, struct msghdr *__message,
++				 int __flags);
++extern ssize_t __recvmsg64 (int __fd, struct msghdr *__message,
++			    int __flags);
++/* Receive a message as described by MESSAGE from socket FD.
++   Returns the number of bytes read or -1 for errors.  */
+ extern int __recvmmsg64 (int __fd, struct mmsghdr *vmessages,
+ 			 unsigned int vlen, int flags,
+ 			 struct __timespec64 *timeout);
 diff --git a/include/sys/sysinfo.h b/include/sys/sysinfo.h
 index 7388356a19..c490561581 100644
 --- a/include/sys/sysinfo.h
@@ -2028,6 +3109,89 @@ index 3759576010..c2de11d73c 100644
  tests-time64 := \
    tst-sockopt-time64 \
    # tests
+diff --git a/socket/opensock.c b/socket/opensock.c
+index 37148d4743..3e35821f91 100644
+--- a/socket/opensock.c
++++ b/socket/opensock.c
+@@ -1,4 +1,5 @@
+-/* Copyright (C) 1999-2021 Free Software Foundation, Inc.
++/* Create socket with an unspecified address family for use with ioctl.
++   Copyright (C) 1999-2021 Free Software Foundation, Inc.
+    This file is part of the GNU C Library.
+ 
+    The GNU C Library is free software; you can redistribute it and/or
+@@ -15,56 +16,27 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#include <stdio.h>
++#include <errno.h>
+ #include <sys/socket.h>
+-#include <libc-lock.h>
+ 
+ /* Return a socket of any type.  The socket can be used in subsequent
+    ioctl calls to talk to the kernel.  */
+ int
+ __opensock (void)
+ {
+-  /* Cache the last AF that worked, to avoid many redundant calls to
+-     socket().  */
+-  static int sock_af = -1;
+-  int fd = -1;
+-  __libc_lock_define_initialized (static, lock);
+-
+-  if (sock_af != -1)
+-    {
+-      fd = __socket (sock_af, SOCK_DGRAM, 0);
+-      if (fd != -1)
+-        return fd;
+-    }
+-
+-  __libc_lock_lock (lock);
+-
+-  if (sock_af != -1)
+-    fd = __socket (sock_af, SOCK_DGRAM, 0);
+-
+-  if (fd == -1)
+-    {
+-#ifdef AF_INET
+-      fd = __socket (sock_af = AF_INET, SOCK_DGRAM, 0);
+-#endif
+-#ifdef AF_INET6
+-      if (fd < 0)
+-	fd = __socket (sock_af = AF_INET6, SOCK_DGRAM, 0);
+-#endif
+-#ifdef AF_IPX
+-      if (fd < 0)
+-	fd = __socket (sock_af = AF_IPX, SOCK_DGRAM, 0);
+-#endif
+-#ifdef AF_AX25
+-      if (fd < 0)
+-	fd = __socket (sock_af = AF_AX25, SOCK_DGRAM, 0);
+-#endif
+-#ifdef AF_APPLETALK
+-      if (fd < 0)
+-	fd = __socket (sock_af = AF_APPLETALK, SOCK_DGRAM, 0);
+-#endif
+-    }
+-
+-  __libc_lock_unlock (lock);
++  /* SOCK_DGRAM is supported by all address families.  */
++  int type = SOCK_DGRAM | SOCK_CLOEXEC;
++  int fd;
++
++  fd = __socket (AF_UNIX, type, 0);
++  if (fd >= 0)
++    return fd;
++  fd = __socket (AF_INET, type, 0);
++  if (fd >= 0)
++    return fd;
++  fd = __socket (AF_INET6, type, 0);
++  if (fd >= 0)
++    return fd;
++  __set_errno (ENOENT);
+   return fd;
+ }
 diff --git a/socket/sockaddr_un_set.c b/socket/sockaddr_un_set.c
 new file mode 100644
 index 0000000000..0bd40dc34e
@@ -2510,7 +3674,7 @@ index 0000000000..35a4b7b0b3
 +
 +#include <support/test-driver.c>
 diff --git a/support/Makefile b/support/Makefile
-index a462781718..2a0731796f 100644
+index a462781718..724ae6d712 100644
 --- a/support/Makefile
 +++ b/support/Makefile
 @@ -66,6 +66,7 @@ libsupport-routines = \
@@ -2521,7 +3685,13 @@ index a462781718..2a0731796f 100644
    support_openpty \
    support_paths \
    support_quote_blob \
-@@ -82,9 +83,10 @@ libsupport-routines = \
+@@ -77,14 +78,16 @@ libsupport-routines = \
+   support_set_small_thread_stack_size \
+   support_shared_allocate \
+   support_small_stack_thread_attribute \
++  support_socket_so_timestamp_time64 \
+   support_stat_nanoseconds \
+   support_subprocess \
    support_test_compare_blob \
    support_test_compare_failure \
    support_test_compare_string \
@@ -2533,7 +3703,7 @@ index a462781718..2a0731796f 100644
    temp_file \
    timespec \
    timespec-time64 \
-@@ -264,6 +266,7 @@ tests = \
+@@ -264,6 +267,7 @@ tests = \
    tst-support_capture_subprocess \
    tst-support_descriptors \
    tst-support_format_dns_packet \
@@ -2682,10 +3852,21 @@ index 0000000000..66a8504105
 +  return lowfd;
 +}
 diff --git a/support/support.h b/support/support.h
-index 834dba9097..c219e0d9d1 100644
+index 834dba9097..309be85b09 100644
 --- a/support/support.h
 +++ b/support/support.h
-@@ -174,6 +174,10 @@ timer_t support_create_timer (uint64_t sec, long int nsec, bool repeat,
+@@ -164,6 +164,10 @@ extern bool support_select_modifies_timeout (void);
+    tv_usec larger than 1000000.  */
+ extern bool support_select_normalizes_timeout (void);
+ 
++/* Return true if socket FD supports 64-bit timestamps with the SOL_SOCKET
++   and SO_TIMESTAMP/SO_TIMESTAMPNS.  */
++extern bool support_socket_so_timestamp_time64 (int fd);
++
+ /* Create a timer that trigger after SEC seconds and NSEC nanoseconds.  If
+    REPEAT is true the timer will repeat indefinitely.  If CALLBACK is not
+    NULL, the function will be called when the timer expires; otherwise a
+@@ -174,6 +178,10 @@ timer_t support_create_timer (uint64_t sec, long int nsec, bool repeat,
  /* Disable the timer TIMER.  */
  void support_delete_timer (timer_t timer);
  
@@ -2696,7 +3877,7 @@ index 834dba9097..c219e0d9d1 100644
  struct support_stack
  {
    void *stack;
-@@ -193,6 +197,14 @@ struct support_stack support_stack_alloc (size_t size);
+@@ -193,6 +201,14 @@ struct support_stack support_stack_alloc (size_t size);
  /* Deallocate the STACK.  */
  void support_stack_free (struct support_stack *stack);
  
@@ -2723,6 +3904,60 @@ index 27bfd19c93..0bacf6dbc2 100644
  
    char * const args[] = {execname, child_id, NULL};
  
+diff --git a/support/support_socket_so_timestamp_time64.c b/support/support_socket_so_timestamp_time64.c
+new file mode 100644
+index 0000000000..54bf3f4272
+--- /dev/null
++++ b/support/support_socket_so_timestamp_time64.c
+@@ -0,0 +1,48 @@
++/* Return whether socket supports 64-bit timestamps.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <errno.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <sys/socket.h>
++#include <support/support.h>
++#ifdef __linux__
++# include <socket-constants-time64.h>
++#endif
++
++bool
++support_socket_so_timestamp_time64 (int fd)
++{
++#ifdef __linux__
++# if __LINUX_KERNEL_VERSION >= 0x050100                          \
++   || __WORDSIZE == 64                                           \
++   || (defined __SYSCALL_WORDSIZE && __SYSCALL_WORDSIZE == 64)
++  return true;
++# else
++  int level = SOL_SOCKET;
++  int optname = COMPAT_SO_TIMESTAMP_NEW;
++  int optval;
++  socklen_t len = sizeof (optval);
++
++  int r = syscall (__NR_getsockopt, fd, level, optname, &optval, &len);
++  return r != -1;
++# endif
++#else
++  return false;
++#endif
++}
 diff --git a/support/support_wait_for_thread_exit.c b/support/support_wait_for_thread_exit.c
 new file mode 100644
 index 0000000000..5e3be421a7
@@ -3384,6 +4619,46 @@ index 1267f39da2..cc8023f979 100644
  /* Return the number of physical pages on the system. */
  long int
  __get_phys_pages (void)
+diff --git a/sysdeps/mach/hurd/i386/ld.abilist b/sysdeps/mach/hurd/i386/ld.abilist
+index 7e20c5e7ce..ebba31f770 100644
+--- a/sysdeps/mach/hurd/i386/ld.abilist
++++ b/sysdeps/mach/hurd/i386/ld.abilist
+@@ -16,3 +16,4 @@ GLIBC_2.2.6 _r_debug D 0x14
+ GLIBC_2.2.6 abort F
+ GLIBC_2.3 ___tls_get_addr F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+diff --git a/sysdeps/mach/hurd/if_index.c b/sysdeps/mach/hurd/if_index.c
+index 0eab510453..e785ac15aa 100644
+--- a/sysdeps/mach/hurd/if_index.c
++++ b/sysdeps/mach/hurd/if_index.c
+@@ -32,7 +32,7 @@ unsigned int
+ __if_nametoindex (const char *ifname)
+ {
+   struct ifreq ifr;
+-  int fd = __opensock ();
++  int fd = __socket (AF_INET, SOCK_DGRAM, 0);
+ 
+   if (fd < 0)
+     return 0;
+@@ -84,7 +84,7 @@ __if_nameindex (void)
+   error_t err = 0;
+   char data[2048];
+   file_t server;
+-  int fd = __opensock ();
++  int fd = __socket (AF_INET, SOCK_DGRAM, 0);
+   struct ifconf ifc;
+   unsigned int nifs, i;
+   struct if_nameindex *idx = NULL;
+@@ -169,7 +169,7 @@ char *
+ __if_indextoname (unsigned int ifindex, char ifname[IF_NAMESIZE])
+ {
+   struct ifreq ifr;
+-  int fd = __opensock ();
++  int fd = __socket (AF_INET, SOCK_DGRAM, 0);
+ 
+   if (fd < 0)
+     return NULL;
 diff --git a/sysdeps/mips/dl-relocate-ld.h b/sysdeps/mips/dl-relocate-ld.h
 new file mode 100644
 index 0000000000..376ad75dd1
@@ -4616,10 +5891,26 @@ index c2e4649524..f34bbe6c59 100644
  ldouble: 5
  
 diff --git a/sysdeps/unix/sysv/linux/Makefile b/sysdeps/unix/sysv/linux/Makefile
-index 76ad06361c..9380d3848d 100644
+index 76ad06361c..c34774806f 100644
 --- a/sysdeps/unix/sysv/linux/Makefile
 +++ b/sysdeps/unix/sysv/linux/Makefile
-@@ -331,7 +331,12 @@ sysdep_routines += xstatconv internal_statvfs \
+@@ -262,6 +262,15 @@ sysdep_routines += cmsg_nxthdr
+ CFLAGS-recvmmsg.c = -fexceptions -fasynchronous-unwind-tables
+ CFLAGS-sendmmsg.c = -fexceptions -fasynchronous-unwind-tables
+ 
++tests += \
++  tst-socket-timestamp \
++  tst-socket-timestamp-compat \
++  # tests
++tests-time64 += \
++  tst-socket-timestamp-time64 \
++  tst-socket-timestamp-compat-time64
++  # tests-time64
++
+ tests-special += $(objpfx)tst-socket-consts.out
+ $(objpfx)tst-socket-consts.out: ../sysdeps/unix/sysv/linux/tst-socket-consts.py
+ 	PYTHONPATH=../scripts \
+@@ -331,7 +340,12 @@ sysdep_routines += xstatconv internal_statvfs \
  
  sysdep_headers += bits/fcntl-linux.h
  
@@ -4669,6 +5960,15 @@ index e9eb707d0a..9905ebedf2 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/aarch64/ld.abilist b/sysdeps/unix/sysv/linux/aarch64/ld.abilist
+index 80b2fe6725..b7196a80e2 100644
+--- a/sysdeps/unix/sysv/linux/aarch64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/aarch64/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.17 __stack_chk_guard D 0x8
+ GLIBC_2.17 __tls_get_addr F
+ GLIBC_2.17 _dl_mcount F
+ GLIBC_2.17 _r_debug D 0x28
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/alpha/arch-syscall.h b/sysdeps/unix/sysv/linux/alpha/arch-syscall.h
 index bd6b7d4003..ee8085be69 100644
 --- a/sysdeps/unix/sysv/linux/alpha/arch-syscall.h
@@ -4697,6 +5997,16 @@ index bd6b7d4003..ee8085be69 100644
  #define __NR_read 3
  #define __NR_readahead 379
  #define __NR_readlink 58
+diff --git a/sysdeps/unix/sysv/linux/alpha/ld.abilist b/sysdeps/unix/sysv/linux/alpha/ld.abilist
+index 98a03f611f..13f7fc74af 100644
+--- a/sysdeps/unix/sysv/linux/alpha/ld.abilist
++++ b/sysdeps/unix/sysv/linux/alpha/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.0 _r_debug D 0x28
+ GLIBC_2.1 __libc_stack_end D 0x8
+ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x8
 diff --git a/sysdeps/unix/sysv/linux/arc/arch-syscall.h b/sysdeps/unix/sysv/linux/arc/arch-syscall.h
 index 10650549c1..1b626d9770 100644
 --- a/sysdeps/unix/sysv/linux/arc/arch-syscall.h
@@ -4725,6 +6035,15 @@ index 10650549c1..1b626d9770 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/arc/ld.abilist b/sysdeps/unix/sysv/linux/arc/ld.abilist
+index 048f17c848..7284383a6b 100644
+--- a/sysdeps/unix/sysv/linux/arc/ld.abilist
++++ b/sysdeps/unix/sysv/linux/arc/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.32 __stack_chk_guard D 0x4
+ GLIBC_2.32 __tls_get_addr F
+ GLIBC_2.32 _dl_mcount F
+ GLIBC_2.32 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/arm/arch-syscall.h b/sysdeps/unix/sysv/linux/arm/arch-syscall.h
 index 85c9b236ce..96ef8db936 100644
 --- a/sysdeps/unix/sysv/linux/arm/arch-syscall.h
@@ -4753,6 +6072,15 @@ index 85c9b236ce..96ef8db936 100644
  #define __NR_read 3
  #define __NR_readahead 225
  #define __NR_readlink 85
+diff --git a/sysdeps/unix/sysv/linux/arm/be/ld.abilist b/sysdeps/unix/sysv/linux/arm/be/ld.abilist
+index cc8825c3bc..7987bbae11 100644
+--- a/sysdeps/unix/sysv/linux/arm/be/ld.abilist
++++ b/sysdeps/unix/sysv/linux/arm/be/ld.abilist
+@@ -1,3 +1,4 @@
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __libc_stack_end D 0x4
+ GLIBC_2.4 __stack_chk_guard D 0x4
+ GLIBC_2.4 __tls_get_addr F
 diff --git a/sysdeps/unix/sysv/linux/arm/getcontext.S b/sysdeps/unix/sysv/linux/arm/getcontext.S
 index 3aa581c4da..11bfcbe5f5 100644
 --- a/sysdeps/unix/sysv/linux/arm/getcontext.S
@@ -4775,6 +6103,15 @@ index 3aa581c4da..11bfcbe5f5 100644
  1:      .long   _GLOBAL_OFFSET_TABLE_ - 0b - PC_OFS
  .Lrtld_global_ro:
  	.long   C_SYMBOL_NAME(_rtld_global_ro)(GOT)
+diff --git a/sysdeps/unix/sysv/linux/arm/le/ld.abilist b/sysdeps/unix/sysv/linux/arm/le/ld.abilist
+index cc8825c3bc..7987bbae11 100644
+--- a/sysdeps/unix/sysv/linux/arm/le/ld.abilist
++++ b/sysdeps/unix/sysv/linux/arm/le/ld.abilist
+@@ -1,3 +1,4 @@
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __libc_stack_end D 0x4
+ GLIBC_2.4 __stack_chk_guard D 0x4
+ GLIBC_2.4 __tls_get_addr F
 diff --git a/sysdeps/unix/sysv/linux/arm/setcontext.S b/sysdeps/unix/sysv/linux/arm/setcontext.S
 index 8be8beefea..4c7c6e5509 100644
 --- a/sysdeps/unix/sysv/linux/arm/setcontext.S
@@ -4838,6 +6175,61 @@ index 91df6b3d96..9c7d907325 100644
  	{
  	  *tp = valid_timespec_to_timespec64 (tp32);
  	  return 0;
+diff --git a/sysdeps/unix/sysv/linux/convert_scm_timestamps.c b/sysdeps/unix/sysv/linux/convert_scm_timestamps.c
+index 00c934c413..953ce97bd2 100644
+--- a/sysdeps/unix/sysv/linux/convert_scm_timestamps.c
++++ b/sysdeps/unix/sysv/linux/convert_scm_timestamps.c
+@@ -16,9 +16,10 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#include <kernel-features.h>
++#include <bits/wordsize.h>
++#include <bits/timesize.h>
+ 
+-#ifndef __ASSUME_TIME64_SYSCALLS
++#if __TIMESIZE != 64
+ # include <stdint.h>
+ # include <string.h>
+ # include <sys/socket.h>
+@@ -54,6 +55,8 @@ __convert_scm_timestamps (struct msghdr *msg, socklen_t msgsize)
+        cmsg != NULL;
+        cmsg = CMSG_NXTHDR (msg, cmsg))
+     {
++      last = cmsg;
++
+       if (cmsg->cmsg_level != SOL_SOCKET)
+ 	continue;
+ 
+@@ -75,11 +78,9 @@ __convert_scm_timestamps (struct msghdr *msg, socklen_t msgsize)
+ 	  tvts[1] = tmp[1];
+ 	  break;
+ 	}
+-
+-      last = cmsg;
+     }
+ 
+-  if (last == NULL || type == 0)
++  if (type == 0)
+     return;
+ 
+   if (CMSG_SPACE (sizeof tvts) > msgsize - msg->msg_controllen)
+@@ -88,10 +89,12 @@ __convert_scm_timestamps (struct msghdr *msg, socklen_t msgsize)
+       return;
+     }
+ 
++  /* Zero memory for the new cmsghdr, so reading cmsg_len field
++     by CMSG_NXTHDR does not trigger UB.  */
++  memset (msg->msg_control + msg->msg_controllen, 0,
++	  CMSG_SPACE (sizeof tvts));
+   msg->msg_controllen += CMSG_SPACE (sizeof tvts);
+-  cmsg = CMSG_NXTHDR(msg, last);
+-  if (cmsg == NULL)
+-    return;
++  cmsg = CMSG_NXTHDR (msg, last);
+   cmsg->cmsg_level = SOL_SOCKET;
+   cmsg->cmsg_type = type;
+   cmsg->cmsg_len = CMSG_LEN (sizeof tvts);
 diff --git a/sysdeps/unix/sysv/linux/csky/arch-syscall.h b/sysdeps/unix/sysv/linux/csky/arch-syscall.h
 index 24b0d1f94e..96910154ed 100644
 --- a/sysdeps/unix/sysv/linux/csky/arch-syscall.h
@@ -4866,6 +6258,15 @@ index 24b0d1f94e..96910154ed 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/csky/ld.abilist b/sysdeps/unix/sysv/linux/csky/ld.abilist
+index 564ac09737..4939b20631 100644
+--- a/sysdeps/unix/sysv/linux/csky/ld.abilist
++++ b/sysdeps/unix/sysv/linux/csky/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.29 __stack_chk_guard D 0x4
+ GLIBC_2.29 __tls_get_addr F
+ GLIBC_2.29 _dl_mcount F
+ GLIBC_2.29 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk b/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk
 index dddfd51747..85b017918e 100644
 --- a/sysdeps/unix/sysv/linux/filter-nr-syscalls.awk
@@ -4880,7 +6281,7 @@ index dddfd51747..85b017918e 100644
  }
  /^#define __NR_(|64_|[NO]32_)Linux(_syscalls)? / {
 diff --git a/sysdeps/unix/sysv/linux/getsysstats.c b/sysdeps/unix/sysv/linux/getsysstats.c
-index 1391e360b8..7fc6521942 100644
+index 1391e360b8..327802b14c 100644
 --- a/sysdeps/unix/sysv/linux/getsysstats.c
 +++ b/sysdeps/unix/sysv/linux/getsysstats.c
 @@ -18,6 +18,8 @@
@@ -4892,7 +6293,7 @@ index 1391e360b8..7fc6521942 100644
  #include <dirent.h>
  #include <errno.h>
  #include <ldsodefs.h>
-@@ -29,61 +31,170 @@
+@@ -29,77 +31,173 @@
  #include <sys/sysinfo.h>
  #include <sysdep.h>
  
@@ -4908,32 +6309,70 @@ index 1391e360b8..7fc6521942 100644
 -				&count))
 -      return INT_MAX;
 -  return count;
+-}
 +  enum
 +    {
 +      max_num_cpus = 32768,
 +      cpu_bits_size = CPU_ALLOC_SIZE (32768)
 +    };
-+
+ 
+-/* __get_nprocs with a large buffer.  */
+-static int
+-__get_nprocs_large (void)
+-{
+-  /* This code cannot use scratch_buffer because it is used during
+-     malloc initialization.  */
+-  size_t pagesize = GLRO (dl_pagesize);
+-  unsigned long int *page = __mmap (0, pagesize, PROT_READ | PROT_WRITE,
+-				    MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+-  if (page == MAP_FAILED)
+-    return 2;
+-  int r = INTERNAL_SYSCALL_CALL (sched_getaffinity, 0, pagesize, page);
+-  int count;
 +  /* This cannot use malloc because it is used on malloc initialization.  */
 +  __cpu_mask cpu_bits[cpu_bits_size / sizeof (__cpu_mask)];
 +  int r = INTERNAL_SYSCALL_CALL (sched_getaffinity, 0, cpu_bits_size,
 +				 cpu_bits);
-+  if (r > 0)
-+    return CPU_COUNT_S (cpu_bits_size, (cpu_set_t*) cpu_bits);
-+  else if (r == -EINVAL)
+   if (r > 0)
+-    count = __get_nprocs_count (page, pagesize / sizeof (unsigned long int));
++    return CPU_COUNT_S (r, (cpu_set_t*) cpu_bits);
+   else if (r == -EINVAL)
+-    /* One page is still not enough to store the bits.  A more-or-less
+-       arbitrary value.  This assumes t hat such large systems never
+-       happen in practice.  */
+-    count = GLRO (dl_pagesize) * CHAR_BIT;
+-  else
+-    count = 2;
+-  __munmap (page, GLRO (dl_pagesize));
+-  return count;
 +    /* The input buffer is still not enough to store the number of cpus.  This
 +       is an arbitrary values assuming such systems should be rare and there
 +       is no offline cpus.  */
 +    return max_num_cpus;
-+  /* Some other error.  2 is conservative (not a uniprocessor system, so
-+     atomics are needed). */
-+  return 2;
-+}
-+
++  /* Some other error.  */
++  return 0;
+ }
+ 
+-int
+-__get_nprocs (void)
 +static char *
 +next_line (int fd, char *const buffer, char **cp, char **re,
 +           char *const buffer_end)
-+{
+ {
+-  /* Fast path for most systems.  The kernel expects a buffer size
+-     that is a multiple of 8.  */
+-  unsigned long int small_buffer[1024 / CHAR_BIT / sizeof (unsigned long int)];
+-  int r = INTERNAL_SYSCALL_CALL (sched_getaffinity, 0,
+-				 sizeof (small_buffer), small_buffer);
+-  if (r > 0)
+-    return __get_nprocs_count (small_buffer, r / sizeof (unsigned long int));
+-  else if (r == -EINVAL)
+-    /* The kernel requests a larger buffer to store the data.  */
+-    return __get_nprocs_large ();
+-  else
+-    /* Some other error.  2 is conservative (not a uniprocessor
+-       system, so atomics are needed). */
+-    return 2;
 +  char *res = *cp;
 +  char *nl = memchr (*cp, '\n', *re - *cp);
 +  if (nl == NULL)
@@ -4981,46 +6420,27 @@ index 1391e360b8..7fc6521942 100644
 +
 +  return res == *re ? NULL : res;
  }
+-libc_hidden_def (__get_nprocs)
+-weak_alias (__get_nprocs, get_nprocs)
  
--/* __get_nprocs with a large buffer.  */
- static int
--__get_nprocs_large (void)
-+get_nproc_stat (char *buffer, size_t buffer_size)
- {
--  /* This code cannot use scratch_buffer because it is used during
--     malloc initialization.  */
--  size_t pagesize = GLRO (dl_pagesize);
--  unsigned long int *page = __mmap (0, pagesize, PROT_READ | PROT_WRITE,
--				    MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
--  if (page == MAP_FAILED)
--    return 2;
--  int r = INTERNAL_SYSCALL_CALL (sched_getaffinity, 0, pagesize, page);
--  int count;
--  if (r > 0)
--    count = __get_nprocs_count (page, pagesize / sizeof (unsigned long int));
--  else if (r == -EINVAL)
--    /* One page is still not enough to store the bits.  A more-or-less
--       arbitrary value.  This assumes t hat such large systems never
--       happen in practice.  */
--    count = GLRO (dl_pagesize) * CHAR_BIT;
--  else
--    count = 2;
--  __munmap (page, GLRO (dl_pagesize));
--  return count;
++static int
++get_nproc_stat (void)
++{
++  enum { buffer_size = 1024 };
++  char buffer[buffer_size];
 +  char *buffer_end = buffer + buffer_size;
 +  char *cp = buffer_end;
 +  char *re = buffer_end;
-+
-+  /* Default to an SMP system in case we cannot obtain an accurate
-+     number.  */
-+  int result = 2;
-+
++  int result = 0;
+ 
+-/* On some architectures it is possible to distinguish between configured
+-   and active cpus.  */
+-int
+-__get_nprocs_conf (void)
 +  const int flags = O_RDONLY | O_CLOEXEC;
 +  int fd = __open_nocancel ("/proc/stat", flags);
 +  if (fd != -1)
 +    {
-+      result = 0;
-+
 +      char *l;
 +      while ((l = next_line (fd, buffer, &cp, &re, buffer_end)) != NULL)
 +	/* The current format of /proc/stat has all the cpu* entries
@@ -5034,25 +6454,13 @@ index 1391e360b8..7fc6521942 100644
 +    }
 +
 +  return result;
- }
- 
- int
- __get_nprocs (void)
++}
++
++static int
++get_nprocs_cpu_online (void)
  {
--  /* Fast path for most systems.  The kernel expects a buffer size
--     that is a multiple of 8.  */
--  unsigned long int small_buffer[1024 / CHAR_BIT / sizeof (unsigned long int)];
--  int r = INTERNAL_SYSCALL_CALL (sched_getaffinity, 0,
--				 sizeof (small_buffer), small_buffer);
--  if (r > 0)
--    return __get_nprocs_count (small_buffer, r / sizeof (unsigned long int));
--  else if (r == -EINVAL)
--    /* The kernel requests a larger buffer to store the data.  */
--    return __get_nprocs_large ();
--  else
--    /* Some other error.  2 is conservative (not a uniprocessor
--       system, so atomics are needed). */
--    return 2;
+-  /* Try to use the sysfs filesystem.  It has actual information about
+-     online processors.  */
 +  enum { buffer_size = 1024 };
 +  char buffer[buffer_size];
 +  char *buffer_end = buffer + buffer_size;
@@ -5090,7 +6498,8 @@ index 1391e360b8..7fc6521942 100644
 +		  }
 +	      }
 +
-+	    result += m - n + 1;
++	    if (m >= n)
++	      result += m - n + 1;
 +
 +	    l = endp;
 +	    if (l < re && *l == ',')
@@ -5099,23 +6508,79 @@ index 1391e360b8..7fc6521942 100644
 +	while (l < re && *l != '\n');
 +
 +      __close_nocancel_nostatus (fd);
-+
-+      if (result > 0)
-+	return result;
 +    }
 +
-+  return get_nproc_stat (buffer, buffer_size);
- }
- libc_hidden_def (__get_nprocs)
- weak_alias (__get_nprocs, get_nprocs)
-@@ -117,7 +228,9 @@ __get_nprocs_conf (void)
-       return count;
++  return result;
++}
++
++static int
++get_nprocs_cpu (void)
++{
++  int count = 0;
+   DIR *dir = __opendir ("/sys/devices/system/cpu");
+   if (dir != NULL)
+     {
+-      int count = 0;
+       struct dirent64 *d;
+ 
+       while ((d = __readdir64 (dir)) != NULL)
+@@ -114,10 +212,57 @@ __get_nprocs_conf (void)
+ 
+       __closedir (dir);
+ 
+-      return count;
      }
++  return count;
++}
++
++static int
++get_nprocs_fallback (void)
++{
++  int result;
++
++  /* Try /proc/stat first.  */
++  result = get_nproc_stat ();
++  if (result != 0)
++    return result;
++
++  /* Try sched_getaffinity.  */
++  result = __get_nprocs_sched ();
++  if (result != 0)
++    return result;
++
++  /* We failed to obtain an accurate number.  Be conservative: return
++     the smallest number meaning that this is not a uniprocessor system,
++     so atomics are needed.  */
++  return 2;
++}
++
++int
++__get_nprocs (void)
++{
++  /* Try /sys/devices/system/cpu/online first.  */
++  int result = get_nprocs_cpu_online ();
++  if (result != 0)
++    return result;
++
++  /* Fall back to /proc/stat and sched_getaffinity.  */
++  return get_nprocs_fallback ();
++}
++libc_hidden_def (__get_nprocs)
++weak_alias (__get_nprocs, get_nprocs)
++
++/* On some architectures it is possible to distinguish between configured
++   and active cpus.  */
++int
++__get_nprocs_conf (void)
++{
++  /* Try /sys/devices/system/cpu/ first.  */
++  int result = get_nprocs_cpu ();
++  if (result != 0)
++    return result;
  
 -  return 1;
-+  enum { buffer_size = 1024 };
-+  char buffer[buffer_size];
-+  return get_nproc_stat (buffer, buffer_size);
++  /* Fall back to /proc/stat and sched_getaffinity.  */
++  return get_nprocs_fallback ();
  }
  libc_hidden_def (__get_nprocs_conf)
  weak_alias (__get_nprocs_conf, get_nprocs_conf)
@@ -5160,6 +6625,16 @@ index feb70abc3e..36675fd48e 100644
  #define __NR_read 3
  #define __NR_readahead 207
  #define __NR_readlink 85
+diff --git a/sysdeps/unix/sysv/linux/hppa/ld.abilist b/sysdeps/unix/sysv/linux/hppa/ld.abilist
+index d155a59843..7cc9ebd792 100644
+--- a/sysdeps/unix/sysv/linux/hppa/ld.abilist
++++ b/sysdeps/unix/sysv/linux/hppa/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.2 __libc_stack_end D 0x4
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x14
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
 diff --git a/sysdeps/unix/sysv/linux/i386/arch-syscall.h b/sysdeps/unix/sysv/linux/i386/arch-syscall.h
 index 3b1894a79b..c86ccbda46 100644
 --- a/sysdeps/unix/sysv/linux/i386/arch-syscall.h
@@ -5272,6 +6747,15 @@ index 9e980784bb..64ab2cc2c8 100644
 -
  libc_cv_gcc_unwind_find_fde=yes
  ldd_rewrite_script=sysdeps/unix/sysv/linux/ldd-rewrite.sed
+diff --git a/sysdeps/unix/sysv/linux/i386/ld.abilist b/sysdeps/unix/sysv/linux/i386/ld.abilist
+index 0478e22071..e8d187b14d 100644
+--- a/sysdeps/unix/sysv/linux/i386/ld.abilist
++++ b/sysdeps/unix/sysv/linux/i386/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.1 __libc_stack_end D 0x4
+ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.3 ___tls_get_addr F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/i386/sysdep.h b/sysdeps/unix/sysv/linux/i386/sysdep.h
 index 8a9911b7ac..39d6a3c134 100644
 --- a/sysdeps/unix/sysv/linux/i386/sysdep.h
@@ -5618,6 +7102,15 @@ index fb388a5fa4..d898bce404 100644
  #define __NR_read 1026
  #define __NR_readahead 1216
  #define __NR_readlink 1092
+diff --git a/sysdeps/unix/sysv/linux/ia64/ld.abilist b/sysdeps/unix/sysv/linux/ia64/ld.abilist
+index 33f91199bf..be5122650a 100644
+--- a/sysdeps/unix/sysv/linux/ia64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/ia64/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.2 __libc_stack_end D 0x8
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x28
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/m68k/arch-syscall.h b/sysdeps/unix/sysv/linux/m68k/arch-syscall.h
 index 7bc8c4af92..fe721b8090 100644
 --- a/sysdeps/unix/sysv/linux/m68k/arch-syscall.h
@@ -5646,6 +7139,25 @@ index 7bc8c4af92..fe721b8090 100644
  #define __NR_read 3
  #define __NR_readahead 240
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/m68k/coldfire/ld.abilist b/sysdeps/unix/sysv/linux/m68k/coldfire/ld.abilist
+index cc8825c3bc..7987bbae11 100644
+--- a/sysdeps/unix/sysv/linux/m68k/coldfire/ld.abilist
++++ b/sysdeps/unix/sysv/linux/m68k/coldfire/ld.abilist
+@@ -1,3 +1,4 @@
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __libc_stack_end D 0x4
+ GLIBC_2.4 __stack_chk_guard D 0x4
+ GLIBC_2.4 __tls_get_addr F
+diff --git a/sysdeps/unix/sysv/linux/m68k/m680x0/ld.abilist b/sysdeps/unix/sysv/linux/m68k/m680x0/ld.abilist
+index 3ba474c27f..4f2854edf7 100644
+--- a/sysdeps/unix/sysv/linux/m68k/m680x0/ld.abilist
++++ b/sysdeps/unix/sysv/linux/m68k/m680x0/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.0 _r_debug D 0x14
+ GLIBC_2.1 __libc_stack_end D 0x4
+ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
 diff --git a/sysdeps/unix/sysv/linux/microblaze/arch-syscall.h b/sysdeps/unix/sysv/linux/microblaze/arch-syscall.h
 index cf560d3af4..6e10c3661d 100644
 --- a/sysdeps/unix/sysv/linux/microblaze/arch-syscall.h
@@ -5674,6 +7186,15 @@ index cf560d3af4..6e10c3661d 100644
  #define __NR_read 3
  #define __NR_readahead 225
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/microblaze/ld.abilist b/sysdeps/unix/sysv/linux/microblaze/ld.abilist
+index a4933c3541..9f0fdeca38 100644
+--- a/sysdeps/unix/sysv/linux/microblaze/ld.abilist
++++ b/sysdeps/unix/sysv/linux/microblaze/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.18 __stack_chk_guard D 0x4
+ GLIBC_2.18 __tls_get_addr F
+ GLIBC_2.18 _dl_mcount F
+ GLIBC_2.18 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/mips/clone.S b/sysdeps/unix/sysv/linux/mips/clone.S
 index 71d9dba8bd..fd71b5ca2e 100644
 --- a/sysdeps/unix/sysv/linux/mips/clone.S
@@ -5750,6 +7271,16 @@ index f346460f48..26a6d594a2 100644
  #define __NR_read 4003
  #define __NR_readahead 4223
  #define __NR_readdir 4089
+diff --git a/sysdeps/unix/sysv/linux/mips/mips32/ld.abilist b/sysdeps/unix/sysv/linux/mips/mips32/ld.abilist
+index be09641a48..f750067d5c 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/mips/mips32/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.0 _r_debug D 0x14
+ GLIBC_2.2 __libc_stack_end D 0x4
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
 diff --git a/sysdeps/unix/sysv/linux/mips/mips64/n32/arch-syscall.h b/sysdeps/unix/sysv/linux/mips/mips64/n32/arch-syscall.h
 index 38ed84997a..83e0d49c5e 100644
 --- a/sysdeps/unix/sysv/linux/mips/mips64/n32/arch-syscall.h
@@ -5778,6 +7309,16 @@ index 38ed84997a..83e0d49c5e 100644
  #define __NR_read 6000
  #define __NR_readahead 6179
  #define __NR_readlink 6087
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/n32/ld.abilist b/sysdeps/unix/sysv/linux/mips/mips64/n32/ld.abilist
+index be09641a48..f750067d5c 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/n32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/mips/mips64/n32/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.0 _r_debug D 0x14
+ GLIBC_2.2 __libc_stack_end D 0x4
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
 diff --git a/sysdeps/unix/sysv/linux/mips/mips64/n64/arch-syscall.h b/sysdeps/unix/sysv/linux/mips/mips64/n64/arch-syscall.h
 index e6a10c8421..d6747c542f 100644
 --- a/sysdeps/unix/sysv/linux/mips/mips64/n64/arch-syscall.h
@@ -5806,6 +7347,16 @@ index e6a10c8421..d6747c542f 100644
  #define __NR_read 5000
  #define __NR_readahead 5179
  #define __NR_readlink 5087
+diff --git a/sysdeps/unix/sysv/linux/mips/mips64/n64/ld.abilist b/sysdeps/unix/sysv/linux/mips/mips64/n64/ld.abilist
+index 1ea36e13f2..2fba6a9b6e 100644
+--- a/sysdeps/unix/sysv/linux/mips/mips64/n64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/mips/mips64/n64/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.0 _r_debug D 0x28
+ GLIBC_2.2 __libc_stack_end D 0x8
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x8
 diff --git a/sysdeps/unix/sysv/linux/mips/xstat.c b/sysdeps/unix/sysv/linux/mips/xstat.c
 index 9d810b6f65..86f4dc31a8 100644
 --- a/sysdeps/unix/sysv/linux/mips/xstat.c
@@ -5862,6 +7413,135 @@ index 5314890289..4ee209bc44 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/nios2/ld.abilist b/sysdeps/unix/sysv/linux/nios2/ld.abilist
+index 52178802dd..57dfad5a53 100644
+--- a/sysdeps/unix/sysv/linux/nios2/ld.abilist
++++ b/sysdeps/unix/sysv/linux/nios2/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.21 __stack_chk_guard D 0x4
+ GLIBC_2.21 __tls_get_addr F
+ GLIBC_2.21 _dl_mcount F
+ GLIBC_2.21 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
+diff --git a/sysdeps/unix/sysv/linux/opensock.c b/sysdeps/unix/sysv/linux/opensock.c
+deleted file mode 100644
+index e87d6e58b0..0000000000
+--- a/sysdeps/unix/sysv/linux/opensock.c
++++ /dev/null
+@@ -1,114 +0,0 @@
+-/* Copyright (C) 1999-2021 Free Software Foundation, Inc.
+-   This file is part of the GNU C Library.
+-
+-   The GNU C Library is free software; you can redistribute it and/or
+-   modify it under the terms of the GNU Lesser General Public
+-   License as published by the Free Software Foundation; either
+-   version 2.1 of the License, or (at your option) any later version.
+-
+-   The GNU C Library is distributed in the hope that it will be useful,
+-   but WITHOUT ANY WARRANTY; without even the implied warranty of
+-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-   Lesser General Public License for more details.
+-
+-   You should have received a copy of the GNU Lesser General Public
+-   License along with the GNU C Library; if not, see
+-   <https://www.gnu.org/licenses/>.  */
+-
+-#include <assert.h>
+-#include <errno.h>
+-#include <stdio.h>
+-#include <string.h>
+-#include <unistd.h>
+-#include <sys/socket.h>
+-
+-/* Return a socket of any type.  The socket can be used in subsequent
+-   ioctl calls to talk to the kernel.  */
+-int
+-__opensock (void)
+-{
+-  static int last_family;	/* Available socket family we will use.  */
+-  static int last_type;
+-  static const struct
+-  {
+-    int family;
+-    const char procname[15];
+-  } afs[] =
+-    {
+-      { AF_UNIX, "net/unix" },
+-      { AF_INET, "" },
+-      { AF_INET6, "net/if_inet6" },
+-      { AF_AX25, "net/ax25" },
+-      { AF_NETROM, "net/nr" },
+-      { AF_ROSE, "net/rose" },
+-      { AF_IPX, "net/ipx" },
+-      { AF_APPLETALK, "net/appletalk" },
+-      { AF_ECONET, "sys/net/econet" },
+-      { AF_ASH, "sys/net/ash" },
+-      { AF_X25, "net/x25" },
+-#ifdef NEED_AF_IUCV
+-      { AF_IUCV, "net/iucv" }
+-#endif
+-    };
+-#define nafs (sizeof (afs) / sizeof (afs[0]))
+-  char fname[sizeof "/proc/" + 14];
+-  int result;
+-  int has_proc;
+-  size_t cnt;
+-
+-  /* We already know which family to use from the last call.  Use it
+-     again.  */
+-  if (last_family != 0)
+-    {
+-      assert (last_type != 0);
+-
+-      result = __socket (last_family, last_type | SOCK_CLOEXEC, 0);
+-      if (result != -1 || errno != EAFNOSUPPORT)
+-	/* Maybe the socket type isn't supported anymore (module is
+-	   unloaded).  In this case again try to find the type.  */
+-	return result;
+-
+-      /* Reset the values.  They seem not valid anymore.  */
+-      last_family = 0;
+-      last_type = 0;
+-    }
+-
+-  /* Check whether the /proc filesystem is available.  */
+-  has_proc = __access ("/proc/net", R_OK) != -1;
+-  strcpy (fname, "/proc/");
+-
+-  /* Iterate over the interface families and find one which is
+-     available.  */
+-  for (cnt = 0; cnt < nafs; ++cnt)
+-    {
+-      int type = SOCK_DGRAM;
+-
+-      if (has_proc && afs[cnt].procname[0] != '\0')
+-	{
+-	  strcpy (fname + 6, afs[cnt].procname);
+-	  if (__access (fname, R_OK) == -1)
+-	    /* The /proc entry is not available.  I.e., we cannot
+-	       create a socket of this type (without loading the
+-	       module).  Don't look for it since this might trigger
+-	       loading the module.  */
+-	    continue;
+-	}
+-
+-      if (afs[cnt].family == AF_NETROM || afs[cnt].family == AF_X25)
+-	type = SOCK_SEQPACKET;
+-
+-      result = __socket (afs[cnt].family, type | SOCK_CLOEXEC, 0);
+-      if (result != -1)
+-	{
+-	  /* Found an available family.  */
+-	  last_type = type;
+-	  last_family = afs[cnt].family;
+-	  return result;
+-	}
+-    }
+-
+-  /* None of the protocol families is available.  It is unclear what kind
+-     of error is returned.  ENOENT seems like a reasonable choice.  */
+-  __set_errno (ENOENT);
+-  return -1;
+-}
 diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc32/arch-syscall.h b/sysdeps/unix/sysv/linux/powerpc/powerpc32/arch-syscall.h
 index b5b0758532..497299fbc4 100644
 --- a/sysdeps/unix/sysv/linux/powerpc/powerpc32/arch-syscall.h
@@ -5890,6 +7570,15 @@ index b5b0758532..497299fbc4 100644
  #define __NR_read 3
  #define __NR_readahead 191
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc32/ld.abilist b/sysdeps/unix/sysv/linux/powerpc/powerpc32/ld.abilist
+index 4bbfba7a61..e896607392 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/powerpc32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/powerpc/powerpc32/ld.abilist
+@@ -4,3 +4,4 @@ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.22 __tls_get_addr_opt F
+ GLIBC_2.23 __parse_hwcap_and_convert_at_platform F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc64/arch-syscall.h b/sysdeps/unix/sysv/linux/powerpc/powerpc64/arch-syscall.h
 index c77435ca61..e840279f17 100644
 --- a/sysdeps/unix/sysv/linux/powerpc/powerpc64/arch-syscall.h
@@ -5918,6 +7607,24 @@ index c77435ca61..e840279f17 100644
  #define __NR_read 3
  #define __NR_readahead 191
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc64/be/ld.abilist b/sysdeps/unix/sysv/linux/powerpc/powerpc64/be/ld.abilist
+index 283fb4510b..ce0bc63959 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/powerpc64/be/ld.abilist
++++ b/sysdeps/unix/sysv/linux/powerpc/powerpc64/be/ld.abilist
+@@ -4,3 +4,4 @@ GLIBC_2.3 __libc_stack_end D 0x8
+ GLIBC_2.3 __tls_get_addr F
+ GLIBC_2.3 _dl_mcount F
+ GLIBC_2.3 _r_debug D 0x28
++GLIBC_2.34 __rtld_version_placeholder F
+diff --git a/sysdeps/unix/sysv/linux/powerpc/powerpc64/le/ld.abilist b/sysdeps/unix/sysv/linux/powerpc/powerpc64/le/ld.abilist
+index b1f313c7cd..65b22674d2 100644
+--- a/sysdeps/unix/sysv/linux/powerpc/powerpc64/le/ld.abilist
++++ b/sysdeps/unix/sysv/linux/powerpc/powerpc64/le/ld.abilist
+@@ -4,3 +4,4 @@ GLIBC_2.17 _dl_mcount F
+ GLIBC_2.17 _r_debug D 0x28
+ GLIBC_2.22 __tls_get_addr_opt F
+ GLIBC_2.23 __parse_hwcap_and_convert_at_platform F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/powerpc/syscall.S b/sysdeps/unix/sysv/linux/powerpc/syscall.S
 index a29652feaf..a5497c8370 100644
 --- a/sysdeps/unix/sysv/linux/powerpc/syscall.S
@@ -5934,6 +7641,135 @@ index a29652feaf..a5497c8370 100644
  	RET_SCV
  	b 1f
  #endif
+diff --git a/sysdeps/unix/sysv/linux/recvmmsg.c b/sysdeps/unix/sysv/linux/recvmmsg.c
+index 5cd107ffa9..fca9f6582d 100644
+--- a/sysdeps/unix/sysv/linux/recvmmsg.c
++++ b/sysdeps/unix/sysv/linux/recvmmsg.c
+@@ -20,9 +20,9 @@
+ #include <sysdep.h>
+ #include <socketcall.h>
+ 
+-int
+-__recvmmsg64 (int fd, struct mmsghdr *vmessages, unsigned int vlen, int flags,
+-	      struct __timespec64 *timeout)
++static int
++recvmmsg_syscall (int fd, struct mmsghdr *vmessages, unsigned int vlen,
++		  int flags, struct __timespec64 *timeout)
+ {
+ #ifndef __NR_recvmmsg_time64
+ # define __NR_recvmmsg_time64 __NR_recvmmsg
+@@ -45,12 +45,6 @@ __recvmmsg64 (int fd, struct mmsghdr *vmessages, unsigned int vlen, int flags,
+       pts32 = &ts32;
+     }
+ 
+-  socklen_t csize[IOV_MAX];
+-  if (vlen > IOV_MAX)
+-    vlen = IOV_MAX;
+-  for (int i = 0; i < vlen; i++)
+-    csize[i] = vmessages[i].msg_hdr.msg_controllen;
+-
+ # ifdef __ASSUME_RECVMMSG_SYSCALL
+   r = SYSCALL_CANCEL (recvmmsg, fd, vmessages, vlen, flags, pts32);
+ # else
+@@ -60,11 +54,31 @@ __recvmmsg64 (int fd, struct mmsghdr *vmessages, unsigned int vlen, int flags,
+     {
+       if (timeout != NULL)
+         *timeout = valid_timespec_to_timespec64 (ts32);
++    }
++#endif
++  return r;
++}
++
++int
++__recvmmsg64 (int fd, struct mmsghdr *vmessages, unsigned int vlen, int flags,
++	      struct __timespec64 *timeout)
++{
++#if __TIMESIZE != 64
++  socklen_t csize[IOV_MAX];
++  if (vlen > IOV_MAX)
++    vlen = IOV_MAX;
++  for (int i = 0; i < vlen; i++)
++    csize[i] = vmessages[i].msg_hdr.msg_controllen;
++#endif
+ 
++  int r = recvmmsg_syscall (fd, vmessages, vlen, flags, timeout);
++#if __TIMESIZE != 64
++  if (r > 0)
++    {
+       for (int i=0; i < r; i++)
+         __convert_scm_timestamps (&vmessages[i].msg_hdr, csize[i]);
+     }
+-#endif /* __ASSUME_TIME64_SYSCALLS  */
++#endif
+   return r;
+ }
+ #if __TIMESIZE != 64
+@@ -80,7 +94,7 @@ __recvmmsg (int fd, struct mmsghdr *vmessages, unsigned int vlen, int flags,
+       ts64 = valid_timespec_to_timespec64 (*timeout);
+       pts64 = &ts64;
+     }
+-  int r = __recvmmsg64 (fd, vmessages, vlen, flags, pts64);
++  int r = recvmmsg_syscall (fd, vmessages, vlen, flags, pts64);
+   if (r >= 0 && timeout != NULL)
+     /* The remanining timeout will be always less the input TIMEOUT.  */
+     *timeout = valid_timespec64_to_timespec (ts64);
+diff --git a/sysdeps/unix/sysv/linux/recvmsg.c b/sysdeps/unix/sysv/linux/recvmsg.c
+index 07212f7c86..c4b4704fd6 100644
+--- a/sysdeps/unix/sysv/linux/recvmsg.c
++++ b/sysdeps/unix/sysv/linux/recvmsg.c
+@@ -20,29 +20,41 @@
+ #include <sysdep-cancel.h>
+ #include <socketcall.h>
+ 
++static int
++__recvmsg_syscall (int fd, struct msghdr *msg, int flags)
++{
++#ifdef __ASSUME_RECVMSG_SYSCALL
++  return SYSCALL_CANCEL (recvmsg, fd, msg, flags);
++#else
++  return SOCKETCALL_CANCEL (recvmsg, fd, msg, flags);
++#endif
++}
++
+ ssize_t
+-__libc_recvmsg (int fd, struct msghdr *msg, int flags)
++__libc_recvmsg64 (int fd, struct msghdr *msg, int flags)
+ {
+   ssize_t r;
+-#ifndef __ASSUME_TIME64_SYSCALLS
++#if __TIMESIZE != 64
+   socklen_t orig_controllen = msg != NULL ? msg->msg_controllen : 0;
+ #endif
+ 
+-#ifdef __ASSUME_RECVMSG_SYSCALL
+-  r = SYSCALL_CANCEL (recvmsg, fd, msg, flags);
+-#else
+-  r = SOCKETCALL_CANCEL (recvmsg, fd, msg, flags);
+-#endif
++  r = __recvmsg_syscall (fd, msg, flags);
+ 
+-#ifndef __ASSUME_TIME64_SYSCALLS
++#if __TIMESIZE != 64
+   if (r >= 0 && orig_controllen != 0)
+     __convert_scm_timestamps (msg, orig_controllen);
+ #endif
+ 
+   return r;
+ }
+-weak_alias (__libc_recvmsg, recvmsg)
+-weak_alias (__libc_recvmsg, __recvmsg)
+ #if __TIMESIZE != 64
+-weak_alias (__recvmsg, __recvmsg64)
++weak_alias (__libc_recvmsg64, __recvmsg64)
++
++ssize_t
++__libc_recvmsg (int fd, struct msghdr *msg, int flags)
++{
++  return __recvmsg_syscall (fd, msg, flags);
++}
+ #endif
++weak_alias (__libc_recvmsg, recvmsg)
++weak_alias (__libc_recvmsg, __recvmsg)
 diff --git a/sysdeps/unix/sysv/linux/riscv/clone.S b/sysdeps/unix/sysv/linux/riscv/clone.S
 index 12f91a20d3..161e83c7e3 100644
 --- a/sysdeps/unix/sysv/linux/riscv/clone.S
@@ -5984,6 +7820,15 @@ index 70854bb9e3..73ef74c005 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/riscv/rv32/ld.abilist b/sysdeps/unix/sysv/linux/riscv/rv32/ld.abilist
+index 94ca64c43d..5ad4c81d12 100644
+--- a/sysdeps/unix/sysv/linux/riscv/rv32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/riscv/rv32/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.33 __stack_chk_guard D 0x4
+ GLIBC_2.33 __tls_get_addr F
+ GLIBC_2.33 _dl_mcount F
+ GLIBC_2.33 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h b/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h
 index 83b9f31aba..919a79ee91 100644
 --- a/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h
@@ -6012,6 +7857,15 @@ index 83b9f31aba..919a79ee91 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
+diff --git a/sysdeps/unix/sysv/linux/riscv/rv64/ld.abilist b/sysdeps/unix/sysv/linux/riscv/rv64/ld.abilist
+index 845f356c3c..479efdea9b 100644
+--- a/sysdeps/unix/sysv/linux/riscv/rv64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/riscv/rv64/ld.abilist
+@@ -3,3 +3,4 @@ GLIBC_2.27 __stack_chk_guard D 0x8
+ GLIBC_2.27 __tls_get_addr F
+ GLIBC_2.27 _dl_mcount F
+ GLIBC_2.27 _r_debug D 0x28
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h b/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
 index e9bd3684db..00e73a3e3b 100644
 --- a/sysdeps/unix/sysv/linux/s390/bits/hwcap.h
@@ -6034,6 +7888,14 @@ index e9bd3684db..00e73a3e3b 100644
  #define HWCAP_S390_NNPA         1048576
 +#define HWCAP_S390_PCI_MIO      2097152
 +#define HWCAP_S390_SIE          4194304
+diff --git a/sysdeps/unix/sysv/linux/s390/opensock.c b/sysdeps/unix/sysv/linux/s390/opensock.c
+deleted file mode 100644
+index f099d651ff..0000000000
+--- a/sysdeps/unix/sysv/linux/s390/opensock.c
++++ /dev/null
+@@ -1,2 +0,0 @@
+-#define NEED_AF_IUCV 1
+-#include "../opensock.c"
 diff --git a/sysdeps/unix/sysv/linux/s390/s390-32/arch-syscall.h b/sysdeps/unix/sysv/linux/s390/s390-32/arch-syscall.h
 index b224c4aad4..005c0ada7a 100644
 --- a/sysdeps/unix/sysv/linux/s390/s390-32/arch-syscall.h
@@ -6062,6 +7924,15 @@ index b224c4aad4..005c0ada7a 100644
  #define __NR_read 3
  #define __NR_readahead 222
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/s390/s390-32/ld.abilist b/sysdeps/unix/sysv/linux/s390/s390-32/ld.abilist
+index b56f005beb..d5ecb636bb 100644
+--- a/sysdeps/unix/sysv/linux/s390/s390-32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/s390/s390-32/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.0 _r_debug D 0x14
+ GLIBC_2.1 __libc_stack_end D 0x4
+ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.3 __tls_get_offset F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/s390/s390-64/arch-syscall.h b/sysdeps/unix/sysv/linux/s390/s390-64/arch-syscall.h
 index 59864af125..9131fddcc1 100644
 --- a/sysdeps/unix/sysv/linux/s390/s390-64/arch-syscall.h
@@ -6090,6 +7961,15 @@ index 59864af125..9131fddcc1 100644
  #define __NR_read 3
  #define __NR_readahead 222
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/s390/s390-64/ld.abilist b/sysdeps/unix/sysv/linux/s390/s390-64/ld.abilist
+index 6f788a086d..62a5e1d99a 100644
+--- a/sysdeps/unix/sysv/linux/s390/s390-64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/s390/s390-64/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.2 __libc_stack_end D 0x8
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x28
+ GLIBC_2.3 __tls_get_offset F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/sh/arch-syscall.h b/sysdeps/unix/sysv/linux/sh/arch-syscall.h
 index 23612c9092..d8fb041568 100644
 --- a/sysdeps/unix/sysv/linux/sh/arch-syscall.h
@@ -6118,6 +7998,26 @@ index 23612c9092..d8fb041568 100644
  #define __NR_read 3
  #define __NR_readahead 225
  #define __NR_readdir 89
+diff --git a/sysdeps/unix/sysv/linux/sh/be/ld.abilist b/sysdeps/unix/sysv/linux/sh/be/ld.abilist
+index d155a59843..7cc9ebd792 100644
+--- a/sysdeps/unix/sysv/linux/sh/be/ld.abilist
++++ b/sysdeps/unix/sysv/linux/sh/be/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.2 __libc_stack_end D 0x4
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x14
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
+diff --git a/sysdeps/unix/sysv/linux/sh/le/ld.abilist b/sysdeps/unix/sysv/linux/sh/le/ld.abilist
+index d155a59843..7cc9ebd792 100644
+--- a/sysdeps/unix/sysv/linux/sh/le/ld.abilist
++++ b/sysdeps/unix/sysv/linux/sh/le/ld.abilist
+@@ -2,4 +2,5 @@ GLIBC_2.2 __libc_stack_end D 0x4
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x14
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
+ GLIBC_2.4 __stack_chk_guard D 0x4
 diff --git a/sysdeps/unix/sysv/linux/sparc/bits/struct_stat.h b/sysdeps/unix/sysv/linux/sparc/bits/struct_stat.h
 index b481b4f9f8..45db6b6ffb 100644
 --- a/sysdeps/unix/sysv/linux/sparc/bits/struct_stat.h
@@ -6335,6 +8235,15 @@ index 380cddb2d8..2bc014fe6a 100644
  #define __NR_read 3
  #define __NR_readahead 205
  #define __NR_readdir 204
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/ld.abilist b/sysdeps/unix/sysv/linux/sparc/sparc32/ld.abilist
+index 0c6610e3c2..2e60543498 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.0 _r_debug D 0x14
+ GLIBC_2.1 __libc_stack_end D 0x4
+ GLIBC_2.1 _dl_mcount F
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/sparc/sparc64/arch-syscall.h b/sysdeps/unix/sysv/linux/sparc/sparc64/arch-syscall.h
 index 2175eeb6ed..76dbbe595f 100644
 --- a/sysdeps/unix/sysv/linux/sparc/sparc64/arch-syscall.h
@@ -6363,6 +8272,15 @@ index 2175eeb6ed..76dbbe595f 100644
  #define __NR_read 3
  #define __NR_readahead 205
  #define __NR_readdir 204
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc64/ld.abilist b/sysdeps/unix/sysv/linux/sparc/sparc64/ld.abilist
+index 33f91199bf..be5122650a 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/sparc/sparc64/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.2 __libc_stack_end D 0x8
+ GLIBC_2.2 _dl_mcount F
+ GLIBC_2.2 _r_debug D 0x28
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/sys/prctl.h b/sysdeps/unix/sysv/linux/sys/prctl.h
 index db88938b3a..f0e0d2f27f 100644
 --- a/sysdeps/unix/sysv/linux/sys/prctl.h
@@ -6803,6 +8721,633 @@ index ee5b13ee12..810433c238 100644
      sys.exit(glibcextract.compare_macro_consts(
          '#define _GNU_SOURCE 1\n'
          '#include <sys/mman.h>\n',
+diff --git a/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat-time64.c b/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat-time64.c
+new file mode 100644
+index 0000000000..96a0bef0bf
+--- /dev/null
++++ b/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat-time64.c
+@@ -0,0 +1 @@
++#include "tst-socket-timestamp-compat.c"
+diff --git a/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat.c b/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat.c
+new file mode 100644
+index 0000000000..0ff1a214e6
+--- /dev/null
++++ b/sysdeps/unix/sysv/linux/tst-socket-timestamp-compat.c
+@@ -0,0 +1,265 @@
++/* Check recvmsg/recvmmsg 64-bit timestamp support.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <arpa/inet.h>
++#include <string.h>
++#include <support/check.h>
++#include <support/xsocket.h>
++#include <support/xunistd.h>
++#include <stdbool.h>
++
++/* AF_INET socket and address used to receive data.  */
++static int srv;
++static struct sockaddr_in srv_addr;
++
++static int
++do_sendto (const struct sockaddr_in *addr, int payload)
++{
++  int s = xsocket (AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
++  xconnect (s, (const struct sockaddr *) addr, sizeof (*addr));
++
++  xsendto (s, &payload, sizeof (payload), 0, (const struct sockaddr *) addr,
++	   sizeof (*addr));
++
++  xclose (s);
++
++  return 0;
++}
++
++static void
++do_recvmsg_ancillary (bool use_multi_call, struct mmsghdr *mmhdr,
++		      void *msgbuf, size_t msgbuflen, int exp_payload)
++{
++  int payload;
++  struct iovec iov =
++    {
++      .iov_base = &payload,
++      .iov_len = sizeof (payload)
++    };
++  mmhdr->msg_hdr.msg_name = NULL;
++  mmhdr->msg_hdr.msg_iov = &iov;
++  mmhdr->msg_hdr.msg_iovlen = 1;
++  mmhdr->msg_hdr.msg_control = msgbuf;
++  mmhdr->msg_hdr.msg_controllen = msgbuflen;
++
++  int r;
++  if (use_multi_call)
++    {
++      r = recvmmsg (srv, mmhdr, 1, 0, NULL);
++      if (r >= 0)
++	r = mmhdr->msg_len;
++    }
++  else
++    r = recvmsg (srv, &mmhdr->msg_hdr, 0);
++  TEST_COMPARE (r, sizeof (int));
++  TEST_COMPARE (payload, exp_payload);
++}
++
++/* Check if recvmsg create the additional 64 bit timestamp if only 32 bit
++   is enabled for 64 bit recvmsg symbol.  */
++static void
++do_test_large_buffer (bool mc)
++{
++  struct mmsghdr mmhdr = { 0 };
++  /* It should be large enought for either timeval/timespec and the
++     64 time type as well.  */
++
++  union
++  {
++    struct cmsghdr cmsghdr;
++    char msgbuf[512];
++  } control;
++
++  /* Enable 32 bit timeval precision and check if no 64 bit timeval stamp
++     is created.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMP_OLD, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++
++    do_sendto (&srv_addr, 42);
++    do_recvmsg_ancillary (mc, &mmhdr, &control, sizeof control, 42);
++
++    bool found_timestamp = false;
++    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++	 cmsg != NULL;
++	 cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level != SOL_SOCKET)
++	continue;
++
++      if (sizeof (time_t) > 4 && cmsg->cmsg_type == SO_TIMESTAMP_NEW)
++	found_timestamp = true;
++      else
++	TEST_VERIFY (cmsg->cmsg_type != SO_TIMESTAMP_NEW);
++    }
++
++    TEST_COMPARE (found_timestamp, sizeof (time_t) > 4);
++  }
++
++  /* Same as before, but for timespec.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMPNS_OLD, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++
++    do_sendto (&srv_addr, 42);
++    do_recvmsg_ancillary (mc, &mmhdr, &control, sizeof control, 42);
++
++    bool found_timestamp = false;
++    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++	 cmsg != NULL;
++	 cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level != SOL_SOCKET)
++	continue;
++
++      if (sizeof (time_t) > 4 && cmsg->cmsg_type == SO_TIMESTAMPNS_NEW)
++	found_timestamp = true;
++      else
++	TEST_VERIFY (cmsg->cmsg_type != SO_TIMESTAMPNS_NEW);
++    }
++
++    TEST_COMPARE (found_timestamp, sizeof (time_t) > 4);
++  }
++}
++
++/* Check if recvmsg does not create the additional 64 bit timestamp if
++   only 32 bit timestamp is enabled if the ancillary buffer is not large
++   enought.  Also checks if MSG_CTRUNC is set iff for 64 bit recvmsg
++   symbol.  */
++static void
++do_test_small_buffer (bool mc)
++{
++  struct mmsghdr mmhdr = { 0 };
++
++  /* Enable 32 bit timeval precision and check if no 64 bit timeval stamp
++     is created.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMP_OLD, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++
++    union
++    {
++      struct cmsghdr cmsghdr;
++      char msgbuf[CMSG_SPACE (sizeof (struct timeval))];
++    } control;
++
++    do_sendto (&srv_addr, 42);
++    do_recvmsg_ancillary (mc, &mmhdr, &control, sizeof control, 42);
++
++    bool found_timestamp = false;
++    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++	 cmsg != NULL;
++	 cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level != SOL_SOCKET)
++	continue;
++
++      if (sizeof (time_t) > 4 && cmsg->cmsg_type == SO_TIMESTAMP_NEW)
++	found_timestamp = true;
++      else
++	TEST_VERIFY (cmsg->cmsg_type != SO_TIMESTAMP_NEW);
++    }
++
++    if (sizeof (time_t) > 4)
++      {
++	TEST_VERIFY ((mmhdr.msg_hdr.msg_flags & MSG_CTRUNC));
++	TEST_COMPARE (found_timestamp, 0);
++      }
++    else
++      {
++	TEST_VERIFY (!(mmhdr.msg_hdr.msg_flags & MSG_CTRUNC));
++	TEST_COMPARE (found_timestamp, 0);
++      }
++  }
++
++  /* Same as before, but for timespec.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMPNS_OLD, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++
++    union
++    {
++      struct cmsghdr cmsghdr;
++      char msgbuf[CMSG_SPACE (sizeof (struct timespec))];
++    } control;
++
++    do_sendto (&srv_addr, 42);
++    do_recvmsg_ancillary (mc, &mmhdr, &control, sizeof control, 42);
++
++    bool found_timestamp = false;
++    for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++	 cmsg != NULL;
++	 cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level != SOL_SOCKET)
++	continue;
++
++      if (sizeof (time_t) > 4 && cmsg->cmsg_type == SO_TIMESTAMPNS_NEW)
++	found_timestamp = true;
++      else
++	TEST_VERIFY (cmsg->cmsg_type != SO_TIMESTAMPNS_NEW);
++    }
++
++    if (sizeof (time_t) > 4)
++      {
++	TEST_VERIFY ((mmhdr.msg_hdr.msg_flags & MSG_CTRUNC));
++	TEST_COMPARE (found_timestamp, 0);
++      }
++    else
++      {
++	TEST_VERIFY ((mmhdr.msg_hdr.msg_flags & MSG_CTRUNC) == 0);
++	TEST_COMPARE (found_timestamp, 0);
++      }
++  }
++}
++
++static int
++do_test (void)
++{
++  /* This test only make sense for ABIs that support 32 bit time_t socket
++     timestampss.  */
++  if (sizeof (time_t) > 4 && __TIMESIZE == 64)
++    return 0;
++
++  srv = xsocket (AF_INET, SOCK_DGRAM, 0);
++  srv_addr = (struct sockaddr_in) {
++    .sin_family = AF_INET,
++    .sin_addr = {.s_addr = htonl (INADDR_LOOPBACK) },
++  };
++  xbind (srv, (struct sockaddr *) &srv_addr, sizeof (srv_addr));
++  {
++    socklen_t sa_len = sizeof (srv_addr);
++    xgetsockname (srv, (struct sockaddr *) &srv_addr, &sa_len);
++    TEST_VERIFY (sa_len == sizeof (srv_addr));
++  }
++
++  /* Check recvmsg;  */
++  do_test_large_buffer (false);
++  do_test_small_buffer (false);
++  /* Check recvmmsg.  */
++  do_test_large_buffer (true);
++  do_test_small_buffer (true);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/sysdeps/unix/sysv/linux/tst-socket-timestamp-time64.c b/sysdeps/unix/sysv/linux/tst-socket-timestamp-time64.c
+new file mode 100644
+index 0000000000..ae424c2a70
+--- /dev/null
++++ b/sysdeps/unix/sysv/linux/tst-socket-timestamp-time64.c
+@@ -0,0 +1 @@
++#include "tst-socket-timestamp.c"
+diff --git a/sysdeps/unix/sysv/linux/tst-socket-timestamp.c b/sysdeps/unix/sysv/linux/tst-socket-timestamp.c
+new file mode 100644
+index 0000000000..9c2e76f7e2
+--- /dev/null
++++ b/sysdeps/unix/sysv/linux/tst-socket-timestamp.c
+@@ -0,0 +1,336 @@
++/* Check recvmsg/recvmmsg 64-bit timestamp support.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <array_length.h>
++#include <arpa/inet.h>
++#include <errno.h>
++#include <string.h>
++#include <stdio.h>
++#include <support/check.h>
++#include <support/next_to_fault.h>
++#include <support/support.h>
++#include <support/test-driver.h>
++#include <support/xunistd.h>
++#include <support/xsocket.h>
++#include <sys/mman.h>
++
++/* Some extra space added for ancillary data, it might be used to convert
++   32-bit timestamp to 64-bit for _TIME_BITS=64.  */
++enum { slack_max_size = 64 };
++static const int slack[] = { 0, 4, 8, 16, 32, slack_max_size };
++
++static bool support_64_timestamp;
++/* AF_INET socket and address used to receive data.  */
++static int srv;
++static struct sockaddr_in srv_addr;
++
++static int
++do_sendto (const struct sockaddr_in *addr, int nmsgs)
++{
++  int s = xsocket (AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, 0);
++  xconnect (s, (const struct sockaddr *) addr, sizeof (*addr));
++
++  for (int i = 0; i < nmsgs; i++)
++    xsendto (s, &i, sizeof (i), 0, (const struct sockaddr *) addr,
++	     sizeof (*addr));
++
++  xclose (s);
++
++  return 0;
++}
++
++static void
++do_recvmsg_slack_ancillary (bool use_multi_call, int s, void *cmsg,
++			    size_t slack, size_t tsize, int exp_payload)
++{
++  int payload;
++  struct iovec iov =
++    {
++      .iov_base = &payload,
++      .iov_len = sizeof (payload)
++    };
++  size_t msg_controllen = CMSG_SPACE (tsize) + slack;
++  char *msg_control = cmsg - msg_controllen;
++  memset (msg_control, 0x55, msg_controllen);
++  struct mmsghdr mmhdr =
++    {
++      .msg_hdr =
++      {
++        .msg_name = NULL,
++        .msg_namelen = 0,
++        .msg_iov = &iov,
++        .msg_iovlen = 1,
++        .msg_control = msg_control,
++        .msg_controllen = msg_controllen
++      },
++    };
++
++  int r;
++  if (use_multi_call)
++    {
++      r = recvmmsg (s, &mmhdr, 1, 0, NULL);
++      if (r >= 0)
++	r = mmhdr.msg_len;
++    }
++  else
++    r = recvmsg (s, &mmhdr.msg_hdr, 0);
++  TEST_COMPARE (r, sizeof (int));
++  TEST_COMPARE (payload, exp_payload);
++
++  if (cmsg == NULL)
++    return;
++
++  /* A timestamp is expected if 32-bit timestamp are used (support in every
++     configuration) or if underlying kernel support 64-bit timestamps.
++     Otherwise recvmsg will need extra space do add the 64-bit timestamp.  */
++  bool exp_timestamp;
++  if (sizeof (time_t) == 4 || support_64_timestamp)
++    exp_timestamp = true;
++   else
++    exp_timestamp = slack >= CMSG_SPACE (tsize);
++
++  bool timestamp = false;
++  for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++       cmsg != NULL;
++       cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level != SOL_SOCKET)
++	continue;
++      if (cmsg->cmsg_type == SCM_TIMESTAMP
++	  && cmsg->cmsg_len == CMSG_LEN (sizeof (struct timeval)))
++	{
++	  struct timeval tv;
++	  memcpy (&tv, CMSG_DATA (cmsg), sizeof (tv));
++	  if (test_verbose)
++	    printf ("SCM_TIMESTAMP:   {%jd, %jd}\n", (intmax_t)tv.tv_sec,
++		    (intmax_t)tv.tv_usec);
++	  timestamp = true;
++	}
++      else if (cmsg->cmsg_type == SCM_TIMESTAMPNS
++	       && cmsg->cmsg_len == CMSG_LEN (sizeof (struct timespec)))
++	{
++	  struct timespec ts;
++	  memcpy (&ts, CMSG_DATA (cmsg), sizeof (ts));
++	  if (test_verbose)
++	    printf ("SCM_TIMESTAMPNS: {%jd, %jd}\n", (intmax_t)ts.tv_sec,
++		    (intmax_t)ts.tv_nsec);
++	  timestamp = true;
++	}
++    }
++
++  TEST_COMPARE (timestamp, exp_timestamp);
++}
++
++/* Check if the extra ancillary space is correctly handled by recvmsg and
++   recvmmsg with different extra space for the ancillaty buffer.  */
++static void
++do_test_slack_space (void)
++{
++  /* Setup the ancillary data buffer with an extra page with PROT_NONE to
++     check the possible timestamp conversion on some systems.  */
++  struct support_next_to_fault nf =
++    support_next_to_fault_allocate (slack_max_size);
++  void *msgbuf = nf.buffer + slack_max_size;
++
++  /* Enable the timestamp using struct timeval precision.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMP, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++  }
++  /* Check recvmsg.  */
++  do_sendto (&srv_addr, array_length (slack));
++  for (int s = 0; s < array_length (slack); s++)
++    {
++      memset (nf.buffer, 0x55, nf.length);
++      do_recvmsg_slack_ancillary (false, srv, msgbuf, slack[s],
++				  sizeof (struct timeval), s);
++    }
++  /* Check recvmmsg.  */
++  do_sendto (&srv_addr, array_length (slack));
++  for (int s = 0; s < array_length (slack); s++)
++    {
++      memset (nf.buffer, 0x55, nf.length);
++      do_recvmsg_slack_ancillary (true, srv, msgbuf, slack[s],
++				  sizeof (struct timeval), s);
++    }
++
++  /* Now enable timestamp using a higher precision, it overwrites the previous
++     precision.  */
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMPNS, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++  }
++  /* Check recvmsg.  */
++  do_sendto (&srv_addr, array_length (slack));
++  for (int s = 0; s < array_length (slack); s++)
++    do_recvmsg_slack_ancillary (false, srv, msgbuf, slack[s],
++				sizeof (struct timespec), s);
++  /* Check recvmmsg.  */
++  do_sendto (&srv_addr, array_length (slack));
++  for (int s = 0; s < array_length (slack); s++)
++    do_recvmsg_slack_ancillary (true, srv, msgbuf, slack[s],
++				sizeof (struct timespec), s);
++
++  support_next_to_fault_free (&nf);
++}
++
++/* Check if the converted 64-bit timestamp is correctly appended when there
++   are multiple ancillary messages.  */
++static void
++do_recvmsg_multiple_ancillary (bool use_multi_call, int s, void *cmsg,
++			       size_t cmsgsize, int exp_msg)
++{
++  int msg;
++  struct iovec iov =
++    {
++      .iov_base = &msg,
++      .iov_len = sizeof (msg)
++    };
++  size_t msgs = cmsgsize;
++  struct mmsghdr mmhdr =
++    {
++      .msg_hdr =
++      {
++        .msg_name = NULL,
++        .msg_namelen = 0,
++        .msg_iov = &iov,
++        .msg_iovlen = 1,
++        .msg_controllen = msgs,
++        .msg_control = cmsg,
++      },
++    };
++
++  int r;
++  if (use_multi_call)
++    {
++      r = recvmmsg (s, &mmhdr, 1, 0, NULL);
++      if (r >= 0)
++	r = mmhdr.msg_len;
++    }
++  else
++    r = recvmsg (s, &mmhdr.msg_hdr, 0);
++  TEST_COMPARE (r, sizeof (int));
++  TEST_COMPARE (msg, exp_msg);
++
++  if (cmsg == NULL)
++    return;
++
++  bool timestamp = false;
++  bool origdstaddr = false;
++  for (struct cmsghdr *cmsg = CMSG_FIRSTHDR (&mmhdr.msg_hdr);
++       cmsg != NULL;
++       cmsg = CMSG_NXTHDR (&mmhdr.msg_hdr, cmsg))
++    {
++      if (cmsg->cmsg_level == SOL_IP
++	  && cmsg->cmsg_type == IP_ORIGDSTADDR
++	  && cmsg->cmsg_len >= CMSG_LEN (sizeof (struct sockaddr_in)))
++	{
++	  struct sockaddr_in sa;
++	  memcpy (&sa, CMSG_DATA (cmsg), sizeof (sa));
++	  if (test_verbose)
++	    {
++	      char str[INET_ADDRSTRLEN];
++	      inet_ntop (AF_INET, &sa.sin_addr, str, INET_ADDRSTRLEN);
++	      printf ("IP_ORIGDSTADDR:  %s:%d\n", str, ntohs (sa.sin_port));
++	    }
++	  origdstaddr = sa.sin_addr.s_addr == srv_addr.sin_addr.s_addr
++			&& sa.sin_port == srv_addr.sin_port;
++	}
++      if (cmsg->cmsg_level == SOL_SOCKET
++	  && cmsg->cmsg_type == SCM_TIMESTAMP
++	  && cmsg->cmsg_len >= CMSG_LEN (sizeof (struct timeval)))
++	{
++	  struct timeval tv;
++	  memcpy (&tv, CMSG_DATA (cmsg), sizeof (tv));
++	  if (test_verbose)
++	    printf ("SCM_TIMESTAMP:   {%jd, %jd}\n", (intmax_t)tv.tv_sec,
++		    (intmax_t)tv.tv_usec);
++	  timestamp = true;
++	}
++    }
++
++  TEST_COMPARE (timestamp, true);
++  TEST_COMPARE (origdstaddr, true);
++}
++
++static void
++do_test_multiple_ancillary (void)
++{
++  {
++    int r = setsockopt (srv, SOL_SOCKET, SO_TIMESTAMP, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++  }
++  {
++    int r = setsockopt (srv, IPPROTO_IP, IP_RECVORIGDSTADDR, &(int){1},
++			sizeof (int));
++    TEST_VERIFY_EXIT (r != -1);
++  }
++
++  /* Enougth data for default SO_TIMESTAMP, the IP_RECVORIGDSTADDR, and the
++     extra 64-bit SO_TIMESTAMP.  */
++  enum { msgbuflen = CMSG_SPACE (2 * sizeof (uint64_t))
++		     + CMSG_SPACE (sizeof (struct sockaddr_in))
++		     + CMSG_SPACE (2 * sizeof (uint64_t)) };
++  char msgbuf[msgbuflen];
++
++  enum { nmsgs = 8 };
++  /* Check recvmsg.  */
++  do_sendto (&srv_addr, nmsgs);
++  for (int s = 0; s < nmsgs; s++)
++    do_recvmsg_multiple_ancillary (false, srv, msgbuf, msgbuflen, s);
++  /* Check recvmmsg.  */
++  do_sendto (&srv_addr, nmsgs);
++  for (int s = 0; s < nmsgs; s++)
++    do_recvmsg_multiple_ancillary (true, srv, msgbuf, msgbuflen, s);
++}
++
++static int
++do_test (void)
++{
++  srv = xsocket (AF_INET, SOCK_DGRAM, 0);
++  srv_addr = (struct sockaddr_in) {
++    .sin_family = AF_INET,
++    .sin_addr = {.s_addr = htonl (INADDR_LOOPBACK) },
++  };
++  xbind (srv, (struct sockaddr *) &srv_addr, sizeof (srv_addr));
++  {
++    socklen_t sa_len = sizeof (srv_addr);
++    xgetsockname (srv, (struct sockaddr *) &srv_addr, &sa_len);
++    TEST_VERIFY (sa_len == sizeof (srv_addr));
++  }
++
++  TEST_COMPARE (recvmsg (-1, NULL, 0), -1);
++  TEST_COMPARE (errno, EBADF);
++  TEST_COMPARE (recvmmsg (-1, NULL, 0, 0, NULL), -1);
++  TEST_COMPARE (errno, EBADF);
++
++  /* If underlying kernel does not support   */
++  support_64_timestamp = support_socket_so_timestamp_time64 (srv);
++
++  do_test_slack_space ();
++  do_test_multiple_ancillary ();
++
++  xclose (srv);
++
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/sysdeps/unix/sysv/linux/x86_64/64/arch-syscall.h b/sysdeps/unix/sysv/linux/x86_64/64/arch-syscall.h
 index 8e028eb62b..28558279b4 100644
 --- a/sysdeps/unix/sysv/linux/x86_64/64/arch-syscall.h
@@ -6839,6 +9384,15 @@ index 8e028eb62b..28558279b4 100644
  #define __NR_read 0
  #define __NR_readahead 187
  #define __NR_readlink 89
+diff --git a/sysdeps/unix/sysv/linux/x86_64/64/ld.abilist b/sysdeps/unix/sysv/linux/x86_64/64/ld.abilist
+index d3cdf7611e..afddaec57c 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/64/ld.abilist
++++ b/sysdeps/unix/sysv/linux/x86_64/64/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.2.5 __libc_stack_end D 0x8
+ GLIBC_2.2.5 _dl_mcount F
+ GLIBC_2.2.5 _r_debug D 0x28
+ GLIBC_2.3 __tls_get_addr F
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/x86_64/x32/arch-syscall.h b/sysdeps/unix/sysv/linux/x86_64/x32/arch-syscall.h
 index 004feb53f1..c1ab8ec45e 100644
 --- a/sysdeps/unix/sysv/linux/x86_64/x32/arch-syscall.h
@@ -6875,6 +9429,15 @@ index 004feb53f1..c1ab8ec45e 100644
  #define __NR_read 1073741824
  #define __NR_readahead 1073742011
  #define __NR_readlink 1073741913
+diff --git a/sysdeps/unix/sysv/linux/x86_64/x32/ld.abilist b/sysdeps/unix/sysv/linux/x86_64/x32/ld.abilist
+index c70bccf782..defc488d13 100644
+--- a/sysdeps/unix/sysv/linux/x86_64/x32/ld.abilist
++++ b/sysdeps/unix/sysv/linux/x86_64/x32/ld.abilist
+@@ -2,3 +2,4 @@ GLIBC_2.16 __libc_stack_end D 0x4
+ GLIBC_2.16 __tls_get_addr F
+ GLIBC_2.16 _dl_mcount F
+ GLIBC_2.16 _r_debug D 0x14
++GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/x86/cacheinfo.h b/sysdeps/x86/cacheinfo.h
 index 41d2c81369..63f36877e3 100644
 --- a/sysdeps/x86/cacheinfo.h
@@ -6904,6 +9467,53 @@ index 41d2c81369..63f36877e3 100644
  
    __x86_shared_non_temporal_threshold
      = cpu_features->non_temporal_threshold;
+diff --git a/sysdeps/x86/cpu-features.c b/sysdeps/x86/cpu-features.c
+index 645bba6314..de4e3c3b72 100644
+--- a/sysdeps/x86/cpu-features.c
++++ b/sysdeps/x86/cpu-features.c
+@@ -507,11 +507,39 @@ init_cpu_features (struct cpu_features *cpu_features)
+ 	      break;
+ 	    }
+ 
+-	 /* Disable TSX on some Haswell processors to avoid TSX on kernels that
+-	    weren't updated with the latest microcode package (which disables
+-	    broken feature by default).  */
++	 /* Disable TSX on some processors to avoid TSX on kernels that
++	    weren't updated with the latest microcode package (which
++	    disables broken feature by default).  */
+ 	 switch (model)
+ 	    {
++	    case 0x55:
++	      if (stepping <= 5)
++		goto disable_tsx;
++	      break;
++	    case 0x8e:
++	      /* NB: Although the errata documents that for model == 0x8e,
++		 only 0xb stepping or lower are impacted, the intention of
++		 the errata was to disable TSX on all client processors on
++		 all steppings.  Include 0xc stepping which is an Intel
++		 Core i7-8665U, a client mobile processor.  */
++	    case 0x9e:
++	      if (stepping > 0xc)
++		break;
++	      /* Fall through.  */
++	    case 0x4e:
++	    case 0x5e:
++	      {
++		/* Disable Intel TSX and enable RTM_ALWAYS_ABORT for
++		   processors listed in:
++
++https://www.intel.com/content/www/us/en/support/articles/000059422/processors.html
++		 */
++disable_tsx:
++		CPU_FEATURE_UNSET (cpu_features, HLE);
++		CPU_FEATURE_UNSET (cpu_features, RTM);
++		CPU_FEATURE_SET (cpu_features, RTM_ALWAYS_ABORT);
++	      }
++	      break;
+ 	    case 0x3f:
+ 	      /* Xeon E7 v3 with stepping >= 4 has working TSX.  */
+ 	      if (stepping >= 4)
 diff --git a/sysdeps/x86/tst-cpu-features-cpuinfo.c b/sysdeps/x86/tst-cpu-features-cpuinfo.c
 index 2d4927f5e5..830aaca2ec 100644
 --- a/sysdeps/x86/tst-cpu-features-cpuinfo.c
@@ -6924,6 +9534,19 @@ index 2d4927f5e5..830aaca2ec 100644
        fails += CHECK_PROC (stibp, AMD_STIBP);
      }
    fails += CHECK_PROC (ibt, IBT);
+diff --git a/sysdeps/x86/tst-cpu-features-supports.c b/sysdeps/x86/tst-cpu-features-supports.c
+index 9d76e6bd3f..faa5091b78 100644
+--- a/sysdeps/x86/tst-cpu-features-supports.c
++++ b/sysdeps/x86/tst-cpu-features-supports.c
+@@ -130,7 +130,7 @@ do_test (int argc, char **argv)
+   fails += CHECK_FEATURE_ACTIVE (gfni, GFNI);
+ #endif
+ #if __GNUC_PREREQ (11, 0)
+-  fails += CHECK_FEATURE_ACTIVE (hle, HLE);
++  fails += CHECK_FEATURE_PRESENT (hle, HLE);
+   fails += CHECK_FEATURE_PRESENT (ibt, IBT);
+   fails += CHECK_FEATURE_ACTIVE (lahf_lm, LAHF64_SAHF64);
+   fails += CHECK_FEATURE_PRESENT (lm, LM);
 diff --git a/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S b/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
 index 9f02624375..abde8438d4 100644
 --- a/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
@@ -6946,6 +9569,48 @@ index 9f02624375..abde8438d4 100644
  	jz	3f
  	movq	%rsi, %rcx
  	subq	%rdi, %rcx
+diff --git a/sysdeps/x86_64/multiarch/strcmp-avx2.S b/sysdeps/x86_64/multiarch/strcmp-avx2.S
+index 40333010a6..3dfcb1bf80 100644
+--- a/sysdeps/x86_64/multiarch/strcmp-avx2.S
++++ b/sysdeps/x86_64/multiarch/strcmp-avx2.S
+@@ -87,6 +87,16 @@ ENTRY (STRCMP)
+ 	je	L(char0)
+ 	jb	L(zero)
+ #  ifdef USE_AS_WCSCMP
++#  ifndef __ILP32__
++	movq	%rdx, %rcx
++	/* Check if length could overflow when multiplied by
++	   sizeof(wchar_t). Checking top 8 bits will cover all potential
++	   overflow cases as well as redirect cases where its impossible to
++	   length to bound a valid memory region. In these cases just use
++	   'wcscmp'.  */
++	shrq	$56, %rcx
++	jnz	__wcscmp_avx2
++#  endif
+ 	/* Convert units: from wide to byte char.  */
+ 	shl	$2, %RDX_LP
+ #  endif
+diff --git a/sysdeps/x86_64/multiarch/strcmp-evex.S b/sysdeps/x86_64/multiarch/strcmp-evex.S
+index 459eeed09f..d5aa6daa46 100644
+--- a/sysdeps/x86_64/multiarch/strcmp-evex.S
++++ b/sysdeps/x86_64/multiarch/strcmp-evex.S
+@@ -97,6 +97,16 @@ ENTRY (STRCMP)
+ 	je	L(char0)
+ 	jb	L(zero)
+ #  ifdef USE_AS_WCSCMP
++#  ifndef __ILP32__
++	movq	%rdx, %rcx
++	/* Check if length could overflow when multiplied by
++	   sizeof(wchar_t). Checking top 8 bits will cover all potential
++	   overflow cases as well as redirect cases where its impossible to
++	   length to bound a valid memory region. In these cases just use
++	   'wcscmp'.  */
++	shrq	$56, %rcx
++	jnz	__wcscmp_evex
++#  endif
+ 	/* Convert units: from wide to byte char.  */
+ 	shl	$2, %RDX_LP
+ #  endif
 diff --git a/time/tzfile.c b/time/tzfile.c
 index 4377018a55..8668392ad3 100644
 --- a/time/tzfile.c

@@ -101,6 +101,21 @@ glibc (2.34-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 12 Dec 2021 23:52:06 +0100
 
+glibc (2.33-6) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/pthread_once.diff: Fix pthread_key safety.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix HTM aborts in AVX2 multiarch string functions
+    - Fix an overflow bug in some implementation of wcsnlen, wmemchr, and
+      wcsncat
+    - Fix an overflow bug in wcsncmp_avx2 and wcsncmp_evex
+    - Fix a race condition in __opensock
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 15 Feb 2022 12:21:20 +0100
+
 glibc (2.33-5) unstable; urgency=medium
 
   * debian/patches/git-updates.diff: update from upstream stable branch:

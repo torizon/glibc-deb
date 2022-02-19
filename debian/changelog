@@ -11,6 +11,9 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
     find the dynamic linker if it is not in a lib directory.
   * debian/rules.d/build.mk, debian/debhelper.in/libc.postrm: correctly
     recreate the dynamic linker symlink with the new naming scheme.
+  * debian/libc*.symbols.*: force __sysconf@GLIBC_2.* and sysconf@GLIBC_2.*
+    dependencies to 2.34 to correctly support the new definition of MINSIGSTKSZ
+    and SIGSTKSZ.
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.

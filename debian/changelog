@@ -16,6 +16,8 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
     and SIGSTKSZ.
   * debian/debhelper.in/libc*.fixperms: remove, they are ignored by
     dh_fixperms.
+  * debian/debhelper.in/libc-alt.lintian-overrides: adjust overrides for the
+    case slibdir = rtlddir.
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.

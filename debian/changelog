@@ -14,6 +14,8 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
   * debian/libc*.symbols.*: force __sysconf@GLIBC_2.* and sysconf@GLIBC_2.*
     dependencies to 2.34 to correctly support the new definition of MINSIGSTKSZ
     and SIGSTKSZ.
+  * debian/debhelper.in/libc*.fixperms: remove, they are ignored by
+    dh_fixperms.
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd tests.

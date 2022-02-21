@@ -1,4 +1,4 @@
-glibc (2.34-0experimental3) UNRELEASED; urgency=medium
+glibc (2.34-0experimental3) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/testsuite-xfail-debian.mk: whitelist again test-xfail-tst-pkey on
@@ -25,7 +25,7 @@ glibc (2.34-0experimental3) UNRELEASED; urgency=medium
     startup.
   * debian/control: Break hurd << 1:0.9.git20211230-2 accordingly.
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 20 Dec 2021 21:34:33 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 21 Feb 2022 12:53:23 +0100
 
 glibc (2.34-0experimental2) experimental; urgency=medium
 

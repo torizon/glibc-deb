@@ -74,10 +74,10 @@ index 68663d984e..2fa0884b4e 100644
  endif  # build-shared
  endif  # +link
 diff --git a/NEWS b/NEWS
-index 3c610744c9..aef051122e 100644
+index 3c610744c9..81f5decd2b 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -4,6 +4,68 @@ See the end for copying conditions.
+@@ -4,6 +4,70 @@ See the end for copying conditions.
  
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
@@ -142,6 +142,8 @@ index 3c610744c9..aef051122e 100644
 +    __convert_scm_timestamps
 +  [28865] linux: _SC_NPROCESSORS_CONF and _SC_NPROCESSORS_ONLN are inaccurate
 +    without /sys and /proc
++  [28896] strncmp-avx2-rtm and wcsncmp-avx2-rtm fallback on non-rtm
++    variants when avoiding overflow
 +
  
  Version 2.34
@@ -3502,6 +3504,37 @@ index 0000000000..4388890294
 +}
 +
 +#include <support/test-driver.c>
+diff --git a/string/test-strncmp.c b/string/test-strncmp.c
+index 10b34de8d2..97e831d88f 100644
+--- a/string/test-strncmp.c
++++ b/string/test-strncmp.c
+@@ -435,6 +435,18 @@ check3 (void)
+ 	}
+ }
+ 
++static void
++check4 (void)
++{
++  const CHAR *s1 = L ("abc");
++  CHAR *s2 = STRDUP (s1);
++
++  FOR_EACH_IMPL (impl, 0)
++    check_result (impl, s1, s2, SIZE_MAX, 0);
++
++  free (s2);
++}
++
+ int
+ test_main (void)
+ {
+@@ -445,6 +457,7 @@ test_main (void)
+   check1 ();
+   check2 ();
+   check3 ();
++  check4 ();
+ 
+   printf ("%23s", "");
+   FOR_EACH_IMPL (impl, 0)
 diff --git a/sunrpc/Makefile b/sunrpc/Makefile
 index 7e5bbfd951..6408ab5c07 100644
 --- a/sunrpc/Makefile
@@ -9438,6 +9471,32 @@ index c70bccf782..defc488d13 100644
  GLIBC_2.16 _dl_mcount F
  GLIBC_2.16 _r_debug D 0x14
 +GLIBC_2.34 __rtld_version_placeholder F
+diff --git a/sysdeps/x86/Makefile b/sysdeps/x86/Makefile
+index 5ee06f9473..d7fe68609f 100644
+--- a/sysdeps/x86/Makefile
++++ b/sysdeps/x86/Makefile
+@@ -94,7 +94,9 @@ tests += \
+   tst-strcpy-rtm \
+   tst-strlen-rtm \
+   tst-strncmp-rtm \
+-  tst-strrchr-rtm
++  tst-strrchr-rtm \
++  tst-wcsncmp-rtm \
++# tests
+ 
+ CFLAGS-tst-memchr-rtm.c += -mrtm
+ CFLAGS-tst-memcmp-rtm.c += -mrtm
+@@ -104,8 +106,9 @@ CFLAGS-tst-memset-rtm.c += -mrtm
+ CFLAGS-tst-strchr-rtm.c += -mrtm
+ CFLAGS-tst-strcpy-rtm.c += -mrtm
+ CFLAGS-tst-strlen-rtm.c += -mrtm
+-CFLAGS-tst-strncmp-rtm.c += -mrtm
++CFLAGS-tst-strncmp-rtm.c += -mrtm -Wno-error
+ CFLAGS-tst-strrchr-rtm.c += -mrtm
++CFLAGS-tst-wcsncmp-rtm.c += -mrtm -Wno-error
+ endif
+ 
+ ifneq ($(enable-cet),no)
 diff --git a/sysdeps/x86/cacheinfo.h b/sysdeps/x86/cacheinfo.h
 index 41d2c81369..63f36877e3 100644
 --- a/sysdeps/x86/cacheinfo.h
@@ -9547,6 +9606,108 @@ index 9d76e6bd3f..faa5091b78 100644
    fails += CHECK_FEATURE_PRESENT (ibt, IBT);
    fails += CHECK_FEATURE_ACTIVE (lahf_lm, LAHF64_SAHF64);
    fails += CHECK_FEATURE_PRESENT (lm, LM);
+diff --git a/sysdeps/x86/tst-strncmp-rtm.c b/sysdeps/x86/tst-strncmp-rtm.c
+index 236ad951b5..aef9866cf2 100644
+--- a/sysdeps/x86/tst-strncmp-rtm.c
++++ b/sysdeps/x86/tst-strncmp-rtm.c
+@@ -16,20 +16,35 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
++#include <stdint.h>
+ #include <tst-string-rtm.h>
+ 
++#ifdef WIDE
++# define CHAR wchar_t
++# define MEMSET wmemset
++# define STRNCMP wcsncmp
++# define TEST_NAME "wcsncmp"
++#else /* !WIDE */
++# define CHAR char
++# define MEMSET memset
++# define STRNCMP strncmp
++# define TEST_NAME "strncmp"
++#endif /* !WIDE */
++
++
++
+ #define LOOP 3000
+ #define STRING_SIZE 1024
+-char string1[STRING_SIZE];
+-char string2[STRING_SIZE];
++CHAR string1[STRING_SIZE];
++CHAR string2[STRING_SIZE];
+ 
+ __attribute__ ((noinline, noclone))
+ static int
+ prepare (void)
+ {
+-  memset (string1, 'a', STRING_SIZE - 1);
+-  memset (string2, 'a', STRING_SIZE - 1);
+-  if (strncmp (string1, string2, STRING_SIZE) == 0)
++  MEMSET (string1, 'a', STRING_SIZE - 1);
++  MEMSET (string2, 'a', STRING_SIZE - 1);
++  if (STRNCMP (string1, string2, STRING_SIZE) == 0)
+     return EXIT_SUCCESS;
+   else
+     return EXIT_FAILURE;
+@@ -39,7 +54,17 @@ __attribute__ ((noinline, noclone))
+ static int
+ function (void)
+ {
+-  if (strncmp (string1, string2, STRING_SIZE) == 0)
++  if (STRNCMP (string1, string2, STRING_SIZE) == 0)
++    return 0;
++  else
++    return 1;
++}
++
++__attribute__ ((noinline, noclone))
++static int
++function_overflow (void)
++{
++  if (STRNCMP (string1, string2, SIZE_MAX) == 0)
+     return 0;
+   else
+     return 1;
+@@ -48,5 +73,9 @@ function (void)
+ static int
+ do_test (void)
+ {
+-  return do_test_1 ("strncmp", LOOP, prepare, function);
++  int status = do_test_1 (TEST_NAME, LOOP, prepare, function);
++  if (status != EXIT_SUCCESS)
++    return status;
++  status = do_test_1 (TEST_NAME, LOOP, prepare, function_overflow);
++  return status;
+ }
+diff --git a/sysdeps/x86/tst-wcsncmp-rtm.c b/sysdeps/x86/tst-wcsncmp-rtm.c
+new file mode 100644
+index 0000000000..bad3b86378
+--- /dev/null
++++ b/sysdeps/x86/tst-wcsncmp-rtm.c
+@@ -0,0 +1,21 @@
++/* Test case for wcsncmp inside a transactionally executing RTM region.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#define WIDE 1
++#include <wchar.h>
++#include "tst-strncmp-rtm.c"
 diff --git a/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S b/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
 index 9f02624375..abde8438d4 100644
 --- a/sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S
@@ -9570,7 +9731,7 @@ index 9f02624375..abde8438d4 100644
  	movq	%rsi, %rcx
  	subq	%rdi, %rcx
 diff --git a/sysdeps/x86_64/multiarch/strcmp-avx2.S b/sysdeps/x86_64/multiarch/strcmp-avx2.S
-index 40333010a6..3dfcb1bf80 100644
+index 40333010a6..fa70c994fc 100644
 --- a/sysdeps/x86_64/multiarch/strcmp-avx2.S
 +++ b/sysdeps/x86_64/multiarch/strcmp-avx2.S
 @@ -87,6 +87,16 @@ ENTRY (STRCMP)
@@ -9585,7 +9746,7 @@ index 40333010a6..3dfcb1bf80 100644
 +	   length to bound a valid memory region. In these cases just use
 +	   'wcscmp'.  */
 +	shrq	$56, %rcx
-+	jnz	__wcscmp_avx2
++	jnz	OVERFLOW_STRCMP
 +#  endif
  	/* Convert units: from wide to byte char.  */
  	shl	$2, %RDX_LP
@@ -9611,6 +9772,46 @@ index 459eeed09f..d5aa6daa46 100644
  	/* Convert units: from wide to byte char.  */
  	shl	$2, %RDX_LP
  #  endif
+diff --git a/sysdeps/x86_64/multiarch/strncmp-avx2-rtm.S b/sysdeps/x86_64/multiarch/strncmp-avx2-rtm.S
+index 37d1224bb9..68bad365ba 100644
+--- a/sysdeps/x86_64/multiarch/strncmp-avx2-rtm.S
++++ b/sysdeps/x86_64/multiarch/strncmp-avx2-rtm.S
+@@ -1,3 +1,4 @@
+ #define STRCMP	__strncmp_avx2_rtm
+ #define USE_AS_STRNCMP 1
++#define OVERFLOW_STRCMP	__strcmp_avx2_rtm
+ #include "strcmp-avx2-rtm.S"
+diff --git a/sysdeps/x86_64/multiarch/strncmp-avx2.S b/sysdeps/x86_64/multiarch/strncmp-avx2.S
+index 1678bcc235..f138e9f1fd 100644
+--- a/sysdeps/x86_64/multiarch/strncmp-avx2.S
++++ b/sysdeps/x86_64/multiarch/strncmp-avx2.S
+@@ -1,3 +1,4 @@
+ #define STRCMP	__strncmp_avx2
+ #define USE_AS_STRNCMP 1
++#define OVERFLOW_STRCMP __strcmp_avx2
+ #include "strcmp-avx2.S"
+diff --git a/sysdeps/x86_64/multiarch/wcsncmp-avx2-rtm.S b/sysdeps/x86_64/multiarch/wcsncmp-avx2-rtm.S
+index 4e88c70cc6..f467582cbe 100644
+--- a/sysdeps/x86_64/multiarch/wcsncmp-avx2-rtm.S
++++ b/sysdeps/x86_64/multiarch/wcsncmp-avx2-rtm.S
+@@ -1,5 +1,5 @@
+ #define STRCMP __wcsncmp_avx2_rtm
+ #define USE_AS_STRNCMP 1
+ #define USE_AS_WCSCMP 1
+-
++#define OVERFLOW_STRCMP	__wcscmp_avx2_rtm
+ #include "strcmp-avx2-rtm.S"
+diff --git a/sysdeps/x86_64/multiarch/wcsncmp-avx2.S b/sysdeps/x86_64/multiarch/wcsncmp-avx2.S
+index 4fa1de4d3f..e9ede522b8 100644
+--- a/sysdeps/x86_64/multiarch/wcsncmp-avx2.S
++++ b/sysdeps/x86_64/multiarch/wcsncmp-avx2.S
+@@ -1,5 +1,5 @@
+ #define STRCMP __wcsncmp_avx2
+ #define USE_AS_STRNCMP 1
+ #define USE_AS_WCSCMP 1
+-
++#define OVERFLOW_STRCMP	__wcscmp_avx2
+ #include "strcmp-avx2.S"
 diff --git a/time/tzfile.c b/time/tzfile.c
 index 4377018a55..8668392ad3 100644
 --- a/time/tzfile.c

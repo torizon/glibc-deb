@@ -110,6 +110,17 @@ glibc (2.34-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 12 Dec 2021 23:52:06 +0100
 
+glibc (2.33-7) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/rules.d/build.mk: pass --with-default-link=no to configure to
+    ensure that libio vtable protection is enabled.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix wrong fallback of strncmp-avx2-rtm and wcsncmp-avx2-rtm fallback to
+      non-rtm variants when avoiding overflow.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 21 Feb 2022 09:47:11 +0100
+
 glibc (2.33-6) unstable; urgency=medium
 
   [ Samuel Thibault ]

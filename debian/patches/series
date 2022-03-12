@@ -47,6 +47,8 @@ hurd-i386/git-reply_bogus.diff
 
 # 2.36
 hurd-i386/pthread_key.diff
+hurd-i386/tg-EIEIO-fr.diff
+hurd-i386/tg-EGREGIOUS-fr.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
@@ -59,8 +61,6 @@ hurd-i386/local-madvise_warn.diff
 hurd-i386/tg-hooks.diff
 hurd-i386/local-usr.diff
 hurd-i386/tg-ifaddrs_v6.diff
-hurd-i386/tg-EIEIO-fr.diff
-hurd-i386/tg-EGREGIOUS-fr.diff
 hurd-i386/unsubmitted-clock_t_centiseconds.diff
 hurd-i386/submitted-path_mounted.diff
 hurd-i386/submitted-bind_umask2.diff

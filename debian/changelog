@@ -1,4 +1,4 @@
-glibc (2.34-0experimental4) UNRELEASED; urgency=medium
+glibc (2.34-0experimental4) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
@@ -10,7 +10,7 @@ glibc (2.34-0experimental4) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc.postinst: do not re-exec init if DPKG_ROOT is
     set.  Closes: #1006692.
 
- -- Aurelien Jarno <aurel32@debian.org>  Fri, 15 Apr 2022 21:55:54 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 16 Apr 2022 13:10:56 +0200
 
 glibc (2.34-0experimental3) experimental; urgency=medium
 

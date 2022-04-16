@@ -157,6 +157,9 @@ then
     if ischroot 2>/dev/null; then
         # Don't bother trying to re-exec init from a chroot:
         TELINIT=no
+    elif [ -n "${DPKG_ROOT:-}" ]; then
+        # Do not re-exec init if we are operating on a chroot from outside:
+        TELINIT=no
     elif [ -d /run/systemd/system ]; then
         # Restart systemd on upgrade, but carefully.
         # The restart is wanted because of LP: #1942276 and Bug: #993821

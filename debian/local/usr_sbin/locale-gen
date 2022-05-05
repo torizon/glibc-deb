@@ -23,6 +23,19 @@ is_entry_ok() {
 	fi
 }
 
+nproc="$(nproc 2>/dev/null)" || nproc=1
+if [ "$nproc" -gt 1 ]; then
+	mem_free=0
+	while read -r k v _; do
+		[ "$k" = "MemFree:"      ] && mem_free="$v"          || :
+		[ "$k" = "MemAvailable:" ] && mem_free="$v" && break || :  # Prefer using MemAvailable on Linux; other Debian kernels only have MemFree
+	done < /proc/meminfo || :
+	mem_free=$(( mem_free / 1024 / 200 ))
+	[ "$mem_free" -lt 1 ] && mem_free=1 || :
+	[ "$mem_free" -lt "$nproc" ] && nproc="$mem_free" || :
+	jobs=0; pids=
+fi 2>/dev/null
+
 echo "Generating locales (this might take a while)..."
 while read -r locale charset; do
 	if [ -z "$locale" ] || [ "${locale#\#}" != "$locale" ]; then continue; fi
@@ -35,6 +48,7 @@ while read -r locale charset; do
 	locale_at="${locale#*@}"
 	[ "$locale_at" = "$locale" ] && locale_at= || locale_at="@$locale_at"
 	printf "  %s.%s%s..." "$locale_base" "$charset" "$locale_at"
+	[ "$nproc" -gt 1 ] && echo || :
 
 	if [ -e "$USER_LOCALES/$locale" ]; then
 		input="$USER_LOCALES/$locale"
@@ -46,7 +60,20 @@ while read -r locale charset; do
 			input="$USER_LOCALES/$input"
 		fi
 	fi
-	localedef -i "$input" -c -f "$charset" -A /usr/share/locale/locale.alias "$locale" || :
-	echo " done"
+	localedef -i "$input" -c -f "$charset" -A /usr/share/locale/locale.alias "$locale" &
+	if [ "$nproc" -gt 1 ]; then
+		pids="$pids$! "
+		jobs=$(( jobs + 1 ))
+
+		if [ "$jobs" -ge "$nproc" ]; then
+			wait "${pids%% *}" || :
+			jobs=$(( jobs - 1 ))
+			pids="${pids#* }"
+		fi
+	else
+		wait
+		echo " done"
+	fi
 done < "$LOCALEGEN"
+wait
 echo "Generation complete."

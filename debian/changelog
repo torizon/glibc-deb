@@ -1,6 +1,10 @@
 glibc (2.34-0experimental5) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - debian/patches/powerpc/local-powerpc8xx-dcbz.diff: rebase.
+    - debian/rules.d/build.mk: stop passing --with-default-link=no which is
+      now the default.
   * debian/rules.d/build.mk, debian/testsuite-mips-nan2008.c: do not run the
     testsuite if the CPU NaN encoding matches the ABI. This fixes FTBFS on
     broken build daemons.

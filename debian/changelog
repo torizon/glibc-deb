@@ -6,6 +6,9 @@ glibc (2.33-8) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix testsuite on arm64 with recent binutils versions.  Closes: #1014109.
+  * debian/rules.d/build.mk, debian/testsuite-mips-nan2008.c: disable the
+    testsuite if the CPU NaN doesn't encoding matches the ABI. This fixes FTBFS
+    on broken mips build daemons.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 05 May 2022 00:16:34 +0000
 

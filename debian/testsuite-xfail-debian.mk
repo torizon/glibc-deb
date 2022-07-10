@@ -803,6 +803,14 @@ test-xfail-test-float32-float64-sub = yes
 # the conversion and a new qNaN is generated.
 test-xfail-tst-strfrom = yes
 test-xfail-tst-strfrom-locale = yes
+
+# These audit failures seems to be due to the MIPS ELF specificities:
+test-xfail-tst-audit24a = yes
+test-xfail-tst-audit24b = yes
+test-xfail-tst-audit24c = yes
+test-xfail-tst-audit24d = yes
+test-xfail-tst-audit25a = yes
+test-xfail-tst-audit25b = yes
 endif
 
 

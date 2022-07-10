@@ -14,6 +14,8 @@ glibc (2.34-0experimental5) UNRELEASED; urgency=medium
     - libfclib-dev (<= 3.1.0+dfsg-2)
     - libismrmrd-dev (<= 1.8.0-2)
     - libnetcdf-dev (<= 1:4.9.0-2)
+  * debian/testsuite-xfail-debian.mk: XFAIL recently backports audit tests on
+    MIPS.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 Jun 2022 13:26:45 +0200
 

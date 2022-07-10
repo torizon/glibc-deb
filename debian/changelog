@@ -5,6 +5,15 @@ glibc (2.34-0experimental5) UNRELEASED; urgency=medium
     - debian/patches/powerpc/local-powerpc8xx-dcbz.diff: rebase.
     - debian/rules.d/build.mk: stop passing --with-default-link=no which is
       now the default.
+  * debian/control.in/libc: Add breaks in libc6-dev against dev packages that
+    encode the path to libpthread.so, librt.so or libutil.so, they need to be
+    binNMUed:
+    - libassimp-dev (<= 5.2.4~ds0-1)
+    - libdeal.ii-dev (<= 9.4.0-1)
+    - libdolfin-dev-common (<= 2019.2.0~git20220407.d29e24d-5)
+    - libfclib-dev (<= 3.1.0+dfsg-2)
+    - libismrmrd-dev (<= 1.8.0-2)
+    - libnetcdf-dev (<= 1:4.9.0-2)
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 Jun 2022 13:26:45 +0200
 

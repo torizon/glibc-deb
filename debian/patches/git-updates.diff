@@ -15120,10 +15120,18 @@ index bccf9f2806..716bc8f6ef 100644
  ifeq (yes,$(have-thread-library))
  $(objpfx)tst-cancel-getpwuid_r: $(shared-thread-library)
 diff --git a/nss/XXX-lookup.c b/nss/XXX-lookup.c
-index f1c97f7c8e..dbc87868dd 100644
+index f1c97f7c8e..343fd9869b 100644
 --- a/nss/XXX-lookup.c
 +++ b/nss/XXX-lookup.c
-@@ -29,7 +29,7 @@
+@@ -16,6 +16,7 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
++#include <assert.h>
+ #include "nsswitch.h"
+ 
+ /*******************************************************************\
+@@ -29,7 +30,7 @@
  |* ALTERNATE_NAME - name of another service which is examined in   *|
  |*                  case DATABASE_NAME is not found                *|
  |* 								   *|
@@ -15132,8 +15140,19 @@ index f1c97f7c8e..dbc87868dd 100644
  |* 								   *|
  \*******************************************************************/
  
+@@ -55,6 +56,10 @@ DB_LOOKUP_FCT (nss_action_list *ni, const char *fct_name, const char *fct2_name,
+ 
+   *ni = DATABASE_NAME_SYMBOL;
+ 
++  /* We want to know about it if we've somehow got a NULL action list;
++   in the past, we had bad state if seccomp interfered with setup. */
++  assert(*ni != NULL);
++
+   return __nss_lookup (ni, fct_name, fct2_name, fctp);
+ }
+ libc_hidden_def (DB_LOOKUP_FCT)
 diff --git a/nss/nss_database.c b/nss/nss_database.c
-index ab121cb371..54561f0328 100644
+index ab121cb371..e807e9d84c 100644
 --- a/nss/nss_database.c
 +++ b/nss/nss_database.c
 @@ -80,7 +80,7 @@ enum nss_database_default
@@ -15154,6 +15173,54 @@ index ab121cb371..54561f0328 100644
        break;
  
      case nss_database_default_files:
+@@ -420,23 +420,32 @@ nss_database_check_reload_and_get (struct nss_database_state *local,
+       return true;
+     }
+ 
+-  /* Before we reload, verify that "/" hasn't changed.  We assume that
+-     errors here are very unlikely, but the chance that we're entering
+-     a container is also very unlikely, so we err on the side of both
+-     very unlikely things not happening at the same time.  */
+-  if (__stat64_time64 ("/", &str) != 0
+-      || (local->root_ino != 0
+-	  && (str.st_ino != local->root_ino
+-	      ||  str.st_dev != local->root_dev)))
++  int stat_rv = __stat64_time64 ("/", &str);
++
++  if (local->data.services[database_index] != NULL)
+     {
+-      /* Change detected; disable reloading and return current state.  */
+-      atomic_store_release (&local->data.reload_disabled, 1);
+-      *result = local->data.services[database_index];
+-      __libc_lock_unlock (local->lock);
+-      return true;
++      /* Before we reload, verify that "/" hasn't changed.  We assume that
++        errors here are very unlikely, but the chance that we're entering
++        a container is also very unlikely, so we err on the side of both
++        very unlikely things not happening at the same time.  */
++      if (stat_rv != 0
++	  || (local->root_ino != 0
++	      && (str.st_ino != local->root_ino
++		  ||  str.st_dev != local->root_dev)))
++	{
++        /* Change detected; disable reloading and return current state.  */
++        atomic_store_release (&local->data.reload_disabled, 1);
++        *result = local->data.services[database_index];
++        __libc_lock_unlock (local->lock);
++        return true;
++      }
++    }
++  if (stat_rv == 0)
++    {
++      local->root_ino = str.st_ino;
++      local->root_dev = str.st_dev;
+     }
+-  local->root_ino = str.st_ino;
+-  local->root_dev = str.st_dev;
++
+   __libc_lock_unlock (local->lock);
+ 
+   /* Avoid overwriting the global configuration until we have loaded
 diff --git a/nss/nss_module.c b/nss/nss_module.c
 index b28cb94a6a..3a4a464256 100644
 --- a/nss/nss_module.c
@@ -29250,6 +29317,19 @@ index 9799dcdaa4..eccae2e4c6 100644
  	{
  	  /* The only state we keep is the copy of the thread attributes.  */
  	  __pthread_attr_destroy (data.attr);
+diff --git a/sysdeps/unix/sysv/linux/mq_timedreceive.c b/sysdeps/unix/sysv/linux/mq_timedreceive.c
+index 7f3a112d7f..1fc98752e7 100644
+--- a/sysdeps/unix/sysv/linux/mq_timedreceive.c
++++ b/sysdeps/unix/sysv/linux/mq_timedreceive.c
+@@ -41,7 +41,7 @@ ___mq_timedreceive_time64 (mqd_t mqdes, char *__restrict msg_ptr, size_t msg_len
+     {
+       int r = SYSCALL_CANCEL (mq_timedreceive_time64, mqdes, msg_ptr, msg_len,
+ 			      msg_prio, abs_timeout);
+-      if (r == 0 || errno != ENOSYS)
++      if (r >= 0 || errno != ENOSYS)
+ 	return r;
+       __set_errno (EOVERFLOW);
+       return -1;
 diff --git a/sysdeps/unix/sysv/linux/net/if_arp.h b/sysdeps/unix/sysv/linux/net/if_arp.h
 index 2a8933cde7..42910b7766 100644
 --- a/sysdeps/unix/sysv/linux/net/if_arp.h

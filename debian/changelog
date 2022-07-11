@@ -1,4 +1,4 @@
-glibc (2.34-0experimental5) UNRELEASED; urgency=medium
+glibc (2.34-0experimental5) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
@@ -74,7 +74,7 @@ glibc (2.34-0experimental5) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: XFAIL recently backports audit tests on
     MIPS.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 Jun 2022 13:26:45 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 11 Jul 2022 19:30:26 +0200
 
 glibc (2.34-0experimental4) experimental; urgency=medium
 

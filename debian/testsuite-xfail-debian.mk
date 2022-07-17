@@ -230,6 +230,9 @@ tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb1
 tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb2
 tests-unsupported += tst-dynarray-fail
 
+# This overflows pflocal with select requests
+tests-unsupported += tst-pthread_cancel-select-loop
+
 # We don't provide /proc/cpuinfo yet
 test-xfail-test-multiarch = yes
 test-xfail-tst-cpu-features-cpuinfo = yes

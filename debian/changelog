@@ -1,3 +1,10 @@
+glibc (2.33-9) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-htl-pthread-self-early.diff: Fix calling
+    pthread_self very early.  Closes: #1016106.
+
+ -- Samuel Thibault <sthibault@debian.org>  Wed, 27 Jul 2022 21:43:51 +0000
+
 glibc (2.33-8) unstable; urgency=medium
 
   [ Samuel Thibault ]

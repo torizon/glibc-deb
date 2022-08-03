@@ -52,6 +52,10 @@ glibc (2.34-0experimental6) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-dev.NEWS: New file to explain how to update
     programs to use the TI-RPC library instead of the Sun RPC one.  Closes:
     #1014735.
+  * debian/control.in/main: tighten build-dependency on g++-11 to get the fix
+    for GCC PR95115.
+  * debian/patches/riscv64/local-asin-acos-raise-invalid.diff: Drop now that
+    GCC is fixed.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 17 Jul 2022 19:47:05 +0200
 

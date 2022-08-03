@@ -96,8 +96,6 @@ mips/submitted-rld_map.diff
 
 powerpc/local-powerpc8xx-dcbz.diff
 
-riscv64/local-asin-acos-raise-invalid.diff
-
 sh4/local-fpscr_values.diff
 
 all/local-alias-et_EE.diff

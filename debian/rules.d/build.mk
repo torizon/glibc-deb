@@ -380,8 +380,8 @@ LOCALEDEF = I18NPATH=$(CURDIR)/localedata \
 	    localedef --$(DEB_HOST_ARCH_ENDIAN)-endian
 endif
 
-$(stamp)build_C.UTF-8: $(stamp)/build_libc
-	$(LOCALEDEF) --quiet -c -f UTF-8 -i C $(CURDIR)/build-tree/C.UTF-8
+$(stamp)build_C.utf8: $(stamp)/build_libc
+	$(LOCALEDEF) --quiet -c -f UTF-8 -i C $(CURDIR)/build-tree/C.utf8
 	touch $@
 
 $(stamp)build_locales-all: $(stamp)/build_libc

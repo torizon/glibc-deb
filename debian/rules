@@ -204,7 +204,7 @@ build-arch: $(stamp)info \
 	build-arch-post-check
 
 ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
-build-arch: $(stamp)build_C.UTF-8 \
+build-arch: $(stamp)build_C.utf8 \
 	$(stamp)build_locales-all
 endif
 

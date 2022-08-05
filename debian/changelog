@@ -31,6 +31,8 @@ glibc (2.35-0experimental0) UNRELEASED; urgency=medium
     - debian/patches/any/git-localedef-check-magic.patch: upstreamed.
     - debian/debhelper.in/libc-bin.{install,manpages}: stop installing
       catchsegv, removed upstream.  Closes: #775716, #946606.
+  * debian/sysdeps/{amd64,arm64,i386,x32}.mk: stop passing --enable-static-pie
+    to configure as it is now the default.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
 

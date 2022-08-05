@@ -34,6 +34,10 @@ glibc (2.35-0experimental0) UNRELEASED; urgency=medium
   * debian/sysdeps/{amd64,arm64,i386,x32}.mk: stop passing --enable-static-pie
     to configure as it is now the default.
   * debian/debhelper.in/libc-bin.install: install /usr/bin/ld.so in libc-bin.
+  * debian/rules.d/build.mk: remove the C.utf8 locale from locales-all to
+    avoid conflicts with the one in libc-bin. Unfortunately we can't use the
+    one build in locales-all for libc-bin, as locales-all currently can't be
+    cross-compiled.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
 

@@ -389,6 +389,8 @@ $(stamp)build_locales-all: $(stamp)/build_libc
 		objdir=$(DEB_BUILDDIRLIBC) \
 		install_root=$(CURDIR)/build-tree/locales-all \
 		localedata/install-locale-files LOCALEDEF="$(LOCALEDEF)"
+	# Remove the C.utf8 locale to avoid conflicts with the one in libc-bin
+	rm -fr $(CURDIR)/build-tree/locales-all/usr/lib/locale/C.utf8
 	rdfind -outputname /dev/null -makesymlinks true -removeidentinode false \
 		$(CURDIR)/build-tree/locales-all/usr/lib/locale
 	symlinks -r -s -c $(CURDIR)/build-tree/locales-all/usr/lib/locale

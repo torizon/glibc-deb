@@ -35,7 +35,6 @@ Build-Profiles: <!stage1>
 Description: GNU C Library: Binaries
  This package contains utility programs related to the GNU C Library.
  .
-  * catchsegv: catch segmentation faults in programs
   * getconf: query system configuration variables
   * getent: get entries from administrative databases
   * iconv, iconvconfig: convert between character encodings

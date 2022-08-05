@@ -1,3 +1,39 @@
+glibc (2.35-0experimental0) UNRELEASED; urgency=medium
+
+  * New upstream release:
+    - Fixes performance issues in dynamic loader.  Closes: #896008.
+    - debian/symbols.wildcard: add 2.35.
+    - debian/patches/localedata/locale-C.diff: upstreamed.
+    - debian/patches/alpha/local-string-functions.diff: rebased.
+    - debian/patches/hurd-i386/git-drop-rmh.diff: upstreamed.
+    - debian/patches/hurd-i386/git-AT_NO_AUTOMOUNT.diff: upstreamed.
+    - debian/patches/hurd-i386/git-get_errlist.diff: upstreamed.
+    - debian/patches/hurd-i386/git-msync.diff: upstreamed.
+    - debian/patches/hurd-i386/git-htl-init_sigset.diff: upstreamed.
+    - debian/patches/hurd-i386/git-machrules-chk_fail.diff: upstreamed.
+    - debian/patches/hurd-i386/git-random-getrandom.diff: upstreamed.
+    - debian/patches/hurd-i386/git-lib-map.diff: upstreamed.
+    - debian/patches/hurd-i386/git-large-text.diff: upstreamed.
+    - debian/patches/hurd-i386/git-get_dtable.diff: upstreamed.
+    - debian/patches/hurd-i386/git-auth-leak.diff: upstreamed.
+    - debian/patches/hurd-i386/git-nuke_ports_on_exec.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ttydefaults.diff: upstreamed.
+    - debian/patches/hurd-i386/git-const.diff: upstreamed.
+    - debian/patches/hurd-i386/git-pthread_kill_exited.diff: upstreamed.
+    - debian/patches/hurd-i386/git-reply_bogus.diff: upstreamed.
+    - debian/patches/hurd-i386/tg-EIEIO-fr.diff: upstreamed.
+    - debian/patches/hurd-i386/tg-EGREGIOUS-fr.diff: upstreamed.
+    - debian/patches/hurd-i386/local-tls-ie-align.diff: dropped, obsolete.
+    - debian/patches/kfreebsd/submitted-auxv.diff: rebased.
+    - debian/patches/mips/submitted-rld_map.diff: rebased.
+    - debian/patches/all/submitted-po-fr-fixes.diff: upstreamed.
+    - debian/patches/any/local-ldconfig-ignore-ld.so.diff: rebased.
+    - debian/patches/any/git-localedef-check-magic.patch: upstreamed.
+    - debian/debhelper.in/libc-bin.{install,manpages}: stop installing
+      catchsegv, removed upstream.  Closes: #775716, #946606.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
+
 glibc (2.34-0experimental6) UNRELEASED; urgency=medium
 
   [ Samuel Thibault ]

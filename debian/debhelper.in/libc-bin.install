@@ -5,7 +5,6 @@ debian/local/etc/nsswitch.conf usr/share/libc-bin
 debian/local/etc/nss etc/default
 posix/gai.conf etc
 debian/tmp-libc/sbin/ldconfig sbin
-debian/tmp-libc/usr/bin/catchsegv usr/bin
 debian/tmp-libc/usr/bin/getconf usr/bin
 debian/tmp-libc/usr/bin/getent usr/bin
 debian/tmp-libc/usr/bin/iconv usr/bin

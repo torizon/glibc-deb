@@ -38,6 +38,9 @@ glibc (2.35-0experimental0) UNRELEASED; urgency=medium
     avoid conflicts with the one in libc-bin. Unfortunately we can't use the
     one build in locales-all for libc-bin, as locales-all currently can't be
     cross-compiled.
+  * debian/rules.d/debhelper.mk: do not offer C.UTF-8 in the list of locales
+    that can be generated through the debconf template, as it is already
+    provided by libc-bin.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
 

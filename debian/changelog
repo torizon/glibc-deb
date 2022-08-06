@@ -1,5 +1,6 @@
 glibc (2.35-0experimental0) UNRELEASED; urgency=medium
 
+  [ Aurelien Jarno ]
   * New upstream release:
     - Fixes performance issues in dynamic loader.  Closes: #896008.
     - debian/symbols.wildcard: add 2.35.
@@ -43,6 +44,11 @@ glibc (2.35-0experimental0) UNRELEASED; urgency=medium
     provided by libc-bin.
   * debian/testsuite-xfail-debian.mk: add new math tests that are also
     affected by the Octeon 3 and XBurst tininess detection.
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/local-fix-nss.diff: Refresh.
+  * debian/patches/hurd-i386/submitted-net.diff: Refresh.
+  * debian/patches/hurd-i386/tg-bits_atomic.h_multiple_threads.diff: Refresh.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
 

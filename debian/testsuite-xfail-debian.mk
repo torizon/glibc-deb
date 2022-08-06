@@ -788,18 +788,30 @@ test-xfail-check-execstack = yes
 # Theses failures are due to a bug in the cvt.s.d instruction on some FPU
 # (at least Octeon 3 and XBurst). The tininess detection is done on a
 # before-rounding basis instead of an after-rounding basis.
-test-xfail-test-float-fma = yes
-test-xfail-test-float-finite-fma = yes
-test-xfail-test-float32-fma = yes
-test-xfail-test-float32-finite-fma = yes
 test-xfail-test-float-double-add = yes
+test-xfail-test-float-double-div = yes
+test-xfail-test-float-double-fma = yes
+test-xfail-test-float-double-mul = yes
 test-xfail-test-float-double-sub = yes
+test-xfail-test-float-finite-fma = yes
+test-xfail-test-float-fma = yes
 test-xfail-test-float-ldouble-add = yes
+test-xfail-test-float-ldouble-div = yes
+test-xfail-test-float-ldouble-fma = yes
+test-xfail-test-float-ldouble-mul = yes
 test-xfail-test-float-ldouble-sub = yes
+test-xfail-test-float32-finite-fma = yes
 test-xfail-test-float32-float32x-add = yes
+test-xfail-test-float32-float32x-div = yes
+test-xfail-test-float32-float32x-fma = yes
+test-xfail-test-float32-float32x-mul = yes
 test-xfail-test-float32-float32x-sub = yes
 test-xfail-test-float32-float64-add = yes
+test-xfail-test-float32-float64-div = yes
+test-xfail-test-float32-float64-fma = yes
+test-xfail-test-float32-float64-mul = yes
 test-xfail-test-float32-float64-sub = yes
+test-xfail-test-float32-fma = yes
 
 # Theses failures are due to a bug in the cvt.d.s instruction on some FPU
 # (at least Octeon 3 and XBurst). The qNaN payload is not preserved in

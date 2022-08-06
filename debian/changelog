@@ -41,6 +41,8 @@ glibc (2.35-0experimental0) UNRELEASED; urgency=medium
   * debian/rules.d/debhelper.mk: do not offer C.UTF-8 in the list of locales
     that can be generated through the debconf template, as it is already
     provided by libc-bin.
+  * debian/testsuite-xfail-debian.mk: add new math tests that are also
+    affected by the Octeon 3 and XBurst tininess detection.
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 05 Aug 2022 12:23:09 +0200
 

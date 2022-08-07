@@ -110,7 +110,6 @@ endif
 		--disable-crypt \
 		--enable-stackguard-randomization \
 		--enable-stack-protector=strong \
-		--with-default-link=no \
 		--with-pkgversion="Debian GLIBC $(DEB_VERSION)" \
 		--with-bugurl="http://www.debian.org/Bugs/" \
 		$(if $(filter $(pt_chown),yes),--enable-pt_chown) \
@@ -339,15 +338,24 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	  esac; \
 	fi
 
-	# Create the ld.so symlink in the slibdir directory, otherwise it will get
-	# created later by ldconfig, leading to a dangling symlink when the package
-	# is removed
-	ld_so="$$(ls debian/tmp-$(curpass)/$(call xx,slibdir)/ld-*.so)" ; \
-	soname="$$(LANG=C LC_ALL=C readelf -d $$ld_so | grep 'Library soname:' | sed -e 's/.*Library soname: \[\(.*\)\]/\1/g')" ; \
-	target="$$(basename $$ld_so)" ; \
-	link_name="debian/tmp-$(curpass)/$(call xx,slibdir)/$$soname" ; \
-	ln -sf $$target $$link_name
-	
+	# Move the dynamic linker into the slibdir location and replace it with
+	# a symlink. This is needed:
+	# - for TCC which is not able to find the dynamic linker if it is not
+	#   in a lib directory.
+	# - for co-installation for multiarch and biarch libraries
+	# In case slibdir and rtlddir are the same directory (for instance on
+	# libc6-amd64:i386), we instead rename the dynamic linker to ld.so
+	rtld_so=`LANG=C LC_ALL=C readelf -l debian/tmp-$(curpass)/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
+	rtlddir=$(call xx,rtlddir) ; \
+	slibdir=$(call xx,slibdir) ; \
+	if [ "$$rtlddir" = "$$slibdir" ] ; then \
+	  mv debian/tmp-$(curpass)$$slibdir/$$rtld_so debian/tmp-$(curpass)$$slibdir/ld.so ; \
+	  ln -s $$slibdir/ld.so debian/tmp-$(curpass)$$slibdir/$$rtld_so ; \
+	else \
+	  mv debian/tmp-$(curpass)$$rtlddir/$$rtld_so debian/tmp-$(curpass)$$slibdir ; \
+	  ln -s $$slibdir/$$rtld_so debian/tmp-$(curpass)$$rtlddir/$$rtld_so ; \
+	fi
+
 	$(call xx,extra_install)
 endif
 	touch $@
@@ -372,8 +380,8 @@ LOCALEDEF = I18NPATH=$(CURDIR)/localedata \
 	    localedef --$(DEB_HOST_ARCH_ENDIAN)-endian
 endif
 
-$(stamp)build_C.UTF-8: $(stamp)/build_libc
-	$(LOCALEDEF) --quiet -c -f UTF-8 -i C $(CURDIR)/build-tree/C.UTF-8
+$(stamp)build_C.utf8: $(stamp)/build_libc
+	$(LOCALEDEF) --quiet -c -f UTF-8 -i C $(CURDIR)/build-tree/C.utf8
 	touch $@
 
 $(stamp)build_locales-all: $(stamp)/build_libc

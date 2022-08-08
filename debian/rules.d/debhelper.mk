@@ -52,10 +52,12 @@ endif
 
 	dh_compress -p$(curpass)
 	# Keep the setuid on pt_chown (non-Linux only).
+	dh_fixperms -p$(curpass) -Xpt_chown
 	# libc.so prints useful version information when executed.
-	dh_fixperms -p$(curpass) -Xpt_chown -Xlibc.so. -Xld.so
+	find debian/$(curpass) -type f -name libc.so.* -exec chmod a+x '{}' ';'
 	# Use this instead of -X to dh_fixperms so that we can use
 	# an unescaped regular expression.  ld.so must be executable;
+	find debian/$(curpass) -type f -name 'ld.so' -exec chmod a+x '{}' ';'
 	find debian/$(curpass) -type f -regex '.*/ld.*\.so\.[0-9]' -exec chmod a+x '{}' ';'
 	dh_makeshlibs -Xgconv/ -p$(curpass) -V "$(call xx,shlib_dep)"
 	# Add relevant udeb: lines in shlibs files

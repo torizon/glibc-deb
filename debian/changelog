@@ -5,6 +5,9 @@ glibc (2.34-2) UNRELEASED; urgency=medium
   * debian/control.in/libc: provides libc-dev as versioned.
   * debian/control.in/libc: Add breaks in libc6-dev against catch (<=
     1.12.2-0.1).  See: #993515.
+  * debian/rules.d/debhelper.mk: Do not exclude libc.so and ld.so from
+    dh_fixperms, explicitly change the permissions afterwards.  Closes:
+    #1010233.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 08 Aug 2022 08:02:51 +0200
 

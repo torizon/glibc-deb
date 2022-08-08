@@ -52,6 +52,27 @@ glibc (2.35-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 07 Aug 2022 22:25:02 +0200
 
+glibc (2.34-2) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/control.in/libc: provides libc-dev as versioned.
+  * debian/control.in/libc: Add breaks in libc6-dev against catch (<=
+    1.12.2-0.1).  See: #993515.
+  * debian/rules.d/debhelper.mk: Do not exclude libc.so and ld.so from
+    dh_fixperms, explicitly change the permissions afterwards.  Closes:
+    #1010233.
+  * debian/control.in/libc: temporary remove the breaks against
+    heimdal-multidev to break the build-dependency loop between heimdal and
+    openldap.
+  * debian/debhelper.in/libc-udeb.install: ship the dynamic linker in
+    libc6-udeb.
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update hurd-i386 xfails.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 08 Aug 2022 15:24:00 +0200
+
 glibc (2.34-1) unstable; urgency=medium
 
   [ Samuel Thibault ]

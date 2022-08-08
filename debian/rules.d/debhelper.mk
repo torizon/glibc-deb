@@ -95,6 +95,8 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_UDEB_PACKAGES)): debhelper $(patsubst %,
 
 	dh_compress -p$(curpass)
 	dh_fixperms -p$(curpass)
+	find debian/$(curpass) -type f -name libc.so.* -exec chmod a+x '{}' ';'
+	find debian/$(curpass) -type f -regex '.*/ld.*\.so\.[0-9]' -exec chmod a+x '{}' ';'
 	dh_installdeb -p$(curpass)
 	# dh_shlibdeps -p$(curpass)
 	dh_gencontrol -p$(curpass)

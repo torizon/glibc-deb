@@ -12,6 +12,9 @@ glibc (2.34-2) UNRELEASED; urgency=medium
     heimdal-multidev to break the build-dependency loop between heimdal and
     openldap.
 
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update hurd-i386 xfails.
+
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 08 Aug 2022 08:02:51 +0200
 
 glibc (2.34-1) unstable; urgency=medium

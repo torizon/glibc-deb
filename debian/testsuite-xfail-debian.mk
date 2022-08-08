@@ -360,6 +360,12 @@ test-xfail-test-cxa_atexit-race2 = yes
 test-xfail-tst-itimer = yes
 test-xfail-tst-wait3 = yes
 test-xfail-test-fesetexcept-traps = yes
+test-xfail-tst-dlinfo-phdr = yes
+test-xfail-tst-tls-allocation-failure-static-patched = yes
+test-xfail-tst-cancel29 = yes
+
+# fixed in 2.34
+test-xfail-tst-canon-bz26341 = yes
 
 # new in 2.35
 test-xfail-tst-compathooks-on = yes

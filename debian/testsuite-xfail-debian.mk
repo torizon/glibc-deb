@@ -364,9 +364,6 @@ test-xfail-tst-dlinfo-phdr = yes
 test-xfail-tst-tls-allocation-failure-static-patched = yes
 test-xfail-tst-cancel29 = yes
 
-# fixed in 2.34
-test-xfail-tst-canon-bz26341 = yes
-
 # new in 2.35
 test-xfail-tst-compathooks-on = yes
 test-xfail-tst-sched_getaffinity = yes
@@ -383,6 +380,7 @@ test-xfail-tst-audit11 = yes
 test-xfail-tst-audit12 = yes
 test-xfail-tst-auditmany = yes
 test-xfail-tst-timespec_getres = yes
+test-xfail-tst-canon-bz26341 = yes
 # upstreamed in 2.35
 test-xfail-tst-mallocfork2 = yes
 test-xfail-tst-mallocfork2-mcheck = yes

@@ -108,10 +108,10 @@ index 596fa68376..7fbe85719a 100644
  
  # Generate .dT files as we compile.
 diff --git a/NEWS b/NEWS
-index 3c610744c9..04fe72b5f6 100644
+index 3c610744c9..71a3ab0ed4 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -4,6 +4,115 @@ See the end for copying conditions.
+@@ -4,6 +4,116 @@ See the end for copying conditions.
  
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
@@ -223,6 +223,7 @@ index 3c610744c9..04fe72b5f6 100644
 +  [29211] libc: __open_catalog is not y2038 aware
 +  [29213] libc: gconv_parseconfdir is not y2038 aware
 +  [29214] nptl: pthread_setcanceltype fails to set type
++  [29446] _dlopen now ignores dl_caller argument in static mode
 +
  
  Version 2.34
@@ -4565,7 +4566,7 @@ index c171c8953d..2309224eb8 100644
    else
      return dlmopen_implementation (nsid, file, mode, RETURN_ADDRESS (0));
 diff --git a/dlfcn/dlopen.c b/dlfcn/dlopen.c
-index e04b374b82..9c59c751c4 100644
+index e04b374b82..739d17baaf 100644
 --- a/dlfcn/dlopen.c
 +++ b/dlfcn/dlopen.c
 @@ -75,7 +75,7 @@ dlopen_implementation (const char *file, int mode, void *dl_caller)
@@ -4577,6 +4578,15 @@ index e04b374b82..9c59c751c4 100644
      return GLRO (dl_dlfcn_hook)->dlopen (file, mode, RETURN_ADDRESS (0));
    else
      return dlopen_implementation (file, mode, RETURN_ADDRESS (0));
+@@ -90,7 +90,7 @@ compat_symbol (libdl, ___dlopen, dlopen, GLIBC_2_1);
+ void *
+ __dlopen (const char *file, int mode, void *dl_caller)
+ {
+-  return dlopen_implementation (file, mode, RETURN_ADDRESS (0));
++  return dlopen_implementation (file, mode, dl_caller);
+ }
+ 
+ void *
 diff --git a/dlfcn/dlopenold.c b/dlfcn/dlopenold.c
 index 9115501ac1..c2f2a42194 100644
 --- a/dlfcn/dlopenold.c
@@ -29962,7 +29972,7 @@ index 12f91a20d3..161e83c7e3 100644
  	beqz		a0,L (invalid)	/* No NULL function pointers.  */
  	beqz		a1,L (invalid)	/* No NULL stack pointers.  */
 diff --git a/sysdeps/unix/sysv/linux/riscv/rv32/arch-syscall.h b/sysdeps/unix/sysv/linux/riscv/rv32/arch-syscall.h
-index 70854bb9e3..bf4be80f8d 100644
+index 70854bb9e3..202520ee25 100644
 --- a/sysdeps/unix/sysv/linux/riscv/rv32/arch-syscall.h
 +++ b/sysdeps/unix/sysv/linux/riscv/rv32/arch-syscall.h
 @@ -16,6 +16,7 @@
@@ -29981,7 +29991,15 @@ index 70854bb9e3..bf4be80f8d 100644
  #define __NR_get_mempolicy 236
  #define __NR_get_robust_list 100
  #define __NR_getcpu 168
-@@ -171,6 +173,7 @@
+@@ -120,6 +122,7 @@
+ #define __NR_mbind 235
+ #define __NR_membarrier 283
+ #define __NR_memfd_create 279
++#define __NR_memfd_secret 447
+ #define __NR_migrate_pages 238
+ #define __NR_mincore 232
+ #define __NR_mkdirat 34
+@@ -171,6 +174,7 @@
  #define __NR_preadv2 286
  #define __NR_prlimit64 261
  #define __NR_process_madvise 440
@@ -29989,7 +30007,7 @@ index 70854bb9e3..bf4be80f8d 100644
  #define __NR_process_vm_readv 270
  #define __NR_process_vm_writev 271
  #define __NR_pselect6_time64 413
-@@ -179,6 +182,7 @@
+@@ -179,6 +183,7 @@
  #define __NR_pwritev 70
  #define __NR_pwritev2 287
  #define __NR_quotactl 60
@@ -29997,7 +30015,7 @@ index 70854bb9e3..bf4be80f8d 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
-@@ -224,6 +228,7 @@
+@@ -224,6 +229,7 @@
  #define __NR_sendmsg 211
  #define __NR_sendto 206
  #define __NR_set_mempolicy 237
@@ -30015,7 +30033,7 @@ index 94ca64c43d..5ad4c81d12 100644
  GLIBC_2.33 _r_debug D 0x14
 +GLIBC_2.34 __rtld_version_placeholder F
 diff --git a/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h b/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h
-index 83b9f31aba..d656aedcc2 100644
+index 83b9f31aba..4e65f337d4 100644
 --- a/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h
 +++ b/sysdeps/unix/sysv/linux/riscv/rv64/arch-syscall.h
 @@ -62,6 +62,7 @@
@@ -30026,7 +30044,15 @@ index 83b9f31aba..d656aedcc2 100644
  #define __NR_get_mempolicy 236
  #define __NR_get_robust_list 100
  #define __NR_getcpu 168
-@@ -179,6 +180,7 @@
+@@ -126,6 +127,7 @@
+ #define __NR_mbind 235
+ #define __NR_membarrier 283
+ #define __NR_memfd_create 279
++#define __NR_memfd_secret 447
+ #define __NR_migrate_pages 238
+ #define __NR_mincore 232
+ #define __NR_mkdirat 34
+@@ -179,6 +181,7 @@
  #define __NR_preadv2 286
  #define __NR_prlimit64 261
  #define __NR_process_madvise 440
@@ -30034,7 +30060,7 @@ index 83b9f31aba..d656aedcc2 100644
  #define __NR_process_vm_readv 270
  #define __NR_process_vm_writev 271
  #define __NR_pselect6 72
-@@ -187,6 +189,7 @@
+@@ -187,6 +190,7 @@
  #define __NR_pwritev 70
  #define __NR_pwritev2 287
  #define __NR_quotactl 60
@@ -30042,7 +30068,7 @@ index 83b9f31aba..d656aedcc2 100644
  #define __NR_read 63
  #define __NR_readahead 213
  #define __NR_readlinkat 78
-@@ -232,6 +235,7 @@
+@@ -232,6 +236,7 @@
  #define __NR_sendmsg 211
  #define __NR_sendto 206
  #define __NR_set_mempolicy 237
@@ -30690,7 +30716,7 @@ index db88938b3a..f0e0d2f27f 100644
  extern int __prctl_time64 (int __option,d ...) __THROW;
  #  define ioctl __prctl_time64
 diff --git a/sysdeps/unix/sysv/linux/syscall-names.list b/sysdeps/unix/sysv/linux/syscall-names.list
-index 89c5895b9b..95370e2ec5 100644
+index 89c5895b9b..9b285d898d 100644
 --- a/sysdeps/unix/sysv/linux/syscall-names.list
 +++ b/sysdeps/unix/sysv/linux/syscall-names.list
 @@ -21,8 +21,8 @@
@@ -30699,8 +30725,8 @@ index 89c5895b9b..95370e2ec5 100644
  
 -# The list of system calls is current as of Linux 5.13.
 -kernel 5.13
-+# The list of system calls is current as of Linux 5.18.
-+kernel 5.18
++# The list of system calls is current as of Linux 5.19.
++kernel 5.19
  
  FAST_atomic_update
  FAST_cmpxchg

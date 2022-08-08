@@ -11,6 +11,8 @@ glibc (2.34-2) UNRELEASED; urgency=medium
   * debian/control.in/libc: temporary remove the breaks against
     heimdal-multidev to break the build-dependency loop between heimdal and
     openldap.
+  * debian/debhelper.in/libc-udeb.install: ship the dynamic linker in
+    libc6-udeb.
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd-i386 xfails.

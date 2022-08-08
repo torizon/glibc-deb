@@ -4,6 +4,11 @@ glibc (2.35-0experimental2) UNRELEASED; urgency=medium
   * debian/control.in/libc: add a breaks against chrony (<< 4.2-3~). See
     #1017790.
 
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update tests results for hurd-i386.
+
+ -- Samuel Thibault <sthibault@debian.org>  Mon, 08 Aug 2022 00:41:56 +0000
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 21 Aug 2022 11:42:47 +0200
 
 glibc (2.35-0experimental1) experimental; urgency=medium

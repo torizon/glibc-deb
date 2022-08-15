@@ -1,3 +1,9 @@
+glibc (2.34-4) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-ipv6.diff: Add ipv6 RFC options.
+
+ -- Samuel Thibault <sthibault@debian.org>  Sat, 13 Aug 2022 23:07:17 +0200
+
 glibc (2.34-3) unstable; urgency=medium
 
   [ Aurelien Jarno ]

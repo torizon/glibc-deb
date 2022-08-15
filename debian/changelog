@@ -1,6 +1,8 @@
 glibc (2.35-0experimental1) UNRELEASED; urgency=medium
 
-  * 
+  [ Aurelien Jarno ]
+  * debian/rules.d/build.mk: use the new --with-timeoutfactor configure
+    option.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 08 Aug 2022 15:36:55 +0200
 

@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-export LC_ALL=C
 
 type=$1
 preversion=$2
@@ -22,6 +21,10 @@ then
     else
         USE_DEBCONF=
     fi
+
+    # Only change LC_ALL after loading debconf to ensure the debconf templates
+    # are properly localized.
+    export LC_ALL=C
 
     # See if LD_LIBRARY_PATH contains the traditional /lib, but not the
     # multiarch path

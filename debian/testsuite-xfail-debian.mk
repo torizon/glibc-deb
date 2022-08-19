@@ -233,6 +233,12 @@ tests-unsupported += tst-dynarray-fail
 # This overflows pflocal with select requests
 tests-unsupported += tst-pthread_cancel-select-loop
 
+# These stay stuck
+tests-unsupported += tst-audit14
+tests-unsupported += tst-audit14a
+tests-unsupported += tst-audit15
+tests-unsupported += tst-audit16
+
 # We don't provide /proc/cpuinfo yet
 test-xfail-test-multiarch = yes
 test-xfail-tst-cpu-features-cpuinfo = yes
@@ -370,7 +376,7 @@ test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 test-xfail-tst-p_align3 = yes
-test-xfail-tst-spawn6 = yes
+tests-unsupported += tst-spawn6
 
 # fixed in 2.35
 test-xfail-tst-safe-linking = yes

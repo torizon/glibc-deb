@@ -55,6 +55,7 @@ hurd-i386/git-spawni-reauth.diff
 hurd-i386/git-htl-pthread-self-early.diff
 hurd-i386/git-ipv6.diff
 hurd-i386/git-ip_mreqn.diff
+hurd-i386/git-bootstrap-enable_secure.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

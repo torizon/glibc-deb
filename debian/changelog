@@ -17,6 +17,7 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/debhelper.in/libc-dev.NEWS: fix a typo.
   * debian/control.in/libc: drop duplicate breaks entry.
+  * debian/patches/*: fix typos in patch description.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 
@@ -17967,4 +17968,3 @@ glibc (2.1-1) unstable; urgency=low
   * Removed hurd-utimes patch, it is integrated upstream.
 
  -- Joel Klecker <espy@debian.org>  Sat,  6 Feb 1999 12:26:10 -0800
-

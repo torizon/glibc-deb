@@ -8,8 +8,8 @@ glibc (2.34-1) unstable; urgency=medium
   In order to link new binaries, the rpcsvc-proto package (a dependency of
   libc6-dev) provides rpcgen and several rpcsvc header files and RPC protocol
   definitions from Sun RPC sources that were previously shipped by glibc, and
-  an an alternative RPC library shall be used. The most used alternative
-  library is TI-RPC, the corresponding development package is libtirpc-dev.
+  an alternative RPC library shall be used. The most used alternative library
+  is TI-RPC, the corresponding development package is libtirpc-dev.
 
   Here are the necessary steps to switch an existing program to use the TI-RPC
   library:

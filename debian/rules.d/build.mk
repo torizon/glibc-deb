@@ -173,7 +173,7 @@ $(stamp)check_%: $(stamp)build_%
 	    echo "|     Encountered regressions that don't match expected failures.     |" ; \
 	    echo "+---------------------------------------------------------------------+" ; \
 	    grep -E '^FAIL:' $(DEB_BUILDDIR)/tests.sum | sort ; \
-	    if ! dpkg-parsechangelog | egrep -q '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
+	    if ! echo $(DEB_VERSION) | egrep -q '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
 	        touch $@_failed ; \
 	    fi ; \
 	  else \
@@ -270,7 +270,7 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 	# Install the Python pretty printers
 	mkdir -p $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)
 	perl -pe 'BEGIN {undef $$/; open(IN, "$(DEB_BUILDDIR)/nptl/nptl_lock_constants.py"); $$j=<IN>;} s/from nptl_lock_constants import \*/$$j/g;' \
-		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/libpthread-$(GLIBC_VERSION).so-gdb.py
+		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/libpthread-$(DEB_VERSION_UPSTREAM).so-gdb.py
 endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
@@ -402,8 +402,8 @@ $(stamp)source: $(stamp)patch
 		--mode=go=rX,u+rw,a-s \
 		--clamp-mtime --mtime "@$(SOURCE_DATE_EPOCH)" \
 		--owner=root --group=root --numeric-owner \
-		--xform='s=^=glibc-$(GLIBC_VERSION)/=' \
-		-f $(CURDIR)/$(build-tree)/glibc-$(GLIBC_VERSION).tar.xz
+		--xform='s=^=glibc-$(DEB_VERSION_UPSTREAM)/=' \
+		-f $(CURDIR)/$(build-tree)/glibc-$(DEB_VERSION_UPSTREAM).tar.xz
 	mkdir -p debian/glibc-source/usr/src/glibc
 	tar cf - --files-from debian/glibc-source.filelist \
 		--clamp-mtime --mtime "@$(SOURCE_DATE_EPOCH)" \

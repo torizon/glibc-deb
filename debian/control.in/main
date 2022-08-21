@@ -13,7 +13,7 @@ Build-Depends: gettext, dpkg (>= 1.18.7), dpkg-dev (>= 1.17.14), xz-utils, file,
  @GPP_CROSS_DEP@
  python3:native,
  libidn2-0 (>= 2.0.5~) <!nocheck>,
- libc-bin (>= @GLIBC_VERSION@) <cross>,
+ libc-bin (>= @DEB_VERSION_UPSTREAM@) <cross>,
  libgd-dev <!stage1> <!stage2>,
 Build-Depends-Indep: perl, po-debconf (>= 1.0)
 Maintainer: GNU Libc Maintainers <debian-glibc@lists.debian.org>
@@ -49,7 +49,7 @@ Section: libdevel
 Priority: optional
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: manpages, manpages-dev, libc-devtools (>> @GLIBC_VERSION@)
+Recommends: manpages, manpages-dev, libc-devtools (>> @DEB_VERSION_UPSTREAM@)
 Build-Profiles: <!stage1>
 Description: GNU C Library: Development binaries
  This package contains utility programs related to the GNU C Library
@@ -117,7 +117,7 @@ Package: locales
 Architecture: all
 Section: localization
 Priority: standard
-Depends: libc-bin (>> @GLIBC_VERSION@), libc-l10n (>> @GLIBC_VERSION@), ${misc:Depends}, debconf | debconf-2.0
+Depends: libc-bin (>> @DEB_VERSION_UPSTREAM@), libc-l10n (>> @DEB_VERSION_UPSTREAM@), ${misc:Depends}, debconf | debconf-2.0
 Build-Profiles: <!stage1>
 Description: GNU C Library: National Language (locale) data [support]
  Machine-readable data files, shared objects and programs used by the
@@ -134,7 +134,7 @@ Architecture: any
 Section: localization
 Priority: optional
 Multi-Arch: foreign
-Depends: libc-l10n (>> @GLIBC_VERSION@), ${misc:Depends}
+Depends: libc-l10n (>> @DEB_VERSION_UPSTREAM@), ${misc:Depends}
 Build-Profiles: <!stage1>
 Description: GNU C Library: Precompiled locale data
  This package contains the precompiled locale data for all supported locales.

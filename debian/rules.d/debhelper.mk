@@ -112,7 +112,7 @@ $(stamp)debhelper-common:
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nsscheck.sh"); $$j=<IN>;} s/__NSS_CHECK__/$$j/g;' \
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nohwcap.sh"); $$k=<IN>;} s/__NOHWCAP__/$$k/g;' \
 	      -e 'BEGIN {open(IN, "debian/tmp-libc/usr/share/i18n/SUPPORTED"); $$l = join("", grep { /UTF-8/ } <IN>);} s/__PROVIDED_LOCALES__/$$l/g;' \
-	      -e 's#GLIBC_VERSION#$(GLIBC_VERSION)#g;' \
+	      -e 's#DEB_VERSION_UPSTREAM#$(DEB_VERSION_UPSTREAM)#g;' \
 	      -e 's#CURRENT_VER#$(DEB_VERSION)#g;' \
 	      -e 's#BUILD-TREE#$(build-tree)#g;' \
 	      -e 's#LIBC#$(libc)#g;' \
@@ -140,7 +140,7 @@ ifeq ($(filter stage1 stage2,$(DEB_BUILD_PROFILES)),)
 	echo 'libcrypt-dev:Depends=libcrypt-dev' >> tmp.substvars
 	echo 'libnsl-dev:Depends=libnsl-dev' >> tmp.substvars
 	echo 'rpcsvc-proto:Depends=rpcsvc-proto' >> tmp.substvars
-	echo 'libc-dev:Breaks=$(libc)-dev-$(DEB_HOST_ARCH)-cross (<< $(GLIBC_VERSION)~)' >> tmp.substvars
+	echo 'libc-dev:Breaks=$(libc)-dev-$(DEB_HOST_ARCH)-cross (<< $(DEB_VERSION_UPSTREAM)~)' >> tmp.substvars
 endif
 	for pkg in $(DEB_ARCH_REGULAR_PACKAGES) $(DEB_INDEP_REGULAR_PACKAGES) $(DEB_UDEB_PACKAGES); do \
 	  cp tmp.substvars debian/$$pkg.substvars; \

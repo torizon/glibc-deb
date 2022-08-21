@@ -165,7 +165,7 @@ if [ "$type" = upgrade ]
 then
     if [ -n "$preversion" ] && [ -x "$(command -v ischroot)" ] && ! ischroot; then
 	# NSS authentication trouble guard
-	if dpkg --compare-versions "$preversion" lt GLIBC_VERSION; then
+	if dpkg --compare-versions "$preversion" lt DEB_VERSION_UPSTREAM; then
 	    if pidof xscreensaver xlockmore >/dev/null; then
 		if [ "$USE_DEBCONF" ] ; then
 		    db_version 2.0
@@ -271,7 +271,7 @@ then
                 fi
             fi
 
-	fi # end upgrading and $preversion lt GLIBC_VERSION
+	fi # end upgrading and $preversion lt DEB_VERSION_UPSTREAM
     fi # Upgrading
 
     # This will keep us from using hwcap libs (optimized) during an
@@ -282,7 +282,7 @@ fi
 #DEBHELPER#
 
 if [ -n "$preversion" ]; then
-    if dpkg --compare-versions "$preversion" lt GLIBC_VERSION; then
+    if dpkg --compare-versions "$preversion" lt DEB_VERSION_UPSTREAM; then
        # unconditionally wipe ld.so.cache on major version upgrades; this
        # makes those upgrades a bit slower, but is less error-prone than
        # hoping we notice every time the cache format is changed upstream

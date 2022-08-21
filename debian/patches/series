@@ -45,6 +45,7 @@ hurd-i386/git-const.diff
 hurd-i386/git-pthread_kill_exited.diff
 hurd-i386/git-reply_bogus.diff
 hurd-i386/git-global.diff
+hurd-i386/git-loadfail.diff
 
 # 2.36
 hurd-i386/pthread_key.diff

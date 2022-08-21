@@ -10,6 +10,8 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: Filter out tests that stay stuck.
   * debian/patches/hurd-i386/git-global.diff: Fix elf/global missing
     dependency.
+  * debian/patches/hurd-i386/git-loadfail.diff: Fix elf/loadfail missing
+    dependency.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

@@ -270,7 +270,7 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 	# Install the Python pretty printers
 	mkdir -p $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)
 	perl -pe 'BEGIN {undef $$/; open(IN, "$(DEB_BUILDDIR)/nptl/nptl_lock_constants.py"); $$j=<IN>;} s/from nptl_lock_constants import \*/$$j/g;' \
-		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/libpthread-$(DEB_VERSION_UPSTREAM).so-gdb.py
+		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/$(patsubst $(DEB_BUILDDIR)/%,%,$(wildcard $(DEB_BUILDDIR)/libc.so.*)-gdb.py)
 endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)

@@ -28,6 +28,8 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     following lintian changes.
   * debian/*: use /usr/share/dpkg/pkg-info.mk instead of parsing changelog
     with dpkg-parsechangelog.
+  * debian/rules.d/build.mk, debian/rules.d/debhelper.mk: update NPTL pretty
+    printer path following the merge of libpthread into libc.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

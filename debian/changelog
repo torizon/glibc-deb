@@ -21,6 +21,7 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   * debian/rules: drop trailing whitespaces.
   * debian/debhelper.in/glibc-source.lintian-overrides: drop unused overrides.
   * debian/debhelper.in/libc-bin.lintian-overrides: drop unused overrides.
+  * debian/source/lintian-overrides: drop unused overrides.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

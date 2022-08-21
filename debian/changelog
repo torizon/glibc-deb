@@ -19,6 +19,7 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   * debian/control.in/libc: drop duplicate breaks entry.
   * debian/patches/*: fix typos in patch description.
   * debian/rules: drop trailing whitespaces.
+  * debian/debhelper.in/glibc-source.lintian-overrides: drop unused overrides.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

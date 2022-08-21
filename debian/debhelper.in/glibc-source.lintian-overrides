@@ -2,9 +2,6 @@
 # of glibc-source binary package to allow re-use of it for cross
 # compiler packages.
 
-glibc-source: missing-dep-for-interpreter make => make | build-essential | dpkg-dev (usr/src/glibc/debian/rules)
-glibc-source: shell-script-fails-syntax-check usr/src/glibc/debian/debhelper.in/libc-otherbuild.postinst
-glibc-source: shell-script-fails-syntax-check usr/src/glibc/debian/debhelper.in/libc-otherbuild.postrm
 glibc-source: script-not-executable usr/src/glibc/debian/debhelper.in/libc-alt.preinst
 glibc-source: script-not-executable usr/src/glibc/debian/debhelper.in/libc-alt.postrm
 glibc-source: script-not-executable usr/src/glibc/debian/debhelper.in/libc-bin.postinst

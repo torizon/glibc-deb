@@ -58,7 +58,7 @@ DEB_BUILDDIR ?= $(build-tree)/$(DEB_HOST_ARCH)-$(curpass)
 DEB_BUILDDIRLIBC ?= $(build-tree)/$(DEB_HOST_ARCH)-libc
 
 GLIBC_SOURCES = $(filter-out debian $(shell basename $(stamp)) $(build-tree), $(wildcard *))
-		 
+
 # Support multiple makes at once based on number of processors
 ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
 NJOBS := -j $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
@@ -129,8 +129,8 @@ curpass = $(filter-out %_,$(subst _,_ ,$@))
 
 ifneq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
   DEB_ARCH_REGULAR_PACKAGES = $(libc)-dev
-  DEB_INDEP_REGULAR_PACKAGES = 
-  DEB_UDEB_PACKAGES = 
+  DEB_INDEP_REGULAR_PACKAGES =
+  DEB_UDEB_PACKAGES =
   ifeq ($(filter nocheck,$(DEB_BUILD_OPTIONS)),)
     DEB_BUILD_OPTIONS+=nocheck
   endif

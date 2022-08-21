@@ -24,6 +24,8 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   * debian/source/lintian-overrides: drop unused overrides.
   * debian/debhelper.in/libc-devtools.lintian-overrides: rename overrides
     following lintian changes.
+  * debian/debhelper.in/libc{,-otherbuild].lintian-overrides: rename overrides
+    following lintian changes.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

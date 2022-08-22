@@ -260,6 +260,6 @@ clean::
 	rm -f debian/*.README.Debian
 	rm -f debian/*.triggers
 	rm -f debian/*.service
-	rm -f debian/*.tmpfile
+	rm -f debian/*.tmpfiles
 
 	rm -f $(stamp)binaryinst*

@@ -293,6 +293,7 @@ test-xfail-tst-sprofil = yes
 # Missing RT signals.
 # And without rt_sigqueueinfo thread_expire_timer can't pass the si_code = SI_TIMER
 test-xfail-tst-timer4 = yes
+test-xfail-tst-timer5 = yes
 
 # This generates GiBs of data instead of sparse files, putting build box on its knees
 tests-unsupported += test-lfs
@@ -339,6 +340,9 @@ test-xfail-test-errno = yes
 # new in 2.27
 test-xfail-tst-tls1-static-non-pie = yes
 
+# new in 2.30
+test-xfail-tst-nss-files-hosts-long = yes
+
 # wants pthread_barrierattr_setpshared
 test-xfail-tst-pututxline-cache = yes
 test-xfail-tst-pututxline-lockfail = yes
@@ -357,6 +361,8 @@ test-xfail-tst-initfinilazyfail = yes
 # Mach misses getting adjtime without privileges
 test-xfail-tst-adjtime = yes
 test-xfail-tst-join15 = yes
+test-xfail-tst-reload1 = yes
+test-xfail-tst-reload2 = yes
 
 # fixed in 2.33
 test-xfail-tst-spawn4-compat = yes
@@ -365,6 +371,7 @@ test-xfail-tst-spawn4-compat = yes
 test-xfail-test-cxa_atexit-race2 = yes
 test-xfail-tst-itimer = yes
 test-xfail-tst-wait3 = yes
+test-xfail-tst-nss-compat1 = yes
 test-xfail-test-fesetexcept-traps = yes
 test-xfail-tst-dlinfo-phdr = yes
 test-xfail-tst-tls-allocation-failure-static-patched = yes
@@ -391,12 +398,7 @@ test-xfail-tst-canon-bz26341 = yes
 test-xfail-tst-mallocfork2 = yes
 test-xfail-tst-mallocfork2-mcheck = yes
 test-xfail-tst-mallocfork2-malloc-check = yes
-test-xfail-tst-nss-compat1 = yes
-test-xfail-tst-reload1 = yes
-test-xfail-tst-reload2 = yes
-test-xfail-tst-nss-files-hosts-long = yes
 test-xfail-tst-vfork3 = yes
-test-xfail-tst-timer5 = yes
 test-xfail-tst-mqueue10 = yes
 
 # actually never succeded

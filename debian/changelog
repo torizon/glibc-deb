@@ -31,6 +31,9 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     with dpkg-parsechangelog.
   * debian/rules.d/build.mk, debian/rules.d/debhelper.mk: update NPTL pretty
     printer path following the merge of libpthread into libc.
+  * debian/compat, debian/control.in/main, debian/rules.d/debhelper.mk:
+    increase debhelper compat to 13, the declarative way, and replace calls to
+    dh_systemd_enable and dh_systemd_start by dh_installsystemd.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

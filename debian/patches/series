@@ -32,6 +32,7 @@ hurd-i386/git-spawni-reauth.diff
 
 # 2.37
 hurd-i386/git-htl-pthread-self-early.diff
+hurd-i386/git-static-pie.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

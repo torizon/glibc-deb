@@ -6,6 +6,8 @@ glibc (2.35-0experimental2) UNRELEASED; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update tests results for hurd-i386.
+  * debian/patches/hurd-i386/git-static-pie.diff: Fix starting static binaries
+    with stack protection enabled.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 08 Aug 2022 00:41:56 +0000
 

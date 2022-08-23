@@ -18,6 +18,9 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     libc0.3-udeb.
 
   [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fixes generic brk system call emulation in __brk_call.  Closes:
+      #1017113.
   * debian/debhelper.in/libc-dev.NEWS: fix a typo.
   * debian/control.in/libc: drop duplicate breaks entry.
   * debian/patches/*: fix typos in patch description.

@@ -245,15 +245,11 @@ clean::
 	rm -f debian/*.postinst
 	rm -f debian/*.prerm
 	rm -f debian/*.postrm
-	rm -f debian/*.info
 	rm -f debian/*.init
 	rm -f debian/*.config
 	rm -f debian/*.templates
 	rm -f debian/*.dirs
 	rm -f debian/*.docs
-	rm -f debian/*.fixperms
-	rm -f debian/*.doc-base
-	rm -f debian/*.generated
 	rm -f debian/*.lintian-overrides
 	rm -f debian/*.NEWS
 	rm -f debian/*.README.Debian

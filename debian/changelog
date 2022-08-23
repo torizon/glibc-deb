@@ -44,6 +44,8 @@ glibc (2.34-5) UNRELEASED; urgency=medium
   * debian/rules, debian/rules.d/build.mk, debian/rules.d/debhelper.mk,
     debian/sysdeps/*.mk: install the main flavor into debian/tmp instead of
     debian/tmp-libc.
+  * debian/debhelper.in/*.install*, debian/rules.d/debhelper.mk: simplify
+    dh_install files by using the auto source/dest features of debhelper.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

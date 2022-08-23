@@ -114,9 +114,7 @@ $(stamp)debhelper-common:
 	      -e 'BEGIN {open(IN, "debian/tmp-libc/usr/share/i18n/SUPPORTED"); $$l = join("", grep { /UTF-8/ } <IN>);} s/__PROVIDED_LOCALES__/$$l/g;' \
 	      -e 's#DEB_VERSION_UPSTREAM#$(DEB_VERSION_UPSTREAM)#g;' \
 	      -e 's#CURRENT_VER#$(DEB_VERSION)#g;' \
-	      -e 's#BUILD-TREE#$(build-tree)#g;' \
 	      -e 's#LIBC#$(libc)#g;' \
-	      -e 's#DEB_HOST_ARCH#$(DEB_HOST_ARCH)#g;' \
 	      $$x > $$y ; \
 	  case $$y in \
 	    *.install) \
@@ -224,7 +222,6 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	    sed -e "s#LIBDIR#$$libdir#g" -i $$t; \
 	    sed -e "s#FLAVOR#$$curpass#g" -i $$t; \
 	    sed -e "s#RTLD_SO#$$rtld_so#g" -i $$t ; \
-	    sed -e "s#MULTIARCHDIR#$$DEB_HOST_MULTIARCH#g" -i $$t ; \
 	    $(if $(filter $(call xx,mvec),no),sed -e "/libmvec/d" -e "/libm-\*\.a/d" -i $$t ;) \
 	    $(if $(filter-out $(DEB_HOST_ARCH_OS),linux),sed -e "/gdb/d" -i $$t ;) \
 	  done ; \

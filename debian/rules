@@ -66,6 +66,9 @@ define unsetenv
 endef
 $(foreach v, CPPFLAGS CFLAGS CXXFLAGS LDFLAGS, $(if $(filter environment,$(origin $(v))),$(eval $(call unsetenv, $(v)))))
 
+# export debhelper substitution variables
+export $(build-tree)
+
 # Default setup
 GLIBC_PASSES ?= libc
 

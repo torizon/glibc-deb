@@ -18,4 +18,4 @@ debian/tmp-libc/usr/lib/pt_chown usr/lib
 debian/tmp-libc/usr/sbin/iconvconfig usr/sbin
 debian/tmp-libc/usr/bin/zdump usr/bin
 debian/tmp-libc/usr/sbin/zic usr/sbin
-BUILD-TREE/C.utf8 usr/lib/locale
+${env:build-tree}/C.utf8 usr/lib/locale

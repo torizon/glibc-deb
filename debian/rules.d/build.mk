@@ -174,7 +174,7 @@ $(stamp)check_%: $(stamp)build_%
 	    echo "|     Encountered regressions that don't match expected failures.     |" ; \
 	    echo "+---------------------------------------------------------------------+" ; \
 	    grep -E '^FAIL:' $(DEB_BUILDDIR)/tests.sum | sort ; \
-	    if ! dpkg-parsechangelog | egrep -q '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
+	    if ! echo $(DEB_VERSION) | egrep -q '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
 	        touch $@_failed ; \
 	    fi ; \
 	  else \
@@ -227,29 +227,6 @@ ifneq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	$(call xx,CC) -nostdlib -nostartfiles -shared -x c /dev/null \
 	        -o $(CURDIR)/debian/tmp-$(curpass)/$(call xx,libdir)/libc.so
 else
-	: # FIXME: why just needed for ARM multilib?
-	case "$(curpass)" in \
-	        armhf) \
-			libgcc_dirs=/lib/arm-linux-gnueabihf; \
-			if [ -n "$$WITH_BUILD_SYSROOT" ]; then \
-			  libgcc_dirs="$$WITH_BUILD_SYSROOT/usr/arm-linux-gnueabi/lib/arm-linux-gnueabihf $$WITH_BUILD_SYSROOT/usr/lib/gcc-cross/arm-linux-gnueabi/4.7/hf"; \
-			fi; \
-			;; \
-	        armel) \
-			libgcc_dirs=/lib/arm-linux-gnueabi; \
-			if [ -n "$$WITH_BUILD_SYSROOT" ]; then \
-			  libgcc_dirs="$$WITH_BUILD_SYSROOT/usr/arm-linux-gnueabihf/lib/arm-linux-gnueabi $$WITH_BUILD_SYSROOT/usr/lib/gcc-cross/arm-linux-gnueabihf/4.7/sf"; \
-			fi; \
-			;; \
-	esac; \
-	if [ -n "$$libgcc_dirs" ]; then \
-	  for d in $$libgcc_dirs; do \
-	    if [ -f $$d/libgcc_s.so.1 ]; then \
-	      cp -p $$d/libgcc_s.so.1 $(DEB_BUILDDIR)/; \
-	      break; \
-	    fi; \
-	  done; \
-	fi
 	$(MAKE) -C $(DEB_BUILDDIR) \
 	  install_root=$(CURDIR)/debian/tmp-$(curpass) install
 
@@ -271,7 +248,7 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 	# Install the Python pretty printers
 	mkdir -p $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)
 	perl -pe 'BEGIN {undef $$/; open(IN, "$(DEB_BUILDDIR)/nptl/nptl_lock_constants.py"); $$j=<IN>;} s/from nptl_lock_constants import \*/$$j/g;' \
-		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/libpthread-$(GLIBC_VERSION).so-gdb.py
+		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/debian/tmp-$(curpass)/usr/share/gdb/auto-load/$(call xx,slibdir)/$(patsubst $(DEB_BUILDDIR)/%,%,$(wildcard $(DEB_BUILDDIR)/libc.so.*)-gdb.py)
 endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
@@ -319,25 +296,6 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	  echo "$(call xx,libdir)" >> $$conffile; \
 	  ;; \
 	esac
-
-	# handle the non-default multilib for arm targets
-	case $(curpass) in arm*) \
-	  mkdir -p debian/tmp-$(curpass)/etc/ld.so.conf.d; \
-	  conffile="debian/tmp-$(curpass)/etc/ld.so.conf.d/zz_$(curpass)-biarch-compat.conf"; \
-	  echo "# Multiarch support" > $$conffile; \
-	  echo "$(call xx,slibdir)" >> $$conffile; \
-	  echo "$(call xx,libdir)" >> $$conffile; \
-	esac
-
-	# ARM: add dynamic linker name for the non-default multilib in ldd
-	if [ $(curpass) = libc ]; then \
-	  case $(DEB_HOST_ARCH) in \
-	    armel) \
-	      sed -i '/RTLDLIST=/s,=\(.*\),="\1 /lib/ld-linux-armhf.so.3",' debian/tmp-$(curpass)/usr/bin/ldd;; \
-	    armhf) \
-	      sed -i '/RTLDLIST=/s,=\(.*\),="\1 /lib/ld-linux.so.3",' debian/tmp-$(curpass)/usr/bin/ldd;; \
-	  esac; \
-	fi
 
 	# Move the dynamic linker into the slibdir location and replace it with
 	# a symlink. This is needed:
@@ -405,8 +363,8 @@ $(stamp)source: $(stamp)patch
 		--mode=go=rX,u+rw,a-s \
 		--clamp-mtime --mtime "@$(SOURCE_DATE_EPOCH)" \
 		--owner=root --group=root --numeric-owner \
-		--xform='s=^=glibc-$(GLIBC_VERSION)/=' \
-		-f $(CURDIR)/$(build-tree)/glibc-$(GLIBC_VERSION).tar.xz
+		--xform='s=^=glibc-$(DEB_VERSION_UPSTREAM)/=' \
+		-f $(CURDIR)/$(build-tree)/glibc-$(DEB_VERSION_UPSTREAM).tar.xz
 	mkdir -p debian/glibc-source/usr/src/glibc
 	tar cf - --files-from debian/glibc-source.filelist \
 		--clamp-mtime --mtime "@$(SOURCE_DATE_EPOCH)" \

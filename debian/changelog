@@ -73,6 +73,69 @@ glibc (2.35-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 07 Aug 2022 22:25:02 +0200
 
+glibc (2.34-5) UNRELEASED; urgency=medium
+
+  [ Samuel Thibault ]
+  * control: Bump hurd break: glibc now using getrandom() at process
+    initialization makes random bootstrap more complex and the system startup
+    hang if not done properly.
+  * debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: Fix
+    another access call which poses problem during bootstrap.
+  * debian/patches/hurd-i386/git-bootstrap-enable_secure.diff: Fix spurious
+    checks during initialization of processes running at bootstrap.
+  * debian/testsuite-xfail-debian.mk: Filter out tests that stay stuck.
+  * debian/patches/hurd-i386/git-global.diff: Fix elf/global missing
+    dependency.
+  * debian/patches/hurd-i386/git-loadfail.diff: Fix elf/loadfail missing
+    dependency.
+  * debian/patches/hurd-i386/git-cond-destroy.diff: Fix tst-cond20.
+
+  [ Aurelien Jarno ]
+  * debian/debhelper.in/libc-dev.NEWS: fix a typo.
+  * debian/control.in/libc: drop duplicate breaks entry.
+  * debian/patches/*: fix typos in patch description.
+  * debian/rules: drop trailing whitespaces.
+  * debian/debhelper.in/glibc-source.lintian-overrides: drop unused overrides.
+  * debian/debhelper.in/libc-bin.lintian-overrides: drop unused overrides.
+  * debian/source/lintian-overrides: drop unused overrides.
+  * debian/debhelper.in/libc-devtools.lintian-overrides: rename overrides
+    following lintian changes.
+  * debian/debhelper.in/libc{,-otherbuild].lintian-overrides: rename overrides
+    following lintian changes.
+  * debian/*: use /usr/share/dpkg/pkg-info.mk instead of parsing changelog
+    with dpkg-parsechangelog.
+  * debian/rules.d/build.mk, debian/rules.d/debhelper.mk: update NPTL pretty
+    printer path following the merge of libpthread into libc.
+  * debian/compat, debian/control.in/main, debian/rules.d/debhelper.mk:
+    increase debhelper compat to 13, the declarative way, and replace calls to
+    dh_systemd_enable and dh_systemd_start by dh_installsystemd.
+  * debian/rules.d/build.mk, debian/rules.d/control.mk,
+    debian/rules.d/debhelper.mk: remove support for armel/armhf biarch. It has
+    never been used in Debian, and has stopped being used in Ubuntu.
+
+ -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
+
+glibc (2.34-4) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-ipv6.diff: Add ipv6 RFC options.
+  * debian/patches/hurd-i386/git-ip_mreqn.diff: Move ip_mreqn structure from
+    Linux to generic.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fixes mbstowcs attributes.  Closes: #1017367.
+  * debian/debhelper.in/libc.{pre,post}: only set LC_ALL=C after loading
+    debconf.  Closes: #1017406.
+
+  [ наб ]
+  * debian/local/manpages/locale-gen.8: rewrite.
+  * debian/local/manpages/locale-gen.8.sgml: drop, replaced by above.
+  * debian/local/usr_sbin/locale-gen: clean up and optimize.
+  * debian/local/manpages/locale.alias.5: drop, unused.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 16 Aug 2022 23:35:10 +0200
+
 glibc (2.34-3) unstable; urgency=medium
 
   [ Aurelien Jarno ]
@@ -17999,4 +18062,3 @@ glibc (2.1-1) unstable; urgency=low
   * Removed hurd-utimes patch, it is integrated upstream.
 
  -- Joel Klecker <espy@debian.org>  Sat,  6 Feb 1999 12:26:10 -0800
-

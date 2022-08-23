@@ -25,9 +25,9 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_ARCH_REGULAR_PACKAGES) $(DEB_INDEP_REGUL
 	else \
 		dh_installchangelogs -p$(curpass) debian/changelog.upstream ; \
 	fi
-	dh_systemd_enable -p$(curpass)
 	dh_installinit -p$(curpass)
-	dh_systemd_start -p$(curpass)
+	dh_installtmpfiles -p$(curpass)
+	dh_installsystemd -p$(curpass)
 	dh_installdocs -p$(curpass) 
 	dh_lintian -p $(curpass)
 	dh_link -p$(curpass)
@@ -54,7 +54,7 @@ endif
 	# Keep the setuid on pt_chown (non-Linux only).
 	dh_fixperms -p$(curpass) -Xpt_chown
 	# libc.so prints useful version information when executed.
-	find debian/$(curpass) -type f -name libc.so.* -exec chmod a+x '{}' ';'
+	find debian/$(curpass) -type f -regex '.*/libc\.so\.[0-9.]+' -exec chmod a+x '{}' ';'
 	# Use this instead of -X to dh_fixperms so that we can use
 	# an unescaped regular expression.  ld.so must be executable;
 	find debian/$(curpass) -type f -name 'ld.so' -exec chmod a+x '{}' ';'
@@ -95,7 +95,7 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_UDEB_PACKAGES)): debhelper $(patsubst %,
 
 	dh_compress -p$(curpass)
 	dh_fixperms -p$(curpass)
-	find debian/$(curpass) -type f -name libc.so.* -exec chmod a+x '{}' ';'
+	find debian/$(curpass) -type f -regex '.*/libc\.so\.[0-9.]+' -exec chmod a+x '{}' ';'
 	find debian/$(curpass) -type f -regex '.*/ld.*\.so\.[0-9]' -exec chmod a+x '{}' ';'
 	dh_installdeb -p$(curpass)
 	# dh_shlibdeps -p$(curpass)
@@ -112,7 +112,7 @@ $(stamp)debhelper-common:
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nsscheck.sh"); $$j=<IN>;} s/__NSS_CHECK__/$$j/g;' \
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nohwcap.sh"); $$k=<IN>;} s/__NOHWCAP__/$$k/g;' \
 	      -e 'BEGIN {open(IN, "debian/tmp-libc/usr/share/i18n/SUPPORTED"); $$l = join("", grep { !/^C\.UTF-8/ } grep { /UTF-8/ } <IN>);} s/__PROVIDED_LOCALES__/$$l/g;' \
-	      -e 's#GLIBC_VERSION#$(GLIBC_VERSION)#g;' \
+	      -e 's#DEB_VERSION_UPSTREAM#$(DEB_VERSION_UPSTREAM)#g;' \
 	      -e 's#CURRENT_VER#$(DEB_VERSION)#g;' \
 	      -e 's#BUILD-TREE#$(build-tree)#g;' \
 	      -e 's#LIBC#$(libc)#g;' \
@@ -130,7 +130,7 @@ $(stamp)debhelper-common:
 	# Install nscd systemd files on linux
 ifeq ($(DEB_HOST_ARCH_OS),linux)
 	cp nscd/nscd.service debian/nscd.service
-	cp nscd/nscd.tmpfiles debian/nscd.tmpfile
+	cp nscd/nscd.tmpfiles debian/nscd.tmpfiles
 endif
 
 	# Generate common substvars files.
@@ -140,7 +140,7 @@ ifeq ($(filter stage1 stage2,$(DEB_BUILD_PROFILES)),)
 	echo 'libcrypt-dev:Depends=libcrypt-dev' >> tmp.substvars
 	echo 'libnsl-dev:Depends=libnsl-dev' >> tmp.substvars
 	echo 'rpcsvc-proto:Depends=rpcsvc-proto' >> tmp.substvars
-	echo 'libc-dev:Breaks=$(libc)-dev-$(DEB_HOST_ARCH)-cross (<< $(GLIBC_VERSION)~)' >> tmp.substvars
+	echo 'libc-dev:Breaks=$(libc)-dev-$(DEB_HOST_ARCH)-cross (<< $(DEB_VERSION_UPSTREAM)~)' >> tmp.substvars
 endif
 	for pkg in $(DEB_ARCH_REGULAR_PACKAGES) $(DEB_INDEP_REGULAR_PACKAGES) $(DEB_UDEB_PACKAGES); do \
 	  cp tmp.substvars debian/$$pkg.substvars; \
@@ -162,7 +162,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	case "$$curpass:$$slibdir" in \
 	  libc:*) \
 	    ;; \
-	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32 | *:/lib/arm-linux-gnueabi*) \
+	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32) \
 	    pass="-alt" \
 	    suffix="-$(curpass)" \
 	    ;; \
@@ -202,7 +202,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	    pass="" \
 	    suffix="" \
 	    ;; \
-	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32 | *:/lib/arm-linux-gnueabi*) \
+	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32) \
 	    templates="libc libc-dev" \
 	    pass="-alt" \
 	    suffix="-$(curpass)" \
@@ -260,6 +260,6 @@ clean::
 	rm -f debian/*.README.Debian
 	rm -f debian/*.triggers
 	rm -f debian/*.service
-	rm -f debian/*.tmpfile
+	rm -f debian/*.tmpfiles
 
 	rm -f $(stamp)binaryinst*

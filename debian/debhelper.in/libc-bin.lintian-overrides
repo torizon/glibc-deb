@@ -3,11 +3,6 @@
 libc-bin: statically-linked-binary sbin/ldconfig
 libc-bin: shared-library-lacks-prerequisites [sbin/ldconfig]
 
-# pt_chown must be setuid root and in /usr/lib, otherwise non-root users
-# won't be able to login
-libc-bin: setuid-binary usr/lib/pt_chown 4755 root/root
-libc-bin: sharedobject-in-library-directory-missing-soname usr/lib/pt_chown
-
 # these manpages are provided by the manpages package
 libc-bin: no-manual-page [sbin/ldconfig]
 libc-bin: no-manual-page [usr/bin/getent]

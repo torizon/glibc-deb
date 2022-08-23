@@ -29,6 +29,7 @@
 # These are done as absolute paths so that in the case of filesystem size
 # limitations, they can be overridden and spread all over.
 build-tree := build-tree
+debian-tmp = debian/tmp$(filter-out -libc,-$(curpass))
 stamp := $(CURDIR)/stamp-dir/
 DUMMY := $(shell mkdir -p $(stamp))
 

@@ -53,6 +53,7 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     dh_install files by using the auto source/dest features of debhelper.
   * debian/debhelper.in/libc.lintian-overrides, debian/rules.d/debhelper.mk:
     drop package name for lintian overrides files.
+  * debian/control.in/main: bump Standards-Version to 4.6.1 (no changes).
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

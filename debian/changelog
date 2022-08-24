@@ -33,6 +33,23 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     with dpkg-parsechangelog.
   * debian/rules.d/build.mk, debian/rules.d/debhelper.mk: update NPTL pretty
     printer path following the merge of libpthread into libc.
+  * debian/compat, debian/control.in/main, debian/rules.d/debhelper.mk:
+    increase debhelper compat to 13, the declarative way, and replace calls to
+    dh_systemd_enable and dh_systemd_start by dh_installsystemd.
+  * debian/rules.d/build.mk, debian/rules.d/control.mk,
+    debian/rules.d/debhelper.mk: remove support for armel/armhf biarch. It has
+    never been used in Debian, and has stopped being used in Ubuntu.
+  * debian/rules.d/debhelper.mk: stop removing comments from .install files.
+  * debian/rules.d/debhelper.mk: stop cleaning nonexistent files.
+  * debian/debhelper.in/*.install, debian/rules, debian/rules.d/debhelper.mk:
+    use substitution variables from debhelper 13.
+  * debian/rules, debian/rules.d/build.mk, debian/rules.d/debhelper.mk,
+    debian/sysdeps/*.mk: install the main flavor into debian/tmp instead of
+    debian/tmp-libc.
+  * debian/debhelper.in/*.install*, debian/rules.d/debhelper.mk: simplify
+    dh_install files by using the auto source/dest features of debhelper.
+  * debian/debhelper.in/libc.lintian-overrides, debian/rules.d/debhelper.mk:
+    drop package name for lintian overrides files.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
 

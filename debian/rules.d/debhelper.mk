@@ -25,9 +25,9 @@ $(patsubst %,$(stamp)binaryinst_%,$(DEB_ARCH_REGULAR_PACKAGES) $(DEB_INDEP_REGUL
 	else \
 		dh_installchangelogs -p$(curpass) debian/changelog.upstream ; \
 	fi
-	dh_systemd_enable -p$(curpass)
 	dh_installinit -p$(curpass)
-	dh_systemd_start -p$(curpass)
+	dh_installtmpfiles -p$(curpass)
+	dh_installsystemd -p$(curpass)
 	dh_installdocs -p$(curpass) 
 	dh_lintian -p $(curpass)
 	dh_link -p$(curpass)
@@ -111,16 +111,13 @@ $(stamp)debhelper-common:
 	  perl -p \
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nsscheck.sh"); $$j=<IN>;} s/__NSS_CHECK__/$$j/g;' \
 	      -e 'BEGIN {local $$/=undef; open(IN, "debian/script.in/nohwcap.sh"); $$k=<IN>;} s/__NOHWCAP__/$$k/g;' \
-	      -e 'BEGIN {open(IN, "debian/tmp-libc/usr/share/i18n/SUPPORTED"); $$l = join("", grep { /UTF-8/ } <IN>);} s/__PROVIDED_LOCALES__/$$l/g;' \
+	      -e 'BEGIN {open(IN, "debian/tmp/usr/share/i18n/SUPPORTED"); $$l = join("", grep { /UTF-8/ } <IN>);} s/__PROVIDED_LOCALES__/$$l/g;' \
 	      -e 's#DEB_VERSION_UPSTREAM#$(DEB_VERSION_UPSTREAM)#g;' \
 	      -e 's#CURRENT_VER#$(DEB_VERSION)#g;' \
-	      -e 's#BUILD-TREE#$(build-tree)#g;' \
 	      -e 's#LIBC#$(libc)#g;' \
-	      -e 's#DEB_HOST_ARCH#$(DEB_HOST_ARCH)#g;' \
 	      $$x > $$y ; \
 	  case $$y in \
 	    *.install) \
-	      sed -e "s/^#.*//" -i $$y ; \
 	      $(if $(filter $(pt_chown),no),sed -e "/pt_chown/d" -i $$y ;) \
 	      $(if $(filter $(pldd),no),sed -e "/pldd/d" -i $$y ;) \
 	      ;; \
@@ -130,7 +127,7 @@ $(stamp)debhelper-common:
 	# Install nscd systemd files on linux
 ifeq ($(DEB_HOST_ARCH_OS),linux)
 	cp nscd/nscd.service debian/nscd.service
-	cp nscd/nscd.tmpfiles debian/nscd.tmpfile
+	cp nscd/nscd.tmpfiles debian/nscd.tmpfiles
 endif
 
 	# Generate common substvars files.
@@ -162,7 +159,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	case "$$curpass:$$slibdir" in \
 	  libc:*) \
 	    ;; \
-	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32 | *:/lib/arm-linux-gnueabi*) \
+	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32) \
 	    pass="-alt" \
 	    suffix="-$(curpass)" \
 	    ;; \
@@ -178,8 +175,9 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	      cp $$s $$t ; \
 	    fi ; \
 	    sed -i \
+		-e "usr/lib/.*\.a/d" \
 		-e "/LIBDIR.*\.a /d" \
-		-e "s#TMPDIR#debian/tmp-$$curpass#g" \
+		-e "s#TMPDIR#$(debian-tmp)#g" \
 		-e "s#RTLDDIR#$$rtlddir#g" \
 		-e "s#SLIBDIR#$$slibdir#g" \
 		-e "s#LIBDIR#$$libdir#g" \
@@ -195,14 +193,14 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	slibdir=$(call xx,slibdir) ; \
 	rtlddir=$(call xx,rtlddir) ; \
 	curpass=$(curpass) ; \
-	rtld_so=`LANG=C LC_ALL=C readelf -l debian/tmp-$$curpass/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
+	rtld_so=`LANG=C LC_ALL=C readelf -l $(debian-tmp)/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
 	case "$$curpass:$$slibdir" in \
 	  libc:*) \
 	    templates="libc libc-dev libc-udeb" \
 	    pass="" \
 	    suffix="" \
 	    ;; \
-	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32 | *:/lib/arm-linux-gnueabi*) \
+	  *:/lib32 | *:/lib64 | *:/libo32 | *:/libx32) \
 	    templates="libc libc-dev" \
 	    pass="-alt" \
 	    suffix="-$(curpass)" \
@@ -219,13 +217,11 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	    if [ "$$s" != "$$t" ] ; then \
 	      cp $$s $$t ; \
 	    fi ; \
-	    sed -e "s#TMPDIR#debian/tmp-$$curpass#g" -i $$t; \
+	    sed -e "s#TMPDIR#$(debian-tmp)#g" -i $$t; \
 	    sed -e "s#RTLDDIR#$$rtlddir#g" -i $$t; \
 	    sed -e "s#SLIBDIR#$$slibdir#g" -i $$t; \
 	    sed -e "s#LIBDIR#$$libdir#g" -i $$t; \
-	    sed -e "s#FLAVOR#$$curpass#g" -i $$t; \
 	    sed -e "s#RTLD_SO#$$rtld_so#g" -i $$t ; \
-	    sed -e "s#MULTIARCHDIR#$$DEB_HOST_MULTIARCH#g" -i $$t ; \
 	    $(if $(filter $(call xx,mvec),no),sed -e "/libmvec/d" -e "/libm-\*\.a/d" -i $$t ;) \
 	    $(if $(filter-out $(DEB_HOST_ARCH_OS),linux),sed -e "/gdb/d" -i $$t ;) \
 	  done ; \
@@ -246,20 +242,16 @@ clean::
 	rm -f debian/*.postinst
 	rm -f debian/*.prerm
 	rm -f debian/*.postrm
-	rm -f debian/*.info
 	rm -f debian/*.init
 	rm -f debian/*.config
 	rm -f debian/*.templates
 	rm -f debian/*.dirs
 	rm -f debian/*.docs
-	rm -f debian/*.fixperms
-	rm -f debian/*.doc-base
-	rm -f debian/*.generated
 	rm -f debian/*.lintian-overrides
 	rm -f debian/*.NEWS
 	rm -f debian/*.README.Debian
 	rm -f debian/*.triggers
 	rm -f debian/*.service
-	rm -f debian/*.tmpfile
+	rm -f debian/*.tmpfiles
 
 	rm -f $(stamp)binaryinst*

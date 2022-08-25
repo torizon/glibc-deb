@@ -175,7 +175,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	      cp $$s $$t ; \
 	    fi ; \
 	    sed -i \
-		-e "usr/lib/.*\.a/d" \
+		-e "/usr\/lib\/.*\.a/d" \
 		-e "/LIBDIR.*\.a /d" \
 		-e "s#TMPDIR#$(debian-tmp)#g" \
 		-e "s#RTLDDIR#$$rtlddir#g" \

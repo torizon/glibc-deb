@@ -73,7 +73,15 @@ glibc (2.35-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 07 Aug 2022 22:25:02 +0200
 
-glibc (2.34-5) UNRELEASED; urgency=medium
+glibc (2.34-6) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/rules.d/debhelper.mk: fix regular expression to remove static
+    libraries in the stage1 build profile.  Closes: #1018071.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 25 Aug 2022 19:16:34 +0200
+
+glibc (2.34-5) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * control: Bump hurd break: glibc now using getrandom() at process
@@ -128,8 +136,9 @@ glibc (2.34-5) UNRELEASED; urgency=medium
     dh_install files by using the auto source/dest features of debhelper.
   * debian/debhelper.in/libc.lintian-overrides, debian/rules.d/debhelper.mk:
     drop package name for lintian overrides files.
+  * debian/control.in/main: bump Standards-Version to 4.6.1 (no changes).
 
- -- Samuel Thibault <sthibault@debian.org>  Thu, 18 Aug 2022 19:23:51 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 24 Aug 2022 23:19:48 +0200
 
 glibc (2.34-4) unstable; urgency=medium
 

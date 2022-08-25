@@ -1,10 +1,10 @@
-glibc (2.34-6) UNRELEASED; urgency=medium
+glibc (2.34-6) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/rules.d/debhelper.mk: fix regular expression to remove static
     libraries in the stage1 build profile.  Closes: #1018071.
 
- -- Aurelien Jarno <aurel32@debian.org>  Thu, 25 Aug 2022 19:11:37 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 25 Aug 2022 19:16:34 +0200
 
 glibc (2.34-5) unstable; urgency=medium
 

@@ -1,7 +1,13 @@
 glibc (2.34-7) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/debhelper.in/libc.install, debian/debhelper.in/libc-udeb.install:
     Allow installing /lib/ld.so, it's required on hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/rules, debian/rules.d/build.mk, debian/rules.d/debhelper.mk: read
+    ld.so and libc.so names from upstream generated soversions.mk instead of
+    looking directly for generated binaries.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 25 Aug 2022 20:12:32 +0000
 

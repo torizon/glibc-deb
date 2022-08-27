@@ -193,7 +193,7 @@ $(stamp)debhelper_%: $(stamp)debhelper-common $(stamp)install_%
 	slibdir=$(call xx,slibdir) ; \
 	rtlddir=$(call xx,rtlddir) ; \
 	curpass=$(curpass) ; \
-	rtld_so=`LANG=C LC_ALL=C readelf -l $(debian-tmp)/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
+	rtld_so=$(rtld_so) ; \
 	case "$$curpass:$$slibdir" in \
 	  libc:*) \
 	    templates="libc libc-dev libc-udeb" \

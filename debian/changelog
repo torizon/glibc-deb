@@ -73,6 +73,19 @@ glibc (2.35-0experimental0) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 07 Aug 2022 22:25:02 +0200
 
+glibc (2.34-7) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/debhelper.in/libc.install, debian/debhelper.in/libc-udeb.install:
+    Allow installing /lib/ld.so, it's required on hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/rules, debian/rules.d/build.mk, debian/rules.d/debhelper.mk: read
+    ld.so and libc.so names from upstream generated soversions.mk instead of
+    looking directly for generated binaries.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 27 Aug 2022 13:38:11 +0200
+
 glibc (2.34-6) unstable; urgency=medium
 
   [ Aurelien Jarno ]

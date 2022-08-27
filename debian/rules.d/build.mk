@@ -248,7 +248,7 @@ ifeq ($(DEB_HOST_ARCH_OS),linux)
 	# Install the Python pretty printers
 	mkdir -p $(CURDIR)/$(debian-tmp)/usr/share/gdb/auto-load/$(call xx,slibdir)
 	perl -pe 'BEGIN {undef $$/; open(IN, "$(DEB_BUILDDIR)/nptl/nptl_lock_constants.py"); $$j=<IN>;} s/from nptl_lock_constants import \*/$$j/g;' \
-		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/$(debian-tmp)/usr/share/gdb/auto-load/$(call xx,slibdir)/$(patsubst $(DEB_BUILDDIR)/%,%,$(wildcard $(DEB_BUILDDIR)/libc.so.*)-gdb.py)
+		$(CURDIR)/nptl/nptl-printers.py > $(CURDIR)/$(debian-tmp)/usr/share/gdb/auto-load/$(call xx,slibdir)/$(libc_so)-gdb.py
 endif
 
 ifeq ($(DEB_HOST_ARCH_OS),linux)
@@ -304,7 +304,7 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 	# - for co-installation for multiarch and biarch libraries
 	# In case slibdir and rtlddir are the same directory (for instance on
 	# libc6-amd64:i386), we instead rename the dynamic linker to ld.so
-	rtld_so=`LANG=C LC_ALL=C readelf -l $(debian-tmp)/usr/bin/iconv | sed -e '/interpreter:/!d;s/.*interpreter: .*\/\(.*\)]/\1/g'`; \
+	rtld_so=$(rtld_so) ; \
 	rtlddir=$(call xx,rtlddir) ; \
 	slibdir=$(call xx,slibdir) ; \
 	if [ "$$rtlddir" = "$$slibdir" ] ; then \

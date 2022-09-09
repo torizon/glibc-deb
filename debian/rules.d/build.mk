@@ -174,7 +174,7 @@ $(stamp)check_%: $(stamp)build_%
 	    echo "|     Encountered regressions that don't match expected failures.     |" ; \
 	    echo "+---------------------------------------------------------------------+" ; \
 	    grep -E '^FAIL:' $(DEB_BUILDDIR)/tests.sum | sort ; \
-	    if ! echo $(DEB_VERSION) | egrep -q '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
+	    if ! echo $(DEB_VERSION) | grep -q -E '^Version:.*\+deb[0-9]+u[0-9]+' ; then \
 	        touch $@_failed ; \
 	    fi ; \
 	  else \

@@ -4,6 +4,7 @@ glibc (2.35-0experimental3) UNRELEASED; urgency=medium
   * debian/control.in/libc: add a breaks against valgrind (<< 1:3.19.0-1~).
     See #1017791.
   * debian/debhelper.in/libc-bin.install: install /usr/bin/ld.so.
+  * debian/rules.d/build.mk: egrep -> grep -E.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 28 Aug 2022 13:45:56 +0200
 

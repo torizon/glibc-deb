@@ -108,10 +108,10 @@ index 596fa68376..7fbe85719a 100644
  
  # Generate .dT files as we compile.
 diff --git a/NEWS b/NEWS
-index 3c610744c9..70d739b8ec 100644
+index 3c610744c9..4a2531aa97 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -4,6 +4,118 @@ See the end for copying conditions.
+@@ -4,6 +4,120 @@ See the end for copying conditions.
  
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
@@ -224,8 +224,10 @@ index 3c610744c9..70d739b8ec 100644
 +  [29211] libc: __open_catalog is not y2038 aware
 +  [29213] libc: gconv_parseconfdir is not y2038 aware
 +  [29214] nptl: pthread_setcanceltype fails to set type
++  [29415] nscd: Fix netlink cache invalidation if epoll is used
 +  [29446] _dlopen now ignores dl_caller argument in static mode
 +  [29490] alpha: New __brk_call implementation is broken
++  [29528] elf: Call __libc_early_init for reused namespaces
 +
  
  Version 2.34
@@ -4823,7 +4825,7 @@ index 0000000000..a15a7d48eb
 +
 +#include <support/test-driver.c>
 diff --git a/elf/Makefile b/elf/Makefile
-index d05f410592..344b80f76a 100644
+index d05f410592..576e2c8a8a 100644
 --- a/elf/Makefile
 +++ b/elf/Makefile
 @@ -21,21 +21,64 @@ subdir		:= elf
@@ -5051,7 +5053,7 @@ index d05f410592..344b80f76a 100644
  
  ifeq (no,$(build-hardcoded-path-in-tests))
  # This is an ld.so.cache test, and RPATH/RUNPATH in the executable
-@@ -180,70 +282,263 @@ ifeq (no,$(build-hardcoded-path-in-tests))
+@@ -180,70 +282,264 @@ ifeq (no,$(build-hardcoded-path-in-tests))
  tests-container += tst-glibc-hwcaps-prepend-cache
  endif
  
@@ -5205,6 +5207,7 @@ index d05f410592..344b80f76a 100644
 +  tst-dlmopen3 \
 +  tst-dlmopen-dlerror \
 +  tst-dlmopen-gethostbyname \
++  tst-dlmopen-twice \
 +  tst-dlopenfail \
 +  tst-dlopenfail-2 \
 +  tst-dlopenrpath \
@@ -5365,7 +5368,7 @@ index d05f410592..344b80f76a 100644
  endif
  tlsmod17a-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
  tlsmod18a-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19
-@@ -260,104 +555,312 @@ tst-tls-many-dynamic-modules-dep = \
+@@ -260,104 +556,314 @@ tst-tls-many-dynamic-modules-dep = \
  tst-tls-many-dynamic-modules-dep-bad-suffixes = 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
  tst-tls-many-dynamic-modules-dep-bad = \
    $(foreach n,$(tst-tls-many-dynamic-modules-dep-bad-suffixes),tst-tls-manydynamic$(n)mod-dep-bad)
@@ -5635,6 +5638,8 @@ index d05f410592..344b80f76a 100644
 +  tst-dlmopen1mod \
 +  tst-dlmopen-dlerror-mod \
 +  tst-dlmopen-gethostbyname-mod \
++  tst-dlmopen-twice-mod1 \
++  tst-dlmopen-twice-mod2 \
 +  tst-dlopenfaillinkmod \
 +  tst-dlopenfailmod1 \
 +  tst-dlopenfailmod2 \
@@ -5776,7 +5781,7 @@ index d05f410592..344b80f76a 100644
  
  # Most modules build with _ISOMAC defined, but those filtered out
  # depend on internal headers.
-@@ -370,6 +873,22 @@ modules-names += tst-gnu2-tls1mod
+@@ -370,6 +876,22 @@ modules-names += tst-gnu2-tls1mod
  $(objpfx)tst-gnu2-tls1: $(objpfx)tst-gnu2-tls1mod.so
  tst-gnu2-tls1mod.so-no-z-defs = yes
  CFLAGS-tst-gnu2-tls1mod.c += -mtls-dialect=gnu2
@@ -5799,7 +5804,7 @@ index d05f410592..344b80f76a 100644
  endif
  ifeq (yes,$(have-protected-data))
  modules-names += tst-protected1moda tst-protected1modb
-@@ -399,41 +918,78 @@ endif
+@@ -399,41 +921,78 @@ endif
  modules-execstack-yes = tst-execstack-mod
  extra-test-objs += $(addsuffix .os,$(strip $(modules-names)))
  
@@ -5896,7 +5901,7 @@ index d05f410592..344b80f76a 100644
  ifeq (yes,$(have-gcc-ifunc))
  ifunc-pie-tests += ifuncmain9pie
  endif
-@@ -443,30 +999,50 @@ endif
+@@ -443,30 +1002,50 @@ endif
  tests-internal += $(ifunc-pie-tests)
  tests-pie += $(ifunc-pie-tests)
  endif
@@ -5962,7 +5967,7 @@ index d05f410592..344b80f76a 100644
  endif
  
  check-abi: $(objpfx)check-abi-ld.out
-@@ -482,6 +1058,17 @@ CFLAGS-tst-prelink.c += -fno-pie
+@@ -482,6 +1061,17 @@ CFLAGS-tst-prelink.c += -fno-pie
  tst-prelink-no-pie = yes
  endif
  
@@ -5980,7 +5985,7 @@ index d05f410592..344b80f76a 100644
  # The test requires shared _and_ PIE because the executable
  # unit test driver must be able to link with the shared object
  # that is going to eventually go into an installed DSO.
-@@ -548,6 +1135,7 @@ rtld-stubbed-symbols = \
+@@ -548,6 +1138,7 @@ rtld-stubbed-symbols = \
    free \
    malloc \
    realloc \
@@ -5988,7 +5993,7 @@ index d05f410592..344b80f76a 100644
  
  ifeq ($(have-ssp),yes)
  # rtld is not built with the stack protector, so these references will
-@@ -1486,6 +2074,100 @@ $(objpfx)tst-auditmod17.so: $(objpfx)tst-auditmod17.os
+@@ -1486,6 +2077,100 @@ $(objpfx)tst-auditmod17.so: $(objpfx)tst-auditmod17.os
  CFLAGS-.os += $(call elide-stack-protector,.os,tst-auditmod17)
  tst-audit17-ENV = LD_AUDIT=$(objpfx)tst-auditmod17.so
  
@@ -6089,7 +6094,7 @@ index d05f410592..344b80f76a 100644
  # tst-sonamemove links against an older implementation of the library.
  LDFLAGS-tst-sonamemove-linkmod1.so = \
    -Wl,--version-script=tst-sonamemove-linkmod1.map \
-@@ -1750,6 +2432,7 @@ LDFLAGS-libmarkermod1-1.so += -Wl,-soname,libmarkermod1.so
+@@ -1750,6 +2435,7 @@ LDFLAGS-libmarkermod1-1.so += -Wl,-soname,libmarkermod1.so
  LDFLAGS-libmarkermod2-1.so += -Wl,-soname,libmarkermod2.so
  LDFLAGS-libmarkermod3-1.so += -Wl,-soname,libmarkermod3.so
  LDFLAGS-libmarkermod4-1.so += -Wl,-soname,libmarkermod4.so
@@ -6097,7 +6102,7 @@ index d05f410592..344b80f76a 100644
  $(objpfx)libmarkermod%.os : markermodMARKER-VALUE.c
  	$(compile-command.c) \
  	  -DMARKER=marker$(firstword $(subst -, ,$*)) \
-@@ -1762,6 +2445,8 @@ $(objpfx)libmarkermod3.so: $(objpfx)libmarkermod3-1.so
+@@ -1762,6 +2448,8 @@ $(objpfx)libmarkermod3.so: $(objpfx)libmarkermod3-1.so
  	cp $< $@
  $(objpfx)libmarkermod4.so: $(objpfx)libmarkermod4-1.so
  	cp $< $@
@@ -6106,7 +6111,7 @@ index d05f410592..344b80f76a 100644
  
  # tst-glibc-hwcaps-prepend checks that --glibc-hwcaps-prepend is
  # preferred over auto-detected subdirectories.
-@@ -1906,3 +2591,22 @@ $(objpfx)tst-getauxval-static.out: $(objpfx)tst-auxvalmod.so
+@@ -1906,3 +2594,44 @@ $(objpfx)tst-getauxval-static.out: $(objpfx)tst-auxvalmod.so
  tst-getauxval-static-ENV = LD_LIBRARY_PATH=$(objpfx):$(common-objpfx)
  
  $(objpfx)tst-dlmopen-gethostbyname.out: $(objpfx)tst-dlmopen-gethostbyname-mod.so
@@ -6129,6 +6134,28 @@ index d05f410592..344b80f76a 100644
 +	grep -q '^Fatal glibc error: Cannot allocate TLS block$$' $@ \
 +	  && grep -q '^status: 127$$' $@; \
 +	  $(evaluate-test)
++
++$(objpfx)tst-audit-tlsdesc: $(objpfx)tst-audit-tlsdesc-mod1.so \
++			    $(objpfx)tst-audit-tlsdesc-mod2.so \
++			    $(shared-thread-library)
++ifeq (yes,$(have-mtls-dialect-gnu2))
++# The test is valid for all TLS types, but we want to exercise GNU2
++# TLS if possible.
++CFLAGS-tst-audit-tlsdesc-mod1.c += -mtls-dialect=gnu2
++CFLAGS-tst-audit-tlsdesc-mod2.c += -mtls-dialect=gnu2
++endif
++$(objpfx)tst-audit-tlsdesc-dlopen: $(shared-thread-library)
++$(objpfx)tst-audit-tlsdesc-dlopen.out: $(objpfx)tst-audit-tlsdesc-mod1.so \
++				       $(objpfx)tst-audit-tlsdesc-mod2.so
++$(objpfx)tst-audit-tlsdesc-mod1.so: $(objpfx)tst-audit-tlsdesc-mod2.so
++$(objpfx)tst-audit-tlsdesc.out: $(objpfx)tst-auditmod-tlsdesc.so
++tst-audit-tlsdesc-ENV = LD_AUDIT=$(objpfx)tst-auditmod-tlsdesc.so
++$(objpfx)tst-audit-tlsdesc-dlopen.out: $(objpfx)tst-auditmod-tlsdesc.so
++tst-audit-tlsdesc-dlopen-ENV = LD_AUDIT=$(objpfx)tst-auditmod-tlsdesc.so
++
++$(objpfx)tst-dlmopen-twice.out: \
++  $(objpfx)tst-dlmopen-twice-mod1.so \
++  $(objpfx)tst-dlmopen-twice-mod2.so
 diff --git a/elf/Versions b/elf/Versions
 index 775aab62af..bb6697647b 100644
 --- a/elf/Versions
@@ -7176,7 +7203,7 @@ index 1875599eb2..dee49a32d4 100644
  	 worst.  */
        naudit = DL_NNS;
 diff --git a/elf/dl-open.c b/elf/dl-open.c
-index ec386626f9..bc68726328 100644
+index ec386626f9..1ab3c7b5ac 100644
 --- a/elf/dl-open.c
 +++ b/elf/dl-open.c
 @@ -66,6 +66,9 @@ struct dl_open_args
@@ -7262,7 +7289,27 @@ index ec386626f9..bc68726328 100644
    /* Run the initializer functions of new objects.  Temporarily
       disable the exception handler, so that lazy binding failures are
       fatal.  */
-@@ -886,7 +901,7 @@ no more namespaces available for dlmopen()"));
+@@ -824,11 +839,14 @@ _dl_open (const char *file, int mode, const void *caller_dlopen, Lmid_t nsid,
+ 	  _dl_signal_error (EINVAL, file, NULL, N_("\
+ no more namespaces available for dlmopen()"));
+ 	}
+-      else if (nsid == GL(dl_nns))
+-	{
+-	  __rtld_lock_initialize (GL(dl_ns)[nsid]._ns_unique_sym_table.lock);
+-	  ++GL(dl_nns);
+-	}
++
++      if (nsid == GL(dl_nns))
++	++GL(dl_nns);
++
++      /* Initialize the new namespace.  Most members are
++	 zero-initialized, only the lock needs special treatment.  */
++      memset (&GL(dl_ns)[nsid], 0, sizeof (GL(dl_ns)[nsid]));
++      __rtld_lock_initialize (GL(dl_ns)[nsid]._ns_unique_sym_table.lock);
+ 
+       _dl_debug_initialize (0, nsid)->r_state = RT_CONSISTENT;
+     }
+@@ -886,7 +904,7 @@ no more namespaces available for dlmopen()"));
        /* Avoid keeping around a dangling reference to the libc.so link
  	 map in case it has been cached in libc_map.  */
        if (!args.libc_already_loaded)
@@ -7271,7 +7318,7 @@ index ec386626f9..bc68726328 100644
  
        /* Remove the object from memory.  It may be in an inconsistent
  	 state if relocation failed, for example.  */
-@@ -899,8 +914,6 @@ no more namespaces available for dlmopen()"));
+@@ -899,8 +917,6 @@ no more namespaces available for dlmopen()"));
  	     the flag here.  */
  	}
  
@@ -12529,6 +12576,145 @@ index 0000000000..db7ba95abe
 +  else
 +    return (char *) name;
 +}
+diff --git a/elf/tst-dlmopen-twice-mod1.c b/elf/tst-dlmopen-twice-mod1.c
+new file mode 100644
+index 0000000000..0eaf04948c
+--- /dev/null
++++ b/elf/tst-dlmopen-twice-mod1.c
+@@ -0,0 +1,37 @@
++/* Initialization of libc after dlmopen/dlclose/dlmopen (bug 29528).  Module 1.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <stdio.h>
++
++static void __attribute__ ((constructor))
++init (void)
++{
++  puts ("info: tst-dlmopen-twice-mod1.so loaded");
++  fflush (stdout);
++}
++
++static void __attribute__ ((destructor))
++fini (void)
++{
++  puts ("info: tst-dlmopen-twice-mod1.so about to be unloaded");
++  fflush (stdout);
++}
++
++/* Large allocation.  The second module does not have this, so it
++   should load libc at a different address.  */
++char large_allocate[16 * 1024 * 1024];
+diff --git a/elf/tst-dlmopen-twice-mod2.c b/elf/tst-dlmopen-twice-mod2.c
+new file mode 100644
+index 0000000000..40c6c01f96
+--- /dev/null
++++ b/elf/tst-dlmopen-twice-mod2.c
+@@ -0,0 +1,50 @@
++/* Initialization of libc after dlmopen/dlclose/dlmopen (bug 29528).  Module 2.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <ctype.h>
++#include <stdio.h>
++
++static void __attribute__ ((constructor))
++init (void)
++{
++  puts ("info: tst-dlmopen-twice-mod2.so loaded");
++  fflush (stdout);
++}
++
++static void __attribute__ ((destructor))
++fini (void)
++{
++  puts ("info: tst-dlmopen-twice-mod2.so about to be unloaded");
++  fflush (stdout);
++}
++
++int
++run_check (void)
++{
++  puts ("info: about to call isalpha");
++  fflush (stdout);
++
++  volatile char ch = 'a';
++  if (!isalpha (ch))
++    {
++      puts ("error: isalpha ('a') is not true");
++      fflush (stdout);
++      return 1;
++    }
++  return 0;
++}
+diff --git a/elf/tst-dlmopen-twice.c b/elf/tst-dlmopen-twice.c
+new file mode 100644
+index 0000000000..449f3c8fa9
+--- /dev/null
++++ b/elf/tst-dlmopen-twice.c
+@@ -0,0 +1,34 @@
++/* Initialization of libc after dlmopen/dlclose/dlmopen (bug 29528).  Main.
++   Copyright (C) 2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <support/xdlfcn.h>
++#include <support/check.h>
++
++static int
++do_test (void)
++{
++  void *handle = xdlmopen (LM_ID_NEWLM, "tst-dlmopen-twice-mod1.so", RTLD_NOW);
++  xdlclose (handle);
++  handle = xdlmopen (LM_ID_NEWLM, "tst-dlmopen-twice-mod2.so", RTLD_NOW);
++  int (*run_check) (void) = xdlsym (handle, "run_check");
++  TEST_COMPARE (run_check (), 0);
++  xdlclose (handle);
++  return 0;
++}
++
++#include <support/test-driver.c>
 diff --git a/elf/tst-glibc-hwcaps-cache.script b/elf/tst-glibc-hwcaps-cache.script
 index c3271f61f9..d58fc8c5de 100644
 --- a/elf/tst-glibc-hwcaps-cache.script
@@ -13371,6 +13557,20 @@ index c8ba88cdc9..5fc0c0f739 100644
  	}								      \
        else								      \
  	{								      \
+diff --git a/include/bits/stdio2-decl.h b/include/bits/stdio2-decl.h
+new file mode 100644
+index 0000000000..bbb052f192
+--- /dev/null
++++ b/include/bits/stdio2-decl.h
+@@ -0,0 +1 @@
++#include <libio/bits/stdio2-decl.h>
+diff --git a/include/bits/wchar2-decl.h b/include/bits/wchar2-decl.h
+new file mode 100644
+index 0000000000..00b1b93342
+--- /dev/null
++++ b/include/bits/wchar2-decl.h
+@@ -0,0 +1 @@
++#include <wcsmbs/bits/wchar2-decl.h>
 diff --git a/include/dlfcn.h b/include/dlfcn.h
 index a4c283728f..e73294b0af 100644
 --- a/include/dlfcn.h
@@ -13870,11 +14070,243 @@ index 82e965de6a..be20cf16d7 100644
    bool check_ns = support_stat_nanoseconds (path);
    if (!check_ns)
      printf ("warning: timestamp with nanoseconds not supported\n");
+diff --git a/libio/Makefile b/libio/Makefile
+index 5336b7d595..981c876940 100644
+--- a/libio/Makefile
++++ b/libio/Makefile
+@@ -23,7 +23,7 @@ subdir	:= libio
+ include ../Makeconfig
+ 
+ headers	:= stdio.h \
+-	   bits/stdio.h bits/stdio2.h bits/stdio-ldbl.h \
++	   bits/stdio.h bits/stdio2.h bits/stdio2-decl.h bits/stdio-ldbl.h \
+ 	   bits/types/FILE.h bits/types/__FILE.h bits/types/struct_FILE.h \
+ 	   bits/types/__fpos_t.h bits/types/__fpos64_t.h \
+ 	   bits/types/cookie_io_functions_t.h
+diff --git a/libio/bits/stdio2-decl.h b/libio/bits/stdio2-decl.h
+new file mode 100644
+index 0000000000..e398f7182b
+--- /dev/null
++++ b/libio/bits/stdio2-decl.h
+@@ -0,0 +1,111 @@
++/* Checking macros for stdio functions. Declarations only.
++   Copyright (C) 2004-2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#ifndef _BITS_STDIO2_DEC_H
++#define _BITS_STDIO2_DEC_H 1
++
++#ifndef _STDIO_H
++# error "Never include <bits/stdio2-decl.h> directly; use <stdio.h> instead."
++#endif
++
++extern int __sprintf_chk (char *__restrict __s, int __flag, size_t __slen,
++			  const char *__restrict __format, ...) __THROW
++    __attr_access ((__write_only__, 1, 3));
++extern int __vsprintf_chk (char *__restrict __s, int __flag, size_t __slen,
++			   const char *__restrict __format,
++			   __gnuc_va_list __ap) __THROW
++    __attr_access ((__write_only__, 1, 3));
++
++#if defined __USE_ISOC99 || defined __USE_UNIX98
++
++extern int __snprintf_chk (char *__restrict __s, size_t __n, int __flag,
++			   size_t __slen, const char *__restrict __format,
++			   ...) __THROW
++    __attr_access ((__write_only__, 1, 2));
++extern int __vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
++			    size_t __slen, const char *__restrict __format,
++			    __gnuc_va_list __ap) __THROW
++    __attr_access ((__write_only__, 1, 2));
++
++#endif
++
++#if __USE_FORTIFY_LEVEL > 1
++
++extern int __fprintf_chk (FILE *__restrict __stream, int __flag,
++			  const char *__restrict __format, ...);
++extern int __printf_chk (int __flag, const char *__restrict __format, ...);
++extern int __vfprintf_chk (FILE *__restrict __stream, int __flag,
++			   const char *__restrict __format, __gnuc_va_list __ap);
++extern int __vprintf_chk (int __flag, const char *__restrict __format,
++			  __gnuc_va_list __ap);
++
++# ifdef __USE_XOPEN2K8
++extern int __dprintf_chk (int __fd, int __flag, const char *__restrict __fmt,
++			  ...) __attribute__ ((__format__ (__printf__, 3, 4)));
++extern int __vdprintf_chk (int __fd, int __flag,
++			   const char *__restrict __fmt, __gnuc_va_list __arg)
++     __attribute__ ((__format__ (__printf__, 3, 0)));
++# endif
++
++# ifdef __USE_GNU
++
++extern int __asprintf_chk (char **__restrict __ptr, int __flag,
++			   const char *__restrict __fmt, ...)
++     __THROW __attribute__ ((__format__ (__printf__, 3, 4))) __wur;
++extern int __vasprintf_chk (char **__restrict __ptr, int __flag,
++			    const char *__restrict __fmt, __gnuc_va_list __arg)
++     __THROW __attribute__ ((__format__ (__printf__, 3, 0))) __wur;
++extern int __obstack_printf_chk (struct obstack *__restrict __obstack,
++				 int __flag, const char *__restrict __format,
++				 ...)
++     __THROW __attribute__ ((__format__ (__printf__, 3, 4)));
++extern int __obstack_vprintf_chk (struct obstack *__restrict __obstack,
++				  int __flag,
++				  const char *__restrict __format,
++				  __gnuc_va_list __args)
++     __THROW __attribute__ ((__format__ (__printf__, 3, 0)));
++
++# endif
++#endif
++
++#if __GLIBC_USE (DEPRECATED_GETS)
++extern char *__gets_chk (char *__str, size_t) __wur;
++#endif
++
++extern char *__fgets_chk (char *__restrict __s, size_t __size, int __n,
++			  FILE *__restrict __stream)
++    __wur __attr_access ((__write_only__, 1, 3));
++
++extern size_t __fread_chk (void *__restrict __ptr, size_t __ptrlen,
++			   size_t __size, size_t __n,
++			   FILE *__restrict __stream) __wur;
++
++#ifdef __USE_GNU
++extern char *__fgets_unlocked_chk (char *__restrict __s, size_t __size,
++				   int __n, FILE *__restrict __stream)
++    __wur __attr_access ((__write_only__, 1, 3));
++#endif
++
++#ifdef __USE_MISC
++# undef fread_unlocked
++extern size_t __fread_unlocked_chk (void *__restrict __ptr, size_t __ptrlen,
++				    size_t __size, size_t __n,
++				    FILE *__restrict __stream) __wur;
++#endif
++
++#endif /* bits/stdio2-decl.h.  */
 diff --git a/libio/bits/stdio2.h b/libio/bits/stdio2.h
-index 3f0cab1254..40ff16b01b 100644
+index 3f0cab1254..4570f86a44 100644
 --- a/libio/bits/stdio2.h
 +++ b/libio/bits/stdio2.h
-@@ -258,18 +258,15 @@ extern char *__REDIRECT (__fgets_chk_warn,
+@@ -23,14 +23,6 @@
+ # error "Never include <bits/stdio2.h> directly; use <stdio.h> instead."
+ #endif
+ 
+-extern int __sprintf_chk (char *__restrict __s, int __flag, size_t __slen,
+-			  const char *__restrict __format, ...) __THROW
+-    __attr_access ((__write_only__, 1, 3));
+-extern int __vsprintf_chk (char *__restrict __s, int __flag, size_t __slen,
+-			   const char *__restrict __format,
+-			   __gnuc_va_list __ap) __THROW
+-    __attr_access ((__write_only__, 1, 3));
+-
+ #ifdef __va_arg_pack
+ __fortify_function int
+ __NTH (sprintf (char *__restrict __s, const char *__restrict __fmt, ...))
+@@ -54,15 +46,6 @@ __NTH (vsprintf (char *__restrict __s, const char *__restrict __fmt,
+ }
+ 
+ #if defined __USE_ISOC99 || defined __USE_UNIX98
+-
+-extern int __snprintf_chk (char *__restrict __s, size_t __n, int __flag,
+-			   size_t __slen, const char *__restrict __format,
+-			   ...) __THROW
+-    __attr_access ((__write_only__, 1, 2));
+-extern int __vsnprintf_chk (char *__restrict __s, size_t __n, int __flag,
+-			    size_t __slen, const char *__restrict __format,
+-			    __gnuc_va_list __ap) __THROW;
+-
+ # ifdef __va_arg_pack
+ __fortify_function int
+ __NTH (snprintf (char *__restrict __s, size_t __n,
+@@ -89,15 +72,6 @@ __NTH (vsnprintf (char *__restrict __s, size_t __n,
+ #endif
+ 
+ #if __USE_FORTIFY_LEVEL > 1
+-
+-extern int __fprintf_chk (FILE *__restrict __stream, int __flag,
+-			  const char *__restrict __format, ...);
+-extern int __printf_chk (int __flag, const char *__restrict __format, ...);
+-extern int __vfprintf_chk (FILE *__restrict __stream, int __flag,
+-			   const char *__restrict __format, __gnuc_va_list __ap);
+-extern int __vprintf_chk (int __flag, const char *__restrict __format,
+-			  __gnuc_va_list __ap);
+-
+ # ifdef __va_arg_pack
+ __fortify_function int
+ fprintf (FILE *__restrict __stream, const char *__restrict __fmt, ...)
+@@ -136,12 +110,6 @@ vfprintf (FILE *__restrict __stream,
+ }
+ 
+ # ifdef __USE_XOPEN2K8
+-extern int __dprintf_chk (int __fd, int __flag, const char *__restrict __fmt,
+-			  ...) __attribute__ ((__format__ (__printf__, 3, 4)));
+-extern int __vdprintf_chk (int __fd, int __flag,
+-			   const char *__restrict __fmt, __gnuc_va_list __arg)
+-     __attribute__ ((__format__ (__printf__, 3, 0)));
+-
+ #  ifdef __va_arg_pack
+ __fortify_function int
+ dprintf (int __fd, const char *__restrict __fmt, ...)
+@@ -162,23 +130,6 @@ vdprintf (int __fd, const char *__restrict __fmt, __gnuc_va_list __ap)
+ # endif
+ 
+ # ifdef __USE_GNU
+-
+-extern int __asprintf_chk (char **__restrict __ptr, int __flag,
+-			   const char *__restrict __fmt, ...)
+-     __THROW __attribute__ ((__format__ (__printf__, 3, 4))) __wur;
+-extern int __vasprintf_chk (char **__restrict __ptr, int __flag,
+-			    const char *__restrict __fmt, __gnuc_va_list __arg)
+-     __THROW __attribute__ ((__format__ (__printf__, 3, 0))) __wur;
+-extern int __obstack_printf_chk (struct obstack *__restrict __obstack,
+-				 int __flag, const char *__restrict __format,
+-				 ...)
+-     __THROW __attribute__ ((__format__ (__printf__, 3, 4)));
+-extern int __obstack_vprintf_chk (struct obstack *__restrict __obstack,
+-				  int __flag,
+-				  const char *__restrict __format,
+-				  __gnuc_va_list __args)
+-     __THROW __attribute__ ((__format__ (__printf__, 3, 0)));
+-
+ #  ifdef __va_arg_pack
+ __fortify_function int
+ __NTH (asprintf (char **__restrict __ptr, const char *__restrict __fmt, ...))
+@@ -231,7 +182,6 @@ __NTH (obstack_vprintf (struct obstack *__restrict __obstack,
+ #endif
+ 
+ #if __GLIBC_USE (DEPRECATED_GETS)
+-extern char *__gets_chk (char *__str, size_t) __wur;
+ extern char *__REDIRECT (__gets_warn, (char *__str), gets)
+      __wur __warnattr ("please use fgets or getline instead, gets can't "
+ 		       "specify buffer size");
+@@ -245,9 +195,6 @@ gets (char *__str)
+ }
+ #endif
+ 
+-extern char *__fgets_chk (char *__restrict __s, size_t __size, int __n,
+-			  FILE *__restrict __stream)
+-    __wur __attr_access ((__write_only__, 1, 3));
+ extern char *__REDIRECT (__fgets_alias,
+ 			 (char *__restrict __s, int __n,
+ 			  FILE *__restrict __stream), fgets)
+@@ -258,23 +205,17 @@ extern char *__REDIRECT (__fgets_chk_warn,
       __wur __warnattr ("fgets called with bigger size than length "
  		       "of destination buffer");
  
@@ -13899,8 +14331,13 @@ index 3f0cab1254..40ff16b01b 100644
 +  return __fgets_chk (__s, sz, __n, __stream);
  }
  
- extern size_t __fread_chk (void *__restrict __ptr, size_t __ptrlen,
-@@ -291,19 +288,12 @@ __fortify_function __wur size_t
+-extern size_t __fread_chk (void *__restrict __ptr, size_t __ptrlen,
+-			   size_t __size, size_t __n,
+-			   FILE *__restrict __stream) __wur;
+ extern size_t __REDIRECT (__fread_alias,
+ 			  (void *__restrict __ptr, size_t __size,
+ 			   size_t __n, FILE *__restrict __stream),
+@@ -291,25 +232,15 @@ __fortify_function __wur size_t
  fread (void *__restrict __ptr, size_t __size, size_t __n,
         FILE *__restrict __stream)
  {
@@ -13926,7 +14363,13 @@ index 3f0cab1254..40ff16b01b 100644
  }
  
  #ifdef __USE_GNU
-@@ -320,20 +310,15 @@ extern char *__REDIRECT (__fgets_unlocked_chk_warn,
+-extern char *__fgets_unlocked_chk (char *__restrict __s, size_t __size,
+-				   int __n, FILE *__restrict __stream)
+-    __wur __attr_access ((__write_only__, 1, 3));
+ extern char *__REDIRECT (__fgets_unlocked_alias,
+ 			 (char *__restrict __s, int __n,
+ 			  FILE *__restrict __stream), fgets_unlocked)
+@@ -320,28 +251,20 @@ extern char *__REDIRECT (__fgets_unlocked_chk_warn,
       __wur __warnattr ("fgets_unlocked called with bigger size than length "
  		       "of destination buffer");
  
@@ -13954,7 +14397,15 @@ index 3f0cab1254..40ff16b01b 100644
  }
  #endif
  
-@@ -358,41 +343,36 @@ __fortify_function __wur size_t
+ #ifdef __USE_MISC
+ # undef fread_unlocked
+-extern size_t __fread_unlocked_chk (void *__restrict __ptr, size_t __ptrlen,
+-				    size_t __size, size_t __n,
+-				    FILE *__restrict __stream) __wur;
+ extern size_t __REDIRECT (__fread_unlocked_alias,
+ 			  (void *__restrict __ptr, size_t __size,
+ 			   size_t __n, FILE *__restrict __stream),
+@@ -358,41 +281,36 @@ __fortify_function __wur size_t
  fread_unlocked (void *__restrict __ptr, size_t __size, size_t __n,
  		FILE *__restrict __stream)
  {
@@ -14022,7 +14473,7 @@ index 3f0cab1254..40ff16b01b 100644
  #endif
  
 diff --git a/libio/stdio.h b/libio/stdio.h
-index 497da016ff..abefe640e5 100644
+index 497da016ff..d36e61c56b 100644
 --- a/libio/stdio.h
 +++ b/libio/stdio.h
 @@ -584,7 +584,7 @@ extern int putw (int __w, FILE *__stream);
@@ -14043,6 +14494,39 @@ index 497da016ff..abefe640e5 100644
  #endif
  
  
+@@ -879,20 +879,27 @@ extern void funlockfile (FILE *__stream) __THROW;
+ extern int __uflow (FILE *);
+ extern int __overflow (FILE *, int);
+ 
++#if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
++/* Declare all functions from bits/stdio2-decl.h first.  */
++# include <bits/stdio2-decl.h>
++#endif
++
++/* The following headers provide asm redirections.  These redirections must
++   appear before the first usage of these functions, e.g. in bits/stdio.h.  */
++#if defined __LDBL_COMPAT || __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI == 1
++# include <bits/stdio-ldbl.h>
++#endif
++
+ /* If we are compiling with optimizing read this file.  It contains
+    several optimizing inline functions and macros.  */
+ #ifdef __USE_EXTERN_INLINES
+ # include <bits/stdio.h>
+ #endif
+ #if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
++/* Now include the function definitions and redirects too.  */
+ # include <bits/stdio2.h>
+ #endif
+ 
+-#include <bits/floatn.h>
+-#if defined __LDBL_COMPAT || __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI == 1
+-# include <bits/stdio-ldbl.h>
+-#endif
+-
+ __END_DECLS
+ 
+ #endif /* <stdio.h> included.  */
 diff --git a/locale/programs/locarchive.c b/locale/programs/locarchive.c
 index f38e835c52..d79278b6ed 100644
 --- a/locale/programs/locarchive.c
@@ -15161,6 +15645,20 @@ index f50997f728..404fab46d0 100644
  # define FRAME_LEFT(frame, other, adj) \
    ((uintptr_t) frame - adj >= (uintptr_t) other - adj)
  #elif _STACK_GROWS_UP
+diff --git a/nscd/connections.c b/nscd/connections.c
+index 3f0bda4e97..bc941715cf 100644
+--- a/nscd/connections.c
++++ b/nscd/connections.c
+@@ -2285,7 +2285,8 @@ main_loop_epoll (int efd)
+ 					     sizeof (buf))) != -1)
+ 	      ;
+ 
+-	    __bump_nl_timestamp ();
++	    dbs[hstdb].head->extra_data[NSCD_HST_IDX_CONF_TIMESTAMP]
++	      = __bump_nl_timestamp ();
+ 	  }
+ # endif
+ 	else
 diff --git a/nss/Makefile b/nss/Makefile
 index bccf9f2806..716bc8f6ef 100644
 --- a/nss/Makefile
@@ -50414,11 +50912,167 @@ index 0000000000..0a9df1e9a0
 +    !(strcmp (tzname[1], "-03") == 0);
 +}
 +#include <support/test-driver.c>
+diff --git a/wcsmbs/Makefile b/wcsmbs/Makefile
+index f38eb5cfe1..5fe755e65d 100644
+--- a/wcsmbs/Makefile
++++ b/wcsmbs/Makefile
+@@ -22,8 +22,9 @@ subdir	:= wcsmbs
+ 
+ include ../Makeconfig
+ 
+-headers	:= wchar.h bits/wchar.h bits/wchar2.h bits/wchar-ldbl.h uchar.h \
+-	   bits/types/__mbstate_t.h bits/types/mbstate_t.h bits/types/wint_t.h
++headers	:= wchar.h bits/wchar.h bits/wchar2.h bits/wchar2-decl.h \
++	   bits/wchar-ldbl.h uchar.h bits/types/__mbstate_t.h \
++	   bits/types/mbstate_t.h bits/types/wint_t.h
+ 
+ routines := wcscat wcschr wcscmp wcscpy wcscspn wcsdup wcslen wcsncat \
+ 	    wcsncmp wcsncpy wcspbrk wcsrchr wcsspn wcstok wcsstr wmemchr \
+diff --git a/wcsmbs/bits/wchar2-decl.h b/wcsmbs/bits/wchar2-decl.h
+new file mode 100644
+index 0000000000..8e1735c33b
+--- /dev/null
++++ b/wcsmbs/bits/wchar2-decl.h
+@@ -0,0 +1,124 @@
++/* Checking macros for wchar functions.  Declarations only.
++   Copyright (C) 2004-2022 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#ifndef _BITS_WCHAR2_DECL_H
++#define _BITS_WCHAR2_DECL_H 1
++
++#ifndef _WCHAR_H
++# error "Never include <bits/wchar2-decl.h> directly; use <wchar.h> instead."
++#endif
++
++
++extern wchar_t *__wmemcpy_chk (wchar_t *__restrict __s1,
++			       const wchar_t *__restrict __s2, size_t __n,
++			       size_t __ns1) __THROW;
++extern wchar_t *__wmemmove_chk (wchar_t *__s1, const wchar_t *__s2,
++				size_t __n, size_t __ns1) __THROW;
++
++
++#ifdef __USE_GNU
++
++extern wchar_t *__wmempcpy_chk (wchar_t *__restrict __s1,
++				const wchar_t *__restrict __s2, size_t __n,
++				size_t __ns1) __THROW;
++
++#endif
++
++
++extern wchar_t *__wmemset_chk (wchar_t *__s, wchar_t __c, size_t __n,
++			       size_t __ns) __THROW;
++extern wchar_t *__wcscpy_chk (wchar_t *__restrict __dest,
++			      const wchar_t *__restrict __src,
++			      size_t __n) __THROW;
++extern wchar_t *__wcpcpy_chk (wchar_t *__restrict __dest,
++			      const wchar_t *__restrict __src,
++			      size_t __destlen) __THROW;
++extern wchar_t *__wcsncpy_chk (wchar_t *__restrict __dest,
++			       const wchar_t *__restrict __src, size_t __n,
++			       size_t __destlen) __THROW;
++extern wchar_t *__wcpncpy_chk (wchar_t *__restrict __dest,
++			       const wchar_t *__restrict __src, size_t __n,
++			       size_t __destlen) __THROW;
++extern wchar_t *__wcscat_chk (wchar_t *__restrict __dest,
++			      const wchar_t *__restrict __src,
++			      size_t __destlen) __THROW;
++extern wchar_t *__wcsncat_chk (wchar_t *__restrict __dest,
++			       const wchar_t *__restrict __src,
++			       size_t __n, size_t __destlen) __THROW;
++extern int __swprintf_chk (wchar_t *__restrict __s, size_t __n,
++			   int __flag, size_t __s_len,
++			   const wchar_t *__restrict __format, ...)
++     __THROW /* __attribute__ ((__format__ (__wprintf__, 5, 6))) */;
++extern int __vswprintf_chk (wchar_t *__restrict __s, size_t __n,
++			    int __flag, size_t __s_len,
++			    const wchar_t *__restrict __format,
++			    __gnuc_va_list __arg)
++     __THROW /* __attribute__ ((__format__ (__wprintf__, 5, 0))) */;
++
++#if __USE_FORTIFY_LEVEL > 1
++
++extern int __fwprintf_chk (__FILE *__restrict __stream, int __flag,
++			   const wchar_t *__restrict __format, ...);
++extern int __wprintf_chk (int __flag, const wchar_t *__restrict __format,
++			  ...);
++extern int __vfwprintf_chk (__FILE *__restrict __stream, int __flag,
++			    const wchar_t *__restrict __format,
++			    __gnuc_va_list __ap);
++extern int __vwprintf_chk (int __flag, const wchar_t *__restrict __format,
++			   __gnuc_va_list __ap);
++
++#endif
++
++extern wchar_t *__fgetws_chk (wchar_t *__restrict __s, size_t __size, int __n,
++			      __FILE *__restrict __stream) __wur;
++
++#ifdef __USE_GNU
++
++extern wchar_t *__fgetws_unlocked_chk (wchar_t *__restrict __s, size_t __size,
++				       int __n, __FILE *__restrict __stream)
++       __wur;
++
++#endif
++
++extern size_t __wcrtomb_chk (char *__restrict __s, wchar_t __wchar,
++			     mbstate_t *__restrict __p,
++			     size_t __buflen) __THROW __wur;
++extern size_t __mbsrtowcs_chk (wchar_t *__restrict __dst,
++			       const char **__restrict __src,
++			       size_t __len, mbstate_t *__restrict __ps,
++			       size_t __dstlen) __THROW;
++extern size_t __wcsrtombs_chk (char *__restrict __dst,
++			       const wchar_t **__restrict __src,
++			       size_t __len, mbstate_t *__restrict __ps,
++			       size_t __dstlen) __THROW;
++
++#ifdef	__USE_XOPEN2K8
++
++extern size_t __mbsnrtowcs_chk (wchar_t *__restrict __dst,
++				const char **__restrict __src, size_t __nmc,
++				size_t __len, mbstate_t *__restrict __ps,
++				size_t __dstlen) __THROW;
++extern size_t __wcsnrtombs_chk (char *__restrict __dst,
++				const wchar_t **__restrict __src,
++				size_t __nwc, size_t __len,
++				mbstate_t *__restrict __ps, size_t __dstlen)
++       __THROW;
++
++#endif
++
++#endif /* bits/wchar2-decl.h.  */
 diff --git a/wcsmbs/bits/wchar2.h b/wcsmbs/bits/wchar2.h
-index ea2518dc72..88c1fdfcd3 100644
+index ea2518dc72..50151b424d 100644
 --- a/wcsmbs/bits/wchar2.h
 +++ b/wcsmbs/bits/wchar2.h
-@@ -39,17 +39,9 @@ __fortify_function wchar_t *
+@@ -21,9 +21,6 @@
+ #endif
+ 
+ 
+-extern wchar_t *__wmemcpy_chk (wchar_t *__restrict __s1,
+-			       const wchar_t *__restrict __s2, size_t __n,
+-			       size_t __ns1) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wmemcpy_alias,
+ 				(wchar_t *__restrict __s1,
+ 				 const wchar_t *__restrict __s2, size_t __n),
+@@ -39,22 +36,12 @@ __fortify_function wchar_t *
  __NTH (wmemcpy (wchar_t *__restrict __s1, const wchar_t *__restrict __s2,
  		size_t __n))
  {
@@ -50439,7 +51093,12 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -67,18 +59,9 @@ extern wchar_t *__REDIRECT_NTH (__wmemmove_chk_warn,
+-extern wchar_t *__wmemmove_chk (wchar_t *__s1, const wchar_t *__s2,
+-				size_t __n, size_t __ns1) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wmemmove_alias, (wchar_t *__s1,
+ 						   const wchar_t *__s2,
+ 						   size_t __n), wmemmove);
+@@ -67,25 +54,13 @@ extern wchar_t *__REDIRECT_NTH (__wmemmove_chk_warn,
  __fortify_function wchar_t *
  __NTH (wmemmove (wchar_t *__s1, const wchar_t *__s2, size_t __n))
  {
@@ -50461,7 +51120,14 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -101,18 +84,9 @@ __fortify_function wchar_t *
+ #ifdef __USE_GNU
+-extern wchar_t *__wmempcpy_chk (wchar_t *__restrict __s1,
+-				const wchar_t *__restrict __s2, size_t __n,
+-				size_t __ns1) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wmempcpy_alias,
+ 				(wchar_t *__restrict __s1,
+ 				 const wchar_t *__restrict __s2,
+@@ -101,24 +76,13 @@ __fortify_function wchar_t *
  __NTH (wmempcpy (wchar_t *__restrict __s1, const wchar_t *__restrict __s2,
  		 size_t __n))
  {
@@ -50483,7 +51149,13 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  #endif
  
-@@ -130,17 +104,9 @@ extern wchar_t *__REDIRECT_NTH (__wmemset_chk_warn,
+ 
+-extern wchar_t *__wmemset_chk (wchar_t *__s, wchar_t __c, size_t __n,
+-			       size_t __ns) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wmemset_alias, (wchar_t *__s, wchar_t __c,
+ 						  size_t __n), wmemset);
+ extern wchar_t *__REDIRECT_NTH (__wmemset_chk_warn,
+@@ -130,23 +94,12 @@ extern wchar_t *__REDIRECT_NTH (__wmemset_chk_warn,
  __fortify_function wchar_t *
  __NTH (wmemset (wchar_t *__s, wchar_t __c, size_t __n))
  {
@@ -50504,7 +51176,13 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -154,9 +120,9 @@ extern wchar_t *__REDIRECT_NTH (__wcscpy_alias,
+-extern wchar_t *__wcscpy_chk (wchar_t *__restrict __dest,
+-			      const wchar_t *__restrict __src,
+-			      size_t __n) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcscpy_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src), wcscpy);
+@@ -154,16 +107,13 @@ extern wchar_t *__REDIRECT_NTH (__wcscpy_alias,
  __fortify_function wchar_t *
  __NTH (wcscpy (wchar_t *__restrict __dest, const wchar_t *__restrict __src))
  {
@@ -50517,7 +51195,14 @@ index ea2518dc72..88c1fdfcd3 100644
    return __wcscpy_alias (__dest, __src);
  }
  
-@@ -171,9 +137,9 @@ extern wchar_t *__REDIRECT_NTH (__wcpcpy_alias,
+ 
+-extern wchar_t *__wcpcpy_chk (wchar_t *__restrict __dest,
+-			      const wchar_t *__restrict __src,
+-			      size_t __destlen) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcpcpy_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src), wcpcpy);
+@@ -171,16 +121,13 @@ extern wchar_t *__REDIRECT_NTH (__wcpcpy_alias,
  __fortify_function wchar_t *
  __NTH (wcpcpy (wchar_t *__restrict __dest, const wchar_t *__restrict __src))
  {
@@ -50530,7 +51215,14 @@ index ea2518dc72..88c1fdfcd3 100644
    return __wcpcpy_alias (__dest, __src);
  }
  
-@@ -196,17 +162,9 @@ __fortify_function wchar_t *
+ 
+-extern wchar_t *__wcsncpy_chk (wchar_t *__restrict __dest,
+-			       const wchar_t *__restrict __src, size_t __n,
+-			       size_t __destlen) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcsncpy_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src,
+@@ -196,23 +143,12 @@ __fortify_function wchar_t *
  __NTH (wcsncpy (wchar_t *__restrict __dest, const wchar_t *__restrict __src,
  		size_t __n))
  {
@@ -50551,7 +51243,13 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -228,17 +186,9 @@ __fortify_function wchar_t *
+-extern wchar_t *__wcpncpy_chk (wchar_t *__restrict __dest,
+-			       const wchar_t *__restrict __src, size_t __n,
+-			       size_t __destlen) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcpncpy_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src,
+@@ -228,23 +164,12 @@ __fortify_function wchar_t *
  __NTH (wcpncpy (wchar_t *__restrict __dest, const wchar_t *__restrict __src,
  		size_t __n))
  {
@@ -50572,7 +51270,13 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -252,9 +202,9 @@ extern wchar_t *__REDIRECT_NTH (__wcscat_alias,
+-extern wchar_t *__wcscat_chk (wchar_t *__restrict __dest,
+-			      const wchar_t *__restrict __src,
+-			      size_t __destlen) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcscat_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src), wcscat);
+@@ -252,16 +177,13 @@ extern wchar_t *__REDIRECT_NTH (__wcscat_alias,
  __fortify_function wchar_t *
  __NTH (wcscat (wchar_t *__restrict __dest, const wchar_t *__restrict __src))
  {
@@ -50585,7 +51289,14 @@ index ea2518dc72..88c1fdfcd3 100644
    return __wcscat_alias (__dest, __src);
  }
  
-@@ -271,9 +221,9 @@ __fortify_function wchar_t *
+ 
+-extern wchar_t *__wcsncat_chk (wchar_t *__restrict __dest,
+-			       const wchar_t *__restrict __src,
+-			       size_t __n, size_t __destlen) __THROW;
+ extern wchar_t *__REDIRECT_NTH (__wcsncat_alias,
+ 				(wchar_t *__restrict __dest,
+ 				 const wchar_t *__restrict __src,
+@@ -271,17 +193,13 @@ __fortify_function wchar_t *
  __NTH (wcsncat (wchar_t *__restrict __dest, const wchar_t *__restrict __src,
  		size_t __n))
  {
@@ -50598,7 +51309,15 @@ index ea2518dc72..88c1fdfcd3 100644
    return __wcsncat_alias (__dest, __src, __n);
  }
  
-@@ -293,10 +243,10 @@ __fortify_function int
+ 
+-extern int __swprintf_chk (wchar_t *__restrict __s, size_t __n,
+-			   int __flag, size_t __s_len,
+-			   const wchar_t *__restrict __format, ...)
+-     __THROW /* __attribute__ ((__format__ (__wprintf__, 5, 6))) */;
+ 
+ extern int __REDIRECT_NTH_LDBL (__swprintf_alias,
+ 				(wchar_t *__restrict __s, size_t __n,
+@@ -293,10 +211,10 @@ __fortify_function int
  __NTH (swprintf (wchar_t *__restrict __s, size_t __n,
  		 const wchar_t *__restrict __fmt, ...))
  {
@@ -50612,7 +51331,19 @@ index ea2518dc72..88c1fdfcd3 100644
    return __swprintf_alias (__s, __n, __fmt, __va_arg_pack ());
  }
  #elif !defined __cplusplus
-@@ -323,10 +273,10 @@ __fortify_function int
+@@ -308,11 +226,6 @@ __NTH (swprintf (wchar_t *__restrict __s, size_t __n,
+    : swprintf (s, n, __VA_ARGS__))
+ #endif
+ 
+-extern int __vswprintf_chk (wchar_t *__restrict __s, size_t __n,
+-			    int __flag, size_t __s_len,
+-			    const wchar_t *__restrict __format,
+-			    __gnuc_va_list __arg)
+-     __THROW /* __attribute__ ((__format__ (__wprintf__, 5, 0))) */;
+ 
+ extern int __REDIRECT_NTH_LDBL (__vswprintf_alias,
+ 				(wchar_t *__restrict __s, size_t __n,
+@@ -323,26 +236,16 @@ __fortify_function int
  __NTH (vswprintf (wchar_t *__restrict __s, size_t __n,
  		  const wchar_t *__restrict __fmt, __gnuc_va_list __ap))
  {
@@ -50626,7 +51357,32 @@ index ea2518dc72..88c1fdfcd3 100644
    return __vswprintf_alias (__s, __n, __fmt, __ap);
  }
  
-@@ -392,18 +342,12 @@ extern wchar_t *__REDIRECT (__fgetws_chk_warn,
+ 
+ #if __USE_FORTIFY_LEVEL > 1
+ 
+-extern int __fwprintf_chk (__FILE *__restrict __stream, int __flag,
+-			   const wchar_t *__restrict __format, ...);
+-extern int __wprintf_chk (int __flag, const wchar_t *__restrict __format,
+-			  ...);
+-extern int __vfwprintf_chk (__FILE *__restrict __stream, int __flag,
+-			    const wchar_t *__restrict __format,
+-			    __gnuc_va_list __ap);
+-extern int __vwprintf_chk (int __flag, const wchar_t *__restrict __format,
+-			   __gnuc_va_list __ap);
+-
+ # ifdef __va_arg_pack
+ __fortify_function int
+ wprintf (const wchar_t *__restrict __fmt, ...)
+@@ -378,8 +281,6 @@ vfwprintf (__FILE *__restrict __stream,
+ 
+ #endif
+ 
+-extern wchar_t *__fgetws_chk (wchar_t *__restrict __s, size_t __size, int __n,
+-			      __FILE *__restrict __stream) __wur;
+ extern wchar_t *__REDIRECT (__fgetws_alias,
+ 			    (wchar_t *__restrict __s, int __n,
+ 			     __FILE *__restrict __stream), fgetws) __wur;
+@@ -392,24 +293,15 @@ extern wchar_t *__REDIRECT (__fgetws_chk_warn,
  __fortify_function __wur wchar_t *
  fgetws (wchar_t *__restrict __s, int __n, __FILE *__restrict __stream)
  {
@@ -50651,7 +51407,13 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  #ifdef __USE_GNU
-@@ -424,20 +368,13 @@ extern wchar_t *__REDIRECT (__fgetws_unlocked_chk_warn,
+-extern wchar_t *__fgetws_unlocked_chk (wchar_t *__restrict __s, size_t __size,
+-				       int __n, __FILE *__restrict __stream)
+-  __wur;
+ extern wchar_t *__REDIRECT (__fgetws_unlocked_alias,
+ 			    (wchar_t *__restrict __s, int __n,
+ 			     __FILE *__restrict __stream), fgetws_unlocked)
+@@ -424,27 +316,17 @@ extern wchar_t *__REDIRECT (__fgetws_unlocked_chk_warn,
  __fortify_function __wur wchar_t *
  fgetws_unlocked (wchar_t *__restrict __s, int __n, __FILE *__restrict __stream)
  {
@@ -50679,7 +51441,25 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  #endif
  
-@@ -488,18 +425,9 @@ __fortify_function size_t
+ 
+-extern size_t __wcrtomb_chk (char *__restrict __s, wchar_t __wchar,
+-			     mbstate_t *__restrict __p,
+-			     size_t __buflen) __THROW __wur;
+ extern size_t __REDIRECT_NTH (__wcrtomb_alias,
+ 			      (char *__restrict __s, wchar_t __wchar,
+ 			       mbstate_t *__restrict __ps), wcrtomb) __wur;
+@@ -467,10 +349,6 @@ __NTH (wcrtomb (char *__restrict __s, wchar_t __wchar,
+ }
+ 
+ 
+-extern size_t __mbsrtowcs_chk (wchar_t *__restrict __dst,
+-			       const char **__restrict __src,
+-			       size_t __len, mbstate_t *__restrict __ps,
+-			       size_t __dstlen) __THROW;
+ extern size_t __REDIRECT_NTH (__mbsrtowcs_alias,
+ 			      (wchar_t *__restrict __dst,
+ 			       const char **__restrict __src,
+@@ -488,25 +366,12 @@ __fortify_function size_t
  __NTH (mbsrtowcs (wchar_t *__restrict __dst, const char **__restrict __src,
  		  size_t __len, mbstate_t *__restrict __ps))
  {
@@ -50701,7 +51481,14 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -523,21 +451,13 @@ __fortify_function size_t
+-extern size_t __wcsrtombs_chk (char *__restrict __dst,
+-			       const wchar_t **__restrict __src,
+-			       size_t __len, mbstate_t *__restrict __ps,
+-			       size_t __dstlen) __THROW;
+ extern size_t __REDIRECT_NTH (__wcsrtombs_alias,
+ 			      (char *__restrict __dst,
+ 			       const wchar_t **__restrict __src,
+@@ -523,25 +388,13 @@ __fortify_function size_t
  __NTH (wcsrtombs (char *__restrict __dst, const wchar_t **__restrict __src,
  		  size_t __len, mbstate_t *__restrict __ps))
  {
@@ -50723,11 +51510,15 @@ index ea2518dc72..88c1fdfcd3 100644
  
  
 -#ifdef __USE_GNU
+-extern size_t __mbsnrtowcs_chk (wchar_t *__restrict __dst,
+-				const char **__restrict __src, size_t __nmc,
+-				size_t __len, mbstate_t *__restrict __ps,
+-				size_t __dstlen) __THROW;
 +#ifdef	__USE_XOPEN2K8
- extern size_t __mbsnrtowcs_chk (wchar_t *__restrict __dst,
- 				const char **__restrict __src, size_t __nmc,
- 				size_t __len, mbstate_t *__restrict __ps,
-@@ -559,18 +479,9 @@ __fortify_function size_t
+ extern size_t __REDIRECT_NTH (__mbsnrtowcs_alias,
+ 			      (wchar_t *__restrict __dst,
+ 			       const char **__restrict __src, size_t __nmc,
+@@ -559,26 +412,12 @@ __fortify_function size_t
  __NTH (mbsnrtowcs (wchar_t *__restrict __dst, const char **__restrict __src,
  		   size_t __nmc, size_t __len, mbstate_t *__restrict __ps))
  {
@@ -50749,7 +51540,15 @@ index ea2518dc72..88c1fdfcd3 100644
  }
  
  
-@@ -596,16 +507,8 @@ __fortify_function size_t
+-extern size_t __wcsnrtombs_chk (char *__restrict __dst,
+-				const wchar_t **__restrict __src,
+-				size_t __nwc, size_t __len,
+-				mbstate_t *__restrict __ps, size_t __dstlen)
+-     __THROW;
+ extern size_t __REDIRECT_NTH (__wcsnrtombs_alias,
+ 			      (char *__restrict __dst,
+ 			       const wchar_t **__restrict __src,
+@@ -596,16 +435,8 @@ __fortify_function size_t
  __NTH (wcsnrtombs (char *__restrict __dst, const wchar_t **__restrict __src,
  		   size_t __nwc, size_t __len, mbstate_t *__restrict __ps))
  {
@@ -50769,3 +51568,31 @@ index ea2518dc72..88c1fdfcd3 100644
 +			  __dst, __src, __nwc, __len, __ps);
  }
  #endif
+diff --git a/wcsmbs/wchar.h b/wcsmbs/wchar.h
+index 075776890f..1c6d4026c4 100644
+--- a/wcsmbs/wchar.h
++++ b/wcsmbs/wchar.h
+@@ -864,14 +864,21 @@ extern size_t wcsftime_l (wchar_t *__restrict __s, size_t __maxsize,
+ 
+ /* Define some macros helping to catch buffer overflows.  */
+ #if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
+-# include <bits/wchar2.h>
++/* Declare all functions from bits/wchar2-decl.h first.  */
++# include <bits/wchar2-decl.h>
+ #endif
+ 
+-#include <bits/floatn.h>
++/* The following headers provide asm redirections.  These redirections must
++   appear before the first usage of these functions, e.g. in bits/wchar.h.  */
+ #if defined __LDBL_COMPAT || __LDOUBLE_REDIRECTS_TO_FLOAT128_ABI == 1
+ # include <bits/wchar-ldbl.h>
+ #endif
+ 
++#if __USE_FORTIFY_LEVEL > 0 && defined __fortify_function
++/* Now include the function definitions and redirects too.  */
++# include <bits/wchar2.h>
++#endif
++
+ __END_DECLS
+ 
+ #endif /* wchar.h  */

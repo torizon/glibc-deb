@@ -386,6 +386,11 @@ test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 test-xfail-tst-p_align3 = yes
 tests-unsupported += tst-spawn6
 
+# new in 2.36
+test-xfail-tst-arc4random-fork = yes
+test-xfail-tst-arc4random-thread = yes
+test-xfail-tst-nss-gai-actions = yes
+
 # actually never succeded
 test-xfail-tst-create_format1 = yes
 test-xfail-tst-getcwd-abspath = yes

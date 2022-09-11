@@ -21,6 +21,9 @@ glibc (2.36-0experimental0) UNRELEASED; urgency=medium
     - debian/patches/hurd-i386/local-fix-nss.diff: rebased.
     - debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: rebased.
 
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update tests results for hurd-i386.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 10 Sep 2022 22:40:45 +0200
 
 glibc (2.35-0experimental3) experimental; urgency=medium

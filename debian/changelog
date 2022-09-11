@@ -6,6 +6,9 @@ glibc (2.35-0experimental3) experimental; urgency=medium
   * debian/debhelper.in/libc-bin.install: install /usr/bin/ld.so.
   * debian/rules.d/build.mk: egrep -> grep -E.
 
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update tests results for hurd-i386.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 11 Sep 2022 11:40:03 +0200
 
 glibc (2.35-0experimental2) experimental; urgency=medium

@@ -1,3 +1,9 @@
+glibc (2.35-0experimental4) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-strerror_X.diff: Fix tst-sprintf-errno test.
+
+ -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
+
 glibc (2.35-0experimental3) experimental; urgency=medium
 
   [ Aurelien Jarno ]
@@ -86,12 +92,6 @@ glibc (2.35-0experimental0) experimental; urgency=medium
   * debian/patches/hurd-i386/tg-bits_atomic.h_multiple_threads.diff: Refresh.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 07 Aug 2022 22:25:02 +0200
-
-glibc (2.34-9) UNRELEASED; urgency=medium
-
-  * debian/patches/hurd-i386/git-strerror_X.diff: Fix tst-sprintf-errno test.
-
- -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
 
 glibc (2.34-8) unstable; urgency=medium
 

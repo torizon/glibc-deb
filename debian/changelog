@@ -1,3 +1,9 @@
+glibc (2.34-9) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-strerror_X.diff: Fix tst-sprintf-errno test.
+
+ -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
+
 glibc (2.34-8) unstable; urgency=medium
 
   [ Samuel Thibault ]

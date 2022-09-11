@@ -37,6 +37,8 @@ hurd-i386/git-ipv6.diff
 hurd-i386/git-ip_mreqn.diff
 hurd-i386/git-bootstrap-enable_secure.diff
 hurd-i386/git-cond-destroy.diff
+hurd-i386/git-strerror_X.diff
+hurd-i386/git-xpg_strerror.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

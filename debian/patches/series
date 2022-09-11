@@ -26,10 +26,6 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
-# 2.36
-hurd-i386/pthread_key.diff
-hurd-i386/git-spawni-reauth.diff
-
 # 2.37
 hurd-i386/git-htl-pthread-self-early.diff
 hurd-i386/git-static-pie.diff
@@ -65,7 +61,6 @@ i386/local-biarch.diff
 i386/unsubmitted-quiet-ldconfig.diff
 i386/local-setcontext-revert-eax-ecx-edx.patch
 
-kfreebsd/submitted-waitid.diff
 kfreebsd/submitted-auxv.diff
 kfreebsd/local-config_h_in.patch
 kfreebsd/local-grantpt.diff
@@ -108,7 +103,6 @@ any/local-revert-bz13979.diff
 any/unsubmitted-ldso-machine-mismatch.diff
 any/local-ldconfig-ignore-ld.so.diff
 any/local-bootstrap-headers.diff
-any/submitted-resolv-unaligned.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch

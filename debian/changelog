@@ -1,3 +1,28 @@
+glibc (2.36-0experimental0) UNRELEASED; urgency=medium
+
+  * New upstream release:
+    - Support for DT_RELR relative relocation format has been added.  Closes:
+      #996598.
+    - The Linux kernel version check has been removed.  Closes: #781715, #1004577.
+    - debian/symbols.wildcard: add 2.36 and GLIBC_ABI_DT_RELR.
+    - debian/patches/localedata/sort-UTF8-first.diff: rebased.
+    - debian/patches/localedata/supported.diff: rebased.
+    - debian/patches/arm/unsubmitted-ldso-multilib.diff: rebased.
+    - debian/patches/hurd-i386/git-spawni-reauth.diff: upstreamed.
+    - debian/patches/hurd-i386/pthread_key.diff: upstreamed.
+    - debian/patches/kfreebsd/submitted-waitid.diff: dropped. kfreebsd
+      specific changes moved to debian/patches/kfreebsd/local-sysdeps.diff.
+    - debian/patches/kfreebsd/local-config_h_in.patch: rebased.
+    - debian/patches/kfreebsd/local-getaddrinfo-freebsd-kernel.diff: rebased.
+    - debian/patches/all/local-remove-manual.diff: rebased.
+    - debian/patches/any/local-ldso-disable-hwcap.diff: rebased.
+    - debian/patches/any/unsubmitted-ldso-machine-mismatch.diff: rebased.
+    - debian/patches/any/submitted-resolv-unaligned.diff: upstreamed.
+    - debian/patches/hurd-i386/local-fix-nss.diff: rebased.
+    - debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: rebased.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 10 Sep 2022 22:40:45 +0200
+
 glibc (2.35-0experimental3) experimental; urgency=medium
 
   [ Aurelien Jarno ]

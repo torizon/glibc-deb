@@ -166,7 +166,7 @@ then
     if [ -n "$preversion" ] && [ -x "$(command -v ischroot)" ] && ! ischroot; then
 	# NSS authentication trouble guard
 	if dpkg --compare-versions "$preversion" lt DEB_VERSION_UPSTREAM; then
-	    if pidof xscreensaver xlockmore >/dev/null; then
+	    if grep -E -q -z '/(xscreensaver|xlockmore)' /proc/*/cmdline 2>/dev/null; then
 		if [ "$USE_DEBCONF" ] ; then
 		    db_version 2.0
 		    db_reset glibc/disable-screensaver

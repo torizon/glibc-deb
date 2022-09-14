@@ -39,6 +39,7 @@ hurd-i386/git-bootstrap-enable_secure.diff
 hurd-i386/git-cond-destroy.diff
 hurd-i386/git-strerror_X.diff
 hurd-i386/git-xpg_strerror.diff
+hurd-i386/git-readlink-fifo.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

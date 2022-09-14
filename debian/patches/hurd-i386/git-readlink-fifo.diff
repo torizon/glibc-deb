@@ -1,0 +1,58 @@
+commit 9e5c991106cb04b489272de0ef6a7a6bcef50477
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Wed Sep 14 18:52:52 2022 +0200
+
+    hurd: Fix readlink() hanging on fifo
+    
+    readlink() opens the target with O_READ to be able to read the symlink
+    content. When the target is actually a fifo, that would hang waiting for a
+    writer (caught in the coreutils testsuite). We thus have to first lookup the
+    target without O_READ to perform io_stat and lookout for fifos, and only
+    after checking the symlink type, we can re-lookup with O_READ.
+
+diff --git a/sysdeps/mach/hurd/readlink.c b/sysdeps/mach/hurd/readlink.c
+index 770462714f..2d75ef7725 100644
+--- a/sysdeps/mach/hurd/readlink.c
++++ b/sysdeps/mach/hurd/readlink.c
+@@ -31,7 +31,7 @@ __readlink (const char *file_name, char *buf, size_t len)
+   file_t file;
+   struct stat64 st;
+ 
+-  file = __file_name_lookup (file_name, O_READ | O_NOLINK, 0);
++  file = __file_name_lookup (file_name, O_NOLINK, 0);
+   if (file == MACH_PORT_NULL)
+     return -1;
+ 
+@@ -41,6 +41,9 @@ __readlink (const char *file_name, char *buf, size_t len)
+       {
+ 	char *rbuf = buf;
+ 
++	__mach_port_deallocate (__mach_task_self (), file);
++	file = __file_name_lookup (file_name, O_READ | O_NOLINK, 0);
++
+ 	err = __io_read (file, &rbuf, &len, 0, len);
+ 	if (!err && rbuf != buf)
+ 	  {
+diff --git a/sysdeps/mach/hurd/readlinkat.c b/sysdeps/mach/hurd/readlinkat.c
+index 059aad9f58..113b92b732 100644
+--- a/sysdeps/mach/hurd/readlinkat.c
++++ b/sysdeps/mach/hurd/readlinkat.c
+@@ -32,7 +32,7 @@ readlinkat (int fd, const char *file_name, char *buf, size_t len)
+   file_t file;
+   struct stat64 st;
+ 
+-  file = __file_name_lookup_at (fd, 0, file_name, O_READ | O_NOLINK, 0);
++  file = __file_name_lookup_at (fd, 0, file_name, O_NOLINK, 0);
+   if (file == MACH_PORT_NULL)
+     return -1;
+ 
+@@ -42,6 +42,9 @@ readlinkat (int fd, const char *file_name, char *buf, size_t len)
+       {
+ 	char *rbuf = buf;
+ 
++	__mach_port_deallocate (__mach_task_self (), file);
++	file = __file_name_lookup_at (fd, 0, file_name, O_READ | O_NOLINK, 0);
++
+ 	err = __io_read (file, &rbuf, &len, 0, len);
+ 	if (!err && rbuf != buf)
+ 	  {

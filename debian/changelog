@@ -1,6 +1,11 @@
 glibc (2.35-0experimental4) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-strerror_X.diff: Fix tst-sprintf-errno test.
+
+  [ Aurelien Jarno ]
+  * debian/control.in/main: add a breaks against dh-lua (<< 27+nmu1~) to
+    libc-bin. See #1017832.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
 

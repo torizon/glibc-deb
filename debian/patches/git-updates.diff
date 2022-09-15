@@ -792,7 +792,7 @@ index 0000000000..a15a7d48eb
 +
 +#include <support/test-driver.c>
 diff --git a/elf/Makefile b/elf/Makefile
-index 5bdf0a383d..d29b5721bf 100644
+index 5bdf0a383d..bf2550472b 100644
 --- a/elf/Makefile
 +++ b/elf/Makefile
 @@ -33,6 +33,7 @@ routines = \
@@ -831,7 +831,16 @@ index 5bdf0a383d..d29b5721bf 100644
    tst-tlsalign-extern-static \
    tst-tlsalign-static \
    # tests-static-normal
-@@ -386,6 +394,7 @@ tests += \
+@@ -366,6 +374,8 @@ tests += \
+   tst-align \
+   tst-align2 \
+   tst-align3 \
++  tst-audit-tlsdesc \
++  tst-audit-tlsdesc-dlopen \
+   tst-audit1 \
+   tst-audit2 \
+   tst-audit8 \
+@@ -386,6 +396,7 @@ tests += \
    tst-audit24d \
    tst-audit25a \
    tst-audit25b \
@@ -839,7 +848,7 @@ index 5bdf0a383d..d29b5721bf 100644
    tst-auditmany \
    tst-auxobj \
    tst-auxobj-dlopen \
-@@ -399,6 +408,7 @@ tests += \
+@@ -399,6 +410,7 @@ tests += \
    tst-dlmopen4 \
    tst-dlmopen-dlerror \
    tst-dlmopen-gethostbyname \
@@ -847,7 +856,7 @@ index 5bdf0a383d..d29b5721bf 100644
    tst-dlopenfail \
    tst-dlopenfail-2 \
    tst-dlopenrpath \
-@@ -539,6 +549,39 @@ endif
+@@ -539,6 +551,39 @@ endif
  endif
  endif
  
@@ -887,7 +896,7 @@ index 5bdf0a383d..d29b5721bf 100644
  ifeq ($(run-built-tests),yes)
  tests-special += $(objpfx)tst-valgrind-smoke.out
  endif
-@@ -613,6 +656,16 @@ modules-names = \
+@@ -613,6 +658,16 @@ modules-names = \
    libmarkermod4-2 \
    libmarkermod4-3 \
    libmarkermod4-4 \
@@ -904,7 +913,24 @@ index 5bdf0a383d..d29b5721bf 100644
    ltglobmod1 \
    ltglobmod2 \
    neededobj1 \
-@@ -725,6 +778,7 @@ modules-names = \
+@@ -674,6 +729,8 @@ modules-names = \
+   tst-alignmod3 \
+   tst-array2dep \
+   tst-array5dep \
++  tst-audit-tlsdesc-mod1 \
++  tst-audit-tlsdesc-mod2 \
+   tst-audit11mod1 \
+   tst-audit11mod2 \
+   tst-audit12mod1 \
+@@ -707,6 +764,7 @@ modules-names = \
+   tst-auditmanymod7 \
+   tst-auditmanymod8 \
+   tst-auditmanymod9 \
++  tst-auditmod-tlsdesc  \
+   tst-auditmod1 \
+   tst-auditmod9a \
+   tst-auditmod9b \
+@@ -725,6 +783,7 @@ modules-names = \
    tst-auditmod24c \
    tst-auditmod24d \
    tst-auditmod25 \
@@ -912,7 +938,7 @@ index 5bdf0a383d..d29b5721bf 100644
    tst-auxvalmod \
    tst-big-note-lib \
    tst-deep1mod1 \
-@@ -742,6 +796,8 @@ modules-names = \
+@@ -742,6 +801,8 @@ modules-names = \
    tst-dlmopen1mod \
    tst-dlmopen-dlerror-mod \
    tst-dlmopen-gethostbyname-mod \
@@ -921,7 +947,32 @@ index 5bdf0a383d..d29b5721bf 100644
    tst-dlopenfaillinkmod \
    tst-dlopenfailmod1 \
    tst-dlopenfailmod2 \
-@@ -943,7 +999,7 @@ extra-test-objs += $(addsuffix .os,$(strip $(modules-names)))
+@@ -895,23 +956,8 @@ modules-names += tst-gnu2-tls1mod
+ $(objpfx)tst-gnu2-tls1: $(objpfx)tst-gnu2-tls1mod.so
+ tst-gnu2-tls1mod.so-no-z-defs = yes
+ CFLAGS-tst-gnu2-tls1mod.c += -mtls-dialect=gnu2
++endif # $(have-mtls-dialect-gnu2)
+ 
+-tests += tst-audit-tlsdesc tst-audit-tlsdesc-dlopen
+-modules-names += tst-audit-tlsdesc-mod1 tst-audit-tlsdesc-mod2 tst-auditmod-tlsdesc
+-$(objpfx)tst-audit-tlsdesc: $(objpfx)tst-audit-tlsdesc-mod1.so \
+-			    $(objpfx)tst-audit-tlsdesc-mod2.so \
+-			    $(shared-thread-library)
+-CFLAGS-tst-audit-tlsdesc-mod1.c += -mtls-dialect=gnu2
+-CFLAGS-tst-audit-tlsdesc-mod2.c += -mtls-dialect=gnu2
+-$(objpfx)tst-audit-tlsdesc-dlopen: $(shared-thread-library)
+-$(objpfx)tst-audit-tlsdesc-dlopen.out: $(objpfx)tst-audit-tlsdesc-mod1.so \
+-				       $(objpfx)tst-audit-tlsdesc-mod2.so
+-$(objpfx)tst-audit-tlsdesc-mod1.so: $(objpfx)tst-audit-tlsdesc-mod2.so
+-$(objpfx)tst-audit-tlsdesc.out: $(objpfx)tst-auditmod-tlsdesc.so
+-tst-audit-tlsdesc-ENV = LD_AUDIT=$(objpfx)tst-auditmod-tlsdesc.so
+-$(objpfx)tst-audit-tlsdesc-dlopen.out: $(objpfx)tst-auditmod-tlsdesc.so
+-tst-audit-tlsdesc-dlopen-ENV = LD_AUDIT=$(objpfx)tst-auditmod-tlsdesc.so
+-endif
+ ifeq (yes,$(have-protected-data))
+ modules-names += tst-protected1moda tst-protected1modb
+ tests += tst-protected1a tst-protected1b
+@@ -943,7 +989,7 @@ extra-test-objs += $(addsuffix .os,$(strip $(modules-names)))
  # filtmod1.so, tst-big-note-lib.so, tst-ro-dynamic-mod.so have special
  # rules.
  modules-names-nobuild := filtmod1 tst-big-note-lib tst-ro-dynamic-mod \
@@ -930,7 +981,7 @@ index 5bdf0a383d..d29b5721bf 100644
  
  tests += $(tests-static)
  
-@@ -1072,6 +1128,11 @@ tests-special += \
+@@ -1072,6 +1118,11 @@ tests-special += \
    $(objpfx)tst-initorder2-cmp.out \
    $(objpfx)tst-unused-dep-cmp.out \
    $(objpfx)tst-unused-dep.out \
@@ -942,7 +993,7 @@ index 5bdf0a383d..d29b5721bf 100644
    # tests-special
  endif
  
-@@ -1111,6 +1172,17 @@ CFLAGS-tst-prelink.c += -fno-pie
+@@ -1111,6 +1162,17 @@ CFLAGS-tst-prelink.c += -fno-pie
  tst-prelink-no-pie = yes
  endif
  
@@ -960,7 +1011,17 @@ index 5bdf0a383d..d29b5721bf 100644
  # The test requires shared _and_ PIE because the executable
  # unit test driver must be able to link with the shared object
  # that is going to eventually go into an installed DSO.
-@@ -2210,7 +2282,7 @@ $(objpfx)tst-audit24c.out: $(objpfx)tst-auditmod24c.so
+@@ -1234,8 +1296,7 @@ $(objpfx)ld.so: $(objpfx)librtld.os $(ld-map)
+ 	$(LINK.o) -nostdlib -nostartfiles -shared -o $@.new		\
+ 		  $(LDFLAGS-rtld) -Wl,-z,defs $(z-now-$(bind-now))	\
+ 		  $(filter-out $(map-file),$^) $(load-map-file)		\
+-		  -Wl,-soname=$(rtld-installed-name)			\
+-		  -Wl,-defsym=_begin=0
++		  -Wl,-soname=$(rtld-installed-name)
+ 	$(call after-link,$@.new)
+ 	$(READELF) -s $@.new \
+ 	  | $(AWK) '($$7 ~ /^UND(|EF)$$/ && $$1 != "0:" && $$4 != "REGISTER") { print; p=1 } END { exit p != 0 }'
+@@ -2210,7 +2271,7 @@ $(objpfx)tst-audit24c.out: $(objpfx)tst-auditmod24c.so
  $(objpfx)tst-audit24c: $(objpfx)tst-audit24amod1.so \
  		       $(objpfx)tst-audit24amod2.so
  tst-audit24c-ENV = LD_BIND_NOW=1 LD_AUDIT=$(objpfx)tst-auditmod24c.so
@@ -969,7 +1030,7 @@ index 5bdf0a383d..d29b5721bf 100644
  
  $(objpfx)tst-audit24d.out: $(objpfx)tst-auditmod24d.so
  $(objpfx)tst-audit24d: $(objpfx)tst-audit24dmod1.so \
-@@ -2242,6 +2314,10 @@ $(objpfx)tst-audit25b: $(objpfx)tst-audit25mod1.so \
+@@ -2242,6 +2303,10 @@ $(objpfx)tst-audit25b: $(objpfx)tst-audit25mod1.so \
  LDFLAGS-tst-audit25b = -Wl,-z,now
  tst-audit25b-ARGS = -- $(host-test-program-cmd)
  
@@ -980,7 +1041,7 @@ index 5bdf0a383d..d29b5721bf 100644
  # tst-sonamemove links against an older implementation of the library.
  LDFLAGS-tst-sonamemove-linkmod1.so = \
    -Wl,--version-script=tst-sonamemove-linkmod1.map \
-@@ -2509,6 +2585,7 @@ LDFLAGS-libmarkermod1-1.so += -Wl,-soname,libmarkermod1.so
+@@ -2509,6 +2574,7 @@ LDFLAGS-libmarkermod1-1.so += -Wl,-soname,libmarkermod1.so
  LDFLAGS-libmarkermod2-1.so += -Wl,-soname,libmarkermod2.so
  LDFLAGS-libmarkermod3-1.so += -Wl,-soname,libmarkermod3.so
  LDFLAGS-libmarkermod4-1.so += -Wl,-soname,libmarkermod4.so
@@ -988,7 +1049,7 @@ index 5bdf0a383d..d29b5721bf 100644
  $(objpfx)libmarkermod%.os : markermodMARKER-VALUE.c
  	$(compile-command.c) \
  	  -DMARKER=marker$(firstword $(subst -, ,$*)) \
-@@ -2521,6 +2598,8 @@ $(objpfx)libmarkermod3.so: $(objpfx)libmarkermod3-1.so
+@@ -2521,6 +2587,8 @@ $(objpfx)libmarkermod3.so: $(objpfx)libmarkermod3-1.so
  	cp $< $@
  $(objpfx)libmarkermod4.so: $(objpfx)libmarkermod4-1.so
  	cp $< $@
@@ -997,7 +1058,7 @@ index 5bdf0a383d..d29b5721bf 100644
  
  # tst-glibc-hwcaps-prepend checks that --glibc-hwcaps-prepend is
  # preferred over auto-detected subdirectories.
-@@ -2733,3 +2812,81 @@ $(objpfx)tst-p_align3: $(objpfx)tst-p_alignmod3.so
+@@ -2733,3 +2801,81 @@ $(objpfx)tst-p_align3: $(objpfx)tst-p_alignmod3.so
  $(objpfx)tst-p_align3.out: tst-p_align3.sh $(objpfx)tst-p_align3
  	$(SHELL) $< $(common-objpfx) '$(test-program-prefix)'; \
  	$(evaluate-test)
@@ -1792,9 +1853,29 @@ index 0000000000..7c89c9a5a4
 @@ -0,0 +1 @@
 +/* Empty  */
 diff --git a/elf/rtld.c b/elf/rtld.c
-index 8dafaf61f4..9cc9e5fd4c 100644
+index 8dafaf61f4..86354fb0c2 100644
 --- a/elf/rtld.c
 +++ b/elf/rtld.c
+@@ -441,8 +441,8 @@ static ElfW(Addr) _dl_start_final (void *arg,
+ 				   struct dl_start_final_info *info);
+ #endif
+ 
+-/* These defined magically in the linker script.  */
+-extern char _begin[] attribute_hidden;
++/* These are defined magically by the linker.  */
++extern const ElfW(Ehdr) __ehdr_start attribute_hidden;
+ extern char _etext[] attribute_hidden;
+ extern char _end[] attribute_hidden;
+ 
+@@ -487,7 +487,7 @@ _dl_start_final (void *arg, struct dl_start_final_info *info)
+ #endif
+   _dl_setup_hash (&GL(dl_rtld_map));
+   GL(dl_rtld_map).l_real = &GL(dl_rtld_map);
+-  GL(dl_rtld_map).l_map_start = (ElfW(Addr)) _begin;
++  GL(dl_rtld_map).l_map_start = (ElfW(Addr)) &__ehdr_start;
+   GL(dl_rtld_map).l_map_end = (ElfW(Addr)) _end;
+   GL(dl_rtld_map).l_text_end = (ElfW(Addr)) _etext;
+   /* Copy the TLS related data if necessary.  */
 @@ -1312,6 +1312,62 @@ rtld_setup_main_map (struct link_map *main_map)
    return has_interp;
  }
@@ -1978,6 +2059,14 @@ index 8dafaf61f4..9cc9e5fd4c 100644
      }
    else
      {
+@@ -1754,7 +1801,6 @@ dl_main (const ElfW(Phdr) *phdr,
+      segment that also includes the phdrs.  If that's not available, we use
+      the old method that assumes the beginning of the file is part of the
+      lowest-addressed PT_LOAD segment.  */
+-  extern const ElfW(Ehdr) __ehdr_start __attribute__ ((visibility ("hidden")));
+ 
+   /* Set up the program header information for the dynamic linker
+      itself.  It is needed in the dl_iterate_phdr callbacks.  */
 diff --git a/elf/tst-audit26.c b/elf/tst-audit26.c
 new file mode 100644
 index 0000000000..3f920e83ba

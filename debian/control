@@ -30,6 +30,7 @@ Priority: required
 Essential: yes
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
+Breaks: dh-lua (<< 27+nmu1~)
 Recommends: manpages
 Build-Profiles: <!stage1>
 Description: GNU C Library: Binaries

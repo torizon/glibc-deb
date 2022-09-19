@@ -7,6 +7,9 @@ glibc (2.35-0experimental4) UNRELEASED; urgency=medium
   * debian/control.in/main: add a breaks against dh-lua (<< 27+nmu1~) to
     libc-bin. See #1017832.
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/rules.d/build.mk: fix the pt_chown permissions after installation
+    when running with Rules-Requires-Root=no (for non-Linux systems).
+  * debian/control.in/main: set Rules-Requires-Root: no.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
 

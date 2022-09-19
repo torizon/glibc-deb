@@ -317,6 +317,16 @@ ifeq ($(filter stage1,$(DEB_BUILD_PROFILES)),)
 
 	$(call xx,extra_install)
 endif
+
+	# With Rules-Requires-Root=no, the upstream makefile fails to set the
+	# correct chmod for pt_chown as it tries to set the owner at the same
+	# time. Fix the permissions, dpkg-deb will "fix" the owner.
+ifeq ($(pt_chown),yes)
+	if [ $$(stat -c "%u" $(CURDIR)/$(debian-tmp)/usr/lib/pt_chown) != 0 ]; then \
+	  chmod 4755 $(CURDIR)/$(debian-tmp)/usr/lib/pt_chown ; \
+	fi
+endif
+
 	touch $@
 
 #

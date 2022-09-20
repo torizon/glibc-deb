@@ -10,6 +10,8 @@ glibc (2.35-0experimental4) UNRELEASED; urgency=medium
   * debian/rules.d/build.mk: fix the pt_chown permissions after installation
     when running with Rules-Requires-Root=no (for non-Linux systems).
   * debian/control.in/main: set Rules-Requires-Root: no.
+  * debian/debhelper.in/libc.preinst: only apply NSS workaround when upgrading
+    from glibc < 2.34.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
 

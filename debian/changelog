@@ -1,6 +1,11 @@
 glibc (2.34-9) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-readlink-fifo.diff: Fix readlink() on fifos.
+
+  [ Luca Boccassi ]
+  * debian/debhelper.in/libc-alt.preinst: libc6-<arch>: create merged-usr
+    symlinks via preinst script.  Closes: #926699.
 
  -- Samuel Thibault <sthibault@debian.org>  Wed, 14 Sep 2022 18:59:18 +0200
 

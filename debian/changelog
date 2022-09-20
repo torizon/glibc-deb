@@ -2,6 +2,9 @@ glibc (2.34-9) UNRELEASED; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-readlink-fifo.diff: Fix readlink() on fifos.
+  * debian/patches/hurd-i386/git-net-route.h.diff: Add ifrtreq structure and
+    fix SIOCADD/DELRT ioctls.
+  * debian/patches/hurd-i386/submitted-net.diff: Drop net/route.h part.
 
   [ Luca Boccassi ]
   * debian/debhelper.in/libc-alt.preinst: libc6-<arch>: create merged-usr

@@ -10,6 +10,9 @@ glibc (2.34-9) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-alt.preinst: libc6-<arch>: create merged-usr
     symlinks via preinst script.  Closes: #926699.
 
+  [ Gioele Barabucci ]
+  * debian/debhelper.in/libc.preinst: avoid using pidof.
+
  -- Samuel Thibault <sthibault@debian.org>  Wed, 14 Sep 2022 18:59:18 +0200
 
 glibc (2.34-8) unstable; urgency=medium

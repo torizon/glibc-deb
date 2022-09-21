@@ -12,6 +12,7 @@ glibc (2.35-0experimental4) UNRELEASED; urgency=medium
   * debian/control.in/main: set Rules-Requires-Root: no.
   * debian/debhelper.in/libc.preinst: only apply NSS workaround when upgrading
     from glibc < 2.34.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 11 Sep 2022 14:22:55 +0200
 

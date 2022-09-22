@@ -14,6 +14,17 @@ Date:   Sat Aug 27 13:52:46 2022 +0200
     
     Spotted by the libunistring testsuite test-perror2
 
+commit 1918241b55540536fee45b3096e786b7b7f9277a
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Sun Sep 11 14:20:32 2022 +0200
+
+    tst-sprintf-errno: Update Hurd message output
+    
+    03ad444e8e08 ("mach: Fix incoherency between perror and strerror")
+    fixesd the output of error messages, but tst-sprintf-errno.c was still
+    checking the old (erroneous) format. This updates the expected output
+    according to the 03ad444e8e08 fix.
+
 diff --git a/sysdeps/mach/_strerror.c b/sysdeps/mach/_strerror.c
 index b179c440d3..acc00612bb 100644
 --- a/sysdeps/mach/_strerror.c
@@ -27,3 +38,18 @@ index b179c440d3..acc00612bb 100644
  		  errnum);
        return buf;
      }
+diff --git a/stdio-common/tst-sprintf-errno.c b/stdio-common/tst-sprintf-errno.c
+index ca1214cde6..91b1f142fb 100644
+--- a/stdio-common/tst-sprintf-errno.c
++++ b/stdio-common/tst-sprintf-errno.c
+@@ -50,8 +50,8 @@ do_test (void)
+ 
+   errno = -1;
+ #ifdef __GNU__
+-  TEST_COMPARE (sprintf (buf, "%m"), 35);
+-  TEST_COMPARE_STRING (buf, "Error in unknown error system: : -1");
++  TEST_COMPARE (sprintf (buf, "%m"), 39);
++  TEST_COMPARE_STRING (buf, "Error in unknown error system: FFFFFFFF");
+ #else
+   TEST_COMPARE (sprintf (buf, "%m"), 16);
+   TEST_COMPARE_STRING (buf, "Unknown error -1");

@@ -84,7 +84,7 @@ Index: glibc-2.27/sysdeps/gnu/net/ethernet.h
 --- /dev/null
 +++ glibc-2.27/sysdeps/gnu/net/ethernet.h
 @@ -0,0 +1,83 @@
-+/* Copyright (C) 1997-2021 Free Software Foundation, Inc.
++/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
 +
 +   The GNU C Library is free software; you can redistribute it and/or
@@ -171,11 +171,10 @@ Index: glibc-2.27/sysdeps/gnu/net/if_arp.h
 ===================================================================
 --- /dev/null
 +++ glibc-2.27/sysdeps/gnu/net/if_arp.h
-@@ -0,0 +1,185 @@
+@@ -0,0 +1,184 @@
 +/* Definitions for Address Resolution Protocol.
-+   Copyright (C) 1997-2021 Free Software Foundation, Inc.
++   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
-+   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 +
 +   The GNU C Library is free software; you can redistribute it and/or
 +   modify it under the terms of the GNU Lesser General Public
@@ -362,7 +361,7 @@ Index: glibc-2.27/sysdeps/gnu/net/if_ether.h
 --- /dev/null
 +++ glibc-2.27/sysdeps/gnu/net/if_ether.h
 @@ -0,0 +1,115 @@
-+/* Copyright (C) 1997-2021 Free Software Foundation, Inc.
++/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
 +
 +   The GNU C Library is free software; you can redistribute it and/or
@@ -658,7 +657,7 @@ Index: glibc-2.27/sysdeps/gnu/netinet/if_ether.h
 --- /dev/null
 +++ glibc-2.27/sysdeps/gnu/netinet/if_ether.h
 @@ -0,0 +1,103 @@
-+/* Copyright (C) 1996-2021 Free Software Foundation, Inc.
++/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
 +   This file is part of the GNU C Library.
 +
 +   The GNU C Library is free software; you can redistribute it and/or
@@ -779,7 +778,7 @@ Index: glibc-2.27/sysdeps/mach/hurd/net/ethernet.h
 --- glibc-2.27.orig/sysdeps/mach/hurd/net/ethernet.h
 +++ /dev/null
 @@ -1,76 +0,0 @@
--/* Copyright (C) 1997-2021 Free Software Foundation, Inc.
+-/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -859,11 +858,10 @@ Index: glibc-2.27/sysdeps/mach/hurd/net/if_arp.h
 ===================================================================
 --- glibc-2.27.orig/sysdeps/mach/hurd/net/if_arp.h
 +++ /dev/null
-@@ -1,145 +0,0 @@
+@@ -1,144 +0,0 @@
 -/* Definitions for Address Resolution Protocol.
--   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
--   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
 -   modify it under the terms of the GNU Lesser General Public
@@ -1010,7 +1008,7 @@ Index: glibc-2.27/sysdeps/mach/hurd/net/if_ether.h
 --- glibc-2.27.orig/sysdeps/mach/hurd/net/if_ether.h
 +++ /dev/null
 @@ -1,84 +0,0 @@
--/* Copyright (C) 1997-2021 Free Software Foundation, Inc.
+-/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -1113,7 +1111,7 @@ Index: glibc-2.27/sysdeps/unix/sysv/linux/net/ethernet.h
 --- glibc-2.27.orig/sysdeps/unix/sysv/linux/net/ethernet.h
 +++ /dev/null
 @@ -1,83 +0,0 @@
--/* Copyright (C) 1997-2021 Free Software Foundation, Inc.
+-/* Copyright (C) 1997-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -1200,11 +1198,10 @@ Index: glibc-2.27/sysdeps/unix/sysv/linux/net/if_arp.h
 ===================================================================
 --- glibc-2.27.orig/sysdeps/unix/sysv/linux/net/if_arp.h
 +++ /dev/null
-@@ -1,185 +0,0 @@
+@@ -1,184 +0,0 @@
 -/* Definitions for Address Resolution Protocol.
--   Copyright (C) 1997-2021 Free Software Foundation, Inc.
+-   Copyright (C) 1997-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
--   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
 -   modify it under the terms of the GNU Lesser General Public
@@ -1579,7 +1576,7 @@ Index: glibc-2.27/sysdeps/unix/sysv/linux/netinet/if_ether.h
 --- glibc-2.27.orig/sysdeps/unix/sysv/linux/netinet/if_ether.h
 +++ /dev/null
 @@ -1,104 +0,0 @@
--/* Copyright (C) 1996-2021 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or

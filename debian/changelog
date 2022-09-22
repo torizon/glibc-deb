@@ -1,5 +1,6 @@
-glibc (2.36-0experimental0) UNRELEASED; urgency=medium
+glibc (2.36-1) experimental; urgency=medium
 
+  [ Aurelien Jarno ]
   * New upstream release:
     - Support for DT_RELR relative relocation format has been added.  Closes:
       #996598.
@@ -24,7 +25,7 @@ glibc (2.36-0experimental0) UNRELEASED; urgency=medium
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update tests results for hurd-i386.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 10 Sep 2022 22:40:45 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 22 Sep 2022 22:23:11 +0200
 
 glibc (2.35-1) unstable; urgency=medium
 

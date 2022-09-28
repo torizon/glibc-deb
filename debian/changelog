@@ -1,8 +1,14 @@
 glibc (2.35-2) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-SOMAXCONN.diff: Bump SOMAXCONN to 4096.
   * debian/debhelper.in/libc-udeb.install.hurd-i386: Allow installing
     /lib/ld.so, it's required on hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/control.in/libc: add a Breaks against firefox (<< 91~) and
+    firefox-esr (<< 91~) to ensure a seccomp filter compatible with glibc
+    2.34.  Closes: #1020894.
 
  -- Samuel Thibault <sthibault@debian.org>  Tue, 27 Sep 2022 21:40:00 +0000
 

@@ -9,6 +9,8 @@ glibc (2.35-2) UNRELEASED; urgency=medium
   * debian/control.in/libc: add a Breaks against firefox (<< 91~) and
     firefox-esr (<< 91~) to ensure a seccomp filter compatible with glibc
     2.34.  Closes: #1020894.
+  * debian/sysdeps/sparc64.mk: pass --disable-default-pie to configure.
+    Closes: #1020974.
 
  -- Samuel Thibault <sthibault@debian.org>  Tue, 27 Sep 2022 21:40:00 +0000
 

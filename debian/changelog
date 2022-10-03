@@ -11,6 +11,8 @@ glibc (2.35-2) UNRELEASED; urgency=medium
     2.34.  Closes: #1020894.
   * debian/sysdeps/sparc64.mk: pass --disable-default-pie to configure.
     Closes: #1020974.
+  * debian/rules.d/control.mk: add the arc architecture to the control file.
+    Closes: #1021167.
 
  -- Samuel Thibault <sthibault@debian.org>  Tue, 27 Sep 2022 21:40:00 +0000
 

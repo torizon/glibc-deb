@@ -1,4 +1,4 @@
-glibc (2.35-2) UNRELEASED; urgency=medium
+glibc (2.35-2) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-SOMAXCONN.diff: Bump SOMAXCONN to 4096.
@@ -18,7 +18,7 @@ glibc (2.35-2) UNRELEASED; urgency=medium
     - Fix SIGILL on Haswell CPUs without BMI1/BMI2 instructions. Closes:
       #1019855.
 
- -- Samuel Thibault <sthibault@debian.org>  Tue, 27 Sep 2022 21:40:00 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 04 Oct 2022 07:07:58 +0200
 
 glibc (2.35-1) unstable; urgency=medium
 

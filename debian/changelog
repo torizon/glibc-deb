@@ -4,6 +4,10 @@ glibc (2.35-3) UNRELEASED; urgency=medium
     upstream patch switching the arm32 atomics to GCC atomic builtins.
     This fixes the flaky nptl/tst-rwlock9.  Partially addresses:
     #1020500.
+  * debian/control.in/libc: add back the Breaks: on heimdal-multidev
+    (<= 7.7.0+dfsg-4) to libc6-dev, now that the glibc 2.34 transition
+    is finished and that the package has transitioned to testing. It has
+    been temporarily removed in version 2.34-2.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 08 Oct 2022 11:43:37 +0200
 

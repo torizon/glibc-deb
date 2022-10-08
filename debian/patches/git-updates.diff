@@ -4738,6 +4738,32 @@ index c3563e3467..33b0d87579 100644
  # define FRAME_LEFT(frame, other, adj) \
    ((uintptr_t) frame - adj >= (uintptr_t) other - adj)
  #elif _STACK_GROWS_UP
+diff --git a/nscd/aicache.c b/nscd/aicache.c
+index 51e793199f..e0baed170b 100644
+--- a/nscd/aicache.c
++++ b/nscd/aicache.c
+@@ -110,11 +110,10 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
+ 							  "gethostbyname4_r");
+       if (fct4 != NULL)
+ 	{
+-	  struct gaih_addrtuple atmem;
+ 	  struct gaih_addrtuple *at;
+ 	  while (1)
+ 	    {
+-	      at = &atmem;
++	      at = NULL;
+ 	      rc6 = 0;
+ 	      herrno = 0;
+ 	      status[1] = DL_CALL_FCT (fct4, (key, &at,
+@@ -137,7 +136,7 @@ addhstaiX (struct database_dyn *db, int fd, request_header *req,
+ 	    goto next_nip;
+ 
+ 	  /* We found the data.  Count the addresses and the size.  */
+-	  for (const struct gaih_addrtuple *at2 = at = &atmem; at2 != NULL;
++	  for (const struct gaih_addrtuple *at2 = at; at2 != NULL;
+ 	       at2 = at2->next)
+ 	    {
+ 	      ++naddrs;
 diff --git a/nscd/connections.c b/nscd/connections.c
 index 61d1674eb4..531d2e83df 100644
 --- a/nscd/connections.c

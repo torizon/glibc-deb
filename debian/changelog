@@ -8,6 +8,9 @@ glibc (2.35-3) UNRELEASED; urgency=medium
     (<= 7.7.0+dfsg-4) to libc6-dev, now that the glibc 2.34 transition
     is finished and that the package has transitioned to testing. It has
     been temporarily removed in version 2.34-2.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - nscd: do not use stale values when a request needs to be resent.
+      Closes: #1020943, #1021455.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 08 Oct 2022 11:43:37 +0200
 

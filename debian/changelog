@@ -1,4 +1,4 @@
-glibc (2.35-3) UNRELEASED; urgency=medium
+glibc (2.35-3) unstable; urgency=medium
 
   * debian/patches/arm/git-atomic-compiler-builtins.diff: backport an
     upstream patch switching the arm32 atomics to GCC atomic builtins.
@@ -12,7 +12,7 @@ glibc (2.35-3) UNRELEASED; urgency=medium
     - nscd: do not use stale values when a request needs to be resent.
       Closes: #1020943, #1021455.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 08 Oct 2022 11:43:37 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 09 Oct 2022 10:54:21 +0200
 
 glibc (2.35-2) unstable; urgency=medium
 

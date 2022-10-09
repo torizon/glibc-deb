@@ -27,6 +27,44 @@ glibc (2.36-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Thu, 22 Sep 2022 22:23:11 +0200
 
+glibc (2.35-3) unstable; urgency=medium
+
+  * debian/patches/arm/git-atomic-compiler-builtins.diff: backport an
+    upstream patch switching the arm32 atomics to GCC atomic builtins.
+    This fixes the flaky nptl/tst-rwlock9.  Partially addresses:
+    #1020500.
+  * debian/control.in/libc: add back the Breaks: on heimdal-multidev
+    (<= 7.7.0+dfsg-4) to libc6-dev, now that the glibc 2.34 transition
+    is finished and that the package has transitioned to testing. It has
+    been temporarily removed in version 2.34-2.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - nscd: do not use stale values when a request needs to be resent.
+      Closes: #1020943, #1021455.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 09 Oct 2022 10:54:21 +0200
+
+glibc (2.35-2) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-SOMAXCONN.diff: Bump SOMAXCONN to 4096.
+  * debian/debhelper.in/libc-udeb.install.hurd-i386: Allow installing
+    /lib/ld.so, it's required on hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/control.in/libc: add a Breaks against firefox (<< 91~) and
+    firefox-esr (<< 91~) to ensure a seccomp filter compatible with glibc
+    2.34.  Closes: #1020894.
+  * debian/sysdeps/sparc64.mk: pass --disable-default-pie to configure.
+    Closes: #1020974.
+  * debian/rules.d/control.mk: add the arc architecture to the control file.
+    Closes: #1021167.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix initialization of dp register.  Closes: #1020857.
+    - Fix SIGILL on Haswell CPUs without BMI1/BMI2 instructions. Closes:
+      #1019855.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 04 Oct 2022 07:07:58 +0200
+
 glibc (2.35-1) unstable; urgency=medium
 
   [ Samuel Thibault ]

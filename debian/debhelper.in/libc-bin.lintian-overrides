@@ -14,3 +14,6 @@ no-manual-page [usr/bin/pldd]
 no-manual-page [usr/bin/zdump]
 no-manual-page [usr/sbin/iconvconfig]
 no-manual-page [usr/sbin/zic]
+
+# this non-standard permission is needed for security reasons
+non-standard-dir-perm 0700 != 0755 [var/cache/ldconfig/]

@@ -327,6 +327,9 @@ ifeq ($(pt_chown),yes)
 	fi
 endif
 
+	# Create /var/cache/ldconfig
+	install -m 700 -d $(CURDIR)/$(debian-tmp)/var/cache/ldconfig
+
 	touch $@
 
 #

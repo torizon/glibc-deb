@@ -1,3 +1,11 @@
+glibc (2.35-4) UNRELEASED; urgency=medium
+
+  [ Luca Boccassi ]
+  * debian/debhelper.in/libc.preinst: libc6: create merged-usr symlinks via
+    preinst script.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 11 Oct 2022 23:51:01 +0200
+
 glibc (2.35-3) unstable; urgency=medium
 
   * debian/patches/arm/git-atomic-compiler-builtins.diff: backport an

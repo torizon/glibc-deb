@@ -287,13 +287,13 @@ fi
 # Once all packages install only under /usr, this can be removed, as removing
 # this package will no longer result in the symlink being deleted.
 if [ "$1" = "install" ] || [ "$1" = "upgrade" ]; then
-    if [ -L /lib ]; then
+    if [ -L "$DPKG_ROOT/lib" ]; then
         # Has the link already been created?
         # If it has not, is a directory already there? Half-merged systems are
         # the problem of usrmerge, simply ignore them here.
-        if [ ! -L RTLDDIR ] && [ ! -d RTLDDIR ]; then
-            mkdir -p /usrRTLDDIR
-            ln -s usrRTLDDIR RTLDDIR
+        if [ ! -L "${DPKG_ROOT}RTLDDIR" ] && [ ! -d "${DPKG_ROOT}RTLDDIR" ]; then
+            mkdir -p "$DPKG_ROOT/usrRTLDDIR"
+            ln -s usrRTLDDIR "${DPKG_ROOT}RTLDDIR"
         fi
     fi
 fi

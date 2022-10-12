@@ -8,6 +8,8 @@ glibc (2.35-4) UNRELEASED; urgency=medium
   * debhelper.in/libc-bin.install, debhelper.in/libc-bin.lintian-overrides,
     rules.d/build.mk, rules.d/debhelper.mk: install a /var/cache/ldconfig into
     the libc-bin package.  Closes: #1021577.
+  * debian/debhelper.in/libc-bin.lintian-overrides: add an override for the
+    ld.so manpage, provided by the manpages package.
 
  -- Aurelien Jarno <aurel32@debian.org>  Tue, 11 Oct 2022 23:51:01 +0200
 

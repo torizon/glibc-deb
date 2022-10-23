@@ -11,6 +11,10 @@ glibc (2.35-4) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-bin.lintian-overrides: add an override for the
     ld.so manpage, provided by the manpages package.
 
+  [ Samuel Thibault ]
+  * debian/control.in/libc: Break gnumach versions which don't have the FPU
+    context switch fix, to try to improve upgrading from 2021.
+
  -- Aurelien Jarno <aurel32@debian.org>  Tue, 11 Oct 2022 23:51:01 +0200
 
 glibc (2.35-3) unstable; urgency=medium

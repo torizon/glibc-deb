@@ -1,4 +1,4 @@
-glibc (2.35-4) UNRELEASED; urgency=medium
+glibc (2.35-4) unstable; urgency=medium
 
   [ Luca Boccassi ]
   * debian/debhelper.in/libc.preinst: libc6: create merged-usr symlinks via
@@ -15,7 +15,7 @@ glibc (2.35-4) UNRELEASED; urgency=medium
   * debian/control.in/libc: Break gnumach versions which don't have the FPU
     context switch fix, to try to improve upgrading from 2021.
 
- -- Aurelien Jarno <aurel32@debian.org>  Tue, 11 Oct 2022 23:51:01 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 25 Oct 2022 07:23:17 +0200
 
 glibc (2.35-3) unstable; urgency=medium
 

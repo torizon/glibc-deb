@@ -1,4 +1,4 @@
-glibc (2.36-2) UNRELEASED; urgency=medium
+glibc (2.36-2) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch.
@@ -9,7 +9,7 @@ glibc (2.36-2) UNRELEASED; urgency=medium
     Generic System V Application Binary and breaks the Easy Anti-Cheat system.
     Addresses: #1019535.
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 24 Oct 2022 22:04:33 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 25 Oct 2022 07:27:10 +0200
 
 glibc (2.36-1) experimental; urgency=medium
 

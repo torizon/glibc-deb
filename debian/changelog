@@ -40,6 +40,25 @@ glibc (2.36-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Thu, 22 Sep 2022 22:23:11 +0200
 
+glibc (2.35-4) unstable; urgency=medium
+
+  [ Luca Boccassi ]
+  * debian/debhelper.in/libc.preinst: libc6: create merged-usr symlinks via
+    preinst script.
+
+  [ Aurelien Jarno ]
+  * debhelper.in/libc-bin.install, debhelper.in/libc-bin.lintian-overrides,
+    rules.d/build.mk, rules.d/debhelper.mk: install a /var/cache/ldconfig into
+    the libc-bin package.  Closes: #1021577.
+  * debian/debhelper.in/libc-bin.lintian-overrides: add an override for the
+    ld.so manpage, provided by the manpages package.
+
+  [ Samuel Thibault ]
+  * debian/control.in/libc: Break gnumach versions which don't have the FPU
+    context switch fix, to try to improve upgrading from 2021.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 25 Oct 2022 07:23:17 +0200
+
 glibc (2.35-3) unstable; urgency=medium
 
   * debian/patches/arm/git-atomic-compiler-builtins.diff: backport an

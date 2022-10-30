@@ -211,6 +211,9 @@ test-xfail-tst-readdir64-compat = yes
 
 # https://www.spinics.net/lists/linux-parisc/msg15397.html
 test-xfail-tst-minsigstksz-5 = yes
+
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106458
+test-xfail-tst-scratch_buffer = yes
 endif
 
 

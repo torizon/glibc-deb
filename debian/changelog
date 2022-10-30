@@ -1,3 +1,10 @@
+glibc (2.36-3) UNRELEASED; urgency=medium
+
+  * debian/testsuite-xfail-debian.mk: XFAIL malloc/tst-scratch_buffer on hppa.
+    Closes: #1022771.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 30 Oct 2022 21:18:34 +0100
+
 glibc (2.36-2) experimental; urgency=medium
 
   [ Aurelien Jarno ]

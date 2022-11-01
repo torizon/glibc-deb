@@ -1,10 +1,12 @@
-glibc (2.36-3) UNRELEASED; urgency=medium
+glibc (2.36-3) unstable; urgency=medium
 
+  [ Aurelien Jarno ]
+  * Upload to unstable.
   * debian/testsuite-xfail-debian.mk: XFAIL malloc/tst-scratch_buffer on hppa.
     Closes: #1022771.
   * debian/patches/git-updates.diff: update from upstream stable branch.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 30 Oct 2022 21:18:34 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 01 Nov 2022 12:41:15 +0100
 
 glibc (2.36-2) experimental; urgency=medium
 

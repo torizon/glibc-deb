@@ -379,7 +379,6 @@ test-xfail-tst-nss-compat1 = yes
 test-xfail-test-fesetexcept-traps = yes
 test-xfail-tst-dlinfo-phdr = yes
 test-xfail-tst-tls-allocation-failure-static-patched = yes
-test-xfail-tst-cancel29 = yes
 
 # new in 2.35
 test-xfail-tst-compathooks-on = yes

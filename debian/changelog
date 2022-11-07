@@ -1,8 +1,13 @@
 glibc (2.36-5) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-sigtimedwait.diff: Add support for
     sigtimedwait and sigwaitinfo.
   * debian/testsuite-xfail-debian.mk: Update accordingly.
+
+  [ Aurelien Jarno ]
+  * debian/sysdeps/sh{3,4}.mk: build with --disable-default-pie.  Closes:
+    #1023554.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 07 Nov 2022 20:19:11 +0000
 

@@ -8,6 +8,7 @@ glibc (2.36-5) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/sysdeps/sh{3,4}.mk: build with --disable-default-pie.  Closes:
     #1023554.
+  * debian/control.in/main: bump binutils build-depends to 2.38.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 07 Nov 2022 20:19:11 +0000
 

@@ -13,6 +13,7 @@ glibc (2.36-5) UNRELEASED; urgency=medium
     #1023661.
   * debian/control.in/libc: add a Breaks against check (<< 0.15.2-2+b1) on
     s390x.  Addresses: #1023531.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 07 Nov 2022 20:19:11 +0000
 

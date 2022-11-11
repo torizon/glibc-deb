@@ -1,10 +1,68 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.36/master from glibc-2.36
 
+diff --git a/Makeconfig b/Makeconfig
+index ba70321af1..2bbcabd8f9 100644
+--- a/Makeconfig
++++ b/Makeconfig
+@@ -43,6 +43,22 @@ else
+ $(error objdir must be defined by the build-directory Makefile)
+ endif
+ 
++# Did we request 'make -s' run? "yes" or "no".
++# Starting from make-4.4 MAKEFLAGS now contains long
++# options like '--shuffle'. To detect presence of 's'
++# we pick first word with short options. Long options
++# are guaranteed to come after whitespace. We use '-'
++# prefix to always have a word before long options
++# even if no short options were passed.
++# Typical MAKEFLAGS values to watch for:
++#   "rs --shuffle=42" (silent)
++#   " --shuffle" (not silent)
++ifeq ($(findstring s, $(firstword -$(MAKEFLAGS))),)
++silent-make := no
++else
++silent-make := yes
++endif
++
+ # Root of the sysdeps tree.
+ sysdep_dir := $(..)sysdeps
+ export sysdep_dir := $(sysdep_dir)
+@@ -917,7 +933,7 @@ endif
+ # umpteen zillion filenames along with it (we use `...' instead)
+ # but we don't want this echoing done when the user has said
+ # he doesn't want to see commands echoed by using -s.
+-ifneq	"$(findstring s,$(MAKEFLAGS))" ""	# if -s
++ifeq ($(silent-make),yes)			# if -s
+ +cmdecho	:= echo >/dev/null
+ else						# not -s
+ +cmdecho	:= echo
+diff --git a/Makerules b/Makerules
+index d1e139d03c..09c0cf8357 100644
+--- a/Makerules
++++ b/Makerules
+@@ -794,7 +794,7 @@ endif
+ # Maximize efficiency by minimizing the number of rules.
+ .SUFFIXES:	# Clear the suffix list.  We don't use suffix rules.
+ # Don't define any builtin rules.
+-MAKEFLAGS := $(MAKEFLAGS)r
++MAKEFLAGS := $(MAKEFLAGS) -r
+ 
+ # Generic rule for making directories.
+ %/:
+@@ -811,7 +811,7 @@ MAKEFLAGS := $(MAKEFLAGS)r
+ .PRECIOUS: $(foreach l,$(libtypes),$(patsubst %,$(common-objpfx)$l,c))
+ 
+ # Use the verbose option of ar and tar when not running silently.
+-ifeq	"$(findstring s,$(MAKEFLAGS))" ""	# if not -s
++ifeq ($(silent-make),no)			# if not -s
+ verbose := v
+ else	   					# -s
+ verbose	:=
 diff --git a/NEWS b/NEWS
-index f61e521fc8..e92d547e2c 100644
+index f61e521fc8..9f8edea5db 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -5,6 +5,48 @@ See the end for copying conditions.
+@@ -5,6 +5,49 @@ See the end for copying conditions.
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
  
@@ -49,6 +107,7 @@ index f61e521fc8..e92d547e2c 100644
 +  [29657] libc: Incorrect struct stat for 64-bit time on linux/generic
 +    platforms
 +  [29730] broken y2038 support in fstatat on MIPS N64
++  [29771] Restore IPC_64 support in sysvipc *ctl functions
 +
  Version 2.36
  
@@ -429,6 +488,37 @@ index 5f7f18ef27..4bf9052db1 100644
 +tst-bz28937: {+a;+b;-b;+c;%c};a->a1;a->a2;a2->a;b->b1;c->a1;c=>a1
 +output(glibc.rtld.dynamic_sort=1): {+a[a2>a1>a>];+b[b1>b>];-b[<b<b1];+c[c>];%c(a1());}<a<a2<c<a1
 +output(glibc.rtld.dynamic_sort=2): {+a[a2>a1>a>];+b[b1>b>];-b[<b<b1];+c[c>];%c(a1());}<a2<a<c<a1
+diff --git a/elf/elf.h b/elf/elf.h
+index 02a1b3f52f..014393f3cc 100644
+--- a/elf/elf.h
++++ b/elf/elf.h
+@@ -4085,8 +4085,11 @@ enum
+ #define R_NDS32_TLS_DESC	119
+ 
+ /* LoongArch ELF Flags */
+-#define EF_LARCH_ABI    	0x07
+-#define EF_LARCH_ABI_LP64D	0x03
++#define EF_LARCH_ABI_MODIFIER_MASK  0x07
++#define EF_LARCH_ABI_SOFT_FLOAT     0x01
++#define EF_LARCH_ABI_SINGLE_FLOAT   0x02
++#define EF_LARCH_ABI_DOUBLE_FLOAT   0x03
++#define EF_LARCH_OBJABI_V1          0x40
+ 
+ /* LoongArch specific dynamic relocations */
+ #define R_LARCH_NONE		0
+diff --git a/elf/rtld-Rules b/elf/rtld-Rules
+index ca00dd1fe2..3c5e273f2b 100644
+--- a/elf/rtld-Rules
++++ b/elf/rtld-Rules
+@@ -52,7 +52,7 @@ $(objpfx)rtld-libc.a: $(foreach dir,$(rtld-subdirs),\
+ 	mv -f $@T $@
+ 
+ # Use the verbose option of ar and tar when not running silently.
+-ifeq	"$(findstring s,$(MAKEFLAGS))" ""	# if not -s
++ifeq ($(silent-make),no)			# if not -s
+ verbose := v
+ else						# -s
+ verbose	:=
 diff --git a/elf/rtld.c b/elf/rtld.c
 index cbbaf4a331..3e771a93d8 100644
 --- a/elf/rtld.c
@@ -6232,6 +6322,21 @@ index 0cd21ef0fa..079612e4aa 100644
 +
 +/* QEMU does not support set_robust_list.  */
 +#undef __ASSUME_SET_ROBUST_LIST
+diff --git a/sysdeps/unix/sysv/linux/ipc_priv.h b/sysdeps/unix/sysv/linux/ipc_priv.h
+index 87893a6757..2f50c31a8e 100644
+--- a/sysdeps/unix/sysv/linux/ipc_priv.h
++++ b/sysdeps/unix/sysv/linux/ipc_priv.h
+@@ -63,4 +63,10 @@ struct __old_ipc_perm
+ # define __IPC_TIME64 0
+ #endif
+ 
++#if __IPC_TIME64 || defined __ASSUME_SYSVIPC_BROKEN_MODE_T
++# define IPC_CTL_NEED_TRANSLATION 1
++#else
++# define IPC_CTL_NEED_TRANSLATION 0
++#endif
++
+ #include <ipc_ops.h>
 diff --git a/sysdeps/unix/sysv/linux/m68k/libc-lock-arch.h b/sysdeps/unix/sysv/linux/m68k/libc-lock-arch.h
 new file mode 100644
 index 0000000000..1844bbaf6f
@@ -6320,6 +6425,89 @@ index 0000000000..fe6c3a0dda
 +}
 +
 +weak_alias (__fstatat, fstatat)
+diff --git a/sysdeps/unix/sysv/linux/msgctl.c b/sysdeps/unix/sysv/linux/msgctl.c
+index e824ebb095..2072205252 100644
+--- a/sysdeps/unix/sysv/linux/msgctl.c
++++ b/sysdeps/unix/sysv/linux/msgctl.c
+@@ -85,11 +85,19 @@ msgctl_syscall (int msqid, int cmd, msgctl_arg_t *buf)
+ int
+ __msgctl64 (int msqid, int cmd, struct __msqid64_ds *buf)
+ {
+-#if __IPC_TIME64
++#if IPC_CTL_NEED_TRANSLATION
++# if __IPC_TIME64
+   struct kernel_msqid64_ds ksemid, *arg = NULL;
+-#else
++# else
+   msgctl_arg_t *arg;
+-#endif
++# endif
++
++  /* Some applications pass the __IPC_64 flag in cmd, to invoke
++     previously unsupported commands back when there was no EINVAL
++     error checking in glibc.  Mask the flag for the switch statements
++     below.  msgctl_syscall adds back the __IPC_64 flag for the actual
++     system call.  */
++  cmd &= ~__IPC_64;
+ 
+   switch (cmd)
+     {
+@@ -101,19 +109,19 @@ __msgctl64 (int msqid, int cmd, struct __msqid64_ds *buf)
+     case IPC_STAT:
+     case MSG_STAT:
+     case MSG_STAT_ANY:
+-#if __IPC_TIME64
++# if __IPC_TIME64
+       if (buf != NULL)
+ 	{
+ 	  msqid64_to_kmsqid64 (buf, &ksemid);
+ 	  arg = &ksemid;
+ 	}
+-# ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
++#  ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
+       if (cmd == IPC_SET)
+ 	arg->msg_perm.mode *= 0x10000U;
+-# endif
+-#else
++#  endif
++# else
+       arg = buf;
+-#endif
++# endif
+       break;
+ 
+     case IPC_INFO:
+@@ -137,21 +145,25 @@ __msgctl64 (int msqid, int cmd, struct __msqid64_ds *buf)
+     case IPC_STAT:
+     case MSG_STAT:
+     case MSG_STAT_ANY:
+-#ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
++# ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
+       arg->msg_perm.mode >>= 16;
+-#else
++# else
+       /* Old Linux kernel versions might not clear the mode padding.  */
+       if (sizeof ((struct msqid_ds){0}.msg_perm.mode)
+           != sizeof (__kernel_mode_t))
+ 	arg->msg_perm.mode &= 0xFFFF;
+-#endif
++# endif
+ 
+-#if __IPC_TIME64
++# if __IPC_TIME64
+       kmsqid64_to_msqid64 (arg, buf);
+-#endif
++# endif
+     }
+ 
+   return ret;
++
++#else /* !IPC_CTL_NEED_TRANSLATION */
++  return msgctl_syscall (msqid, cmd, buf);
++#endif
+ }
+ #if __TIMESIZE != 64
+ libc_hidden_def (__msgctl64)
 diff --git a/sysdeps/unix/sysv/linux/nios2/bits/struct_stat.h b/sysdeps/unix/sysv/linux/nios2/bits/struct_stat.h
 new file mode 100644
 index 0000000000..e00e71173e
@@ -6498,6 +6686,24 @@ index d656aedcc2..4e65f337d4 100644
  #define __NR_migrate_pages 238
  #define __NR_mincore 232
  #define __NR_mkdirat 34
+diff --git a/sysdeps/unix/sysv/linux/semctl.c b/sysdeps/unix/sysv/linux/semctl.c
+index 77a8130c18..3458b018bc 100644
+--- a/sysdeps/unix/sysv/linux/semctl.c
++++ b/sysdeps/unix/sysv/linux/semctl.c
+@@ -140,6 +140,13 @@ __semctl64 (int semid, int semnum, int cmd, ...)
+   union semun64 arg64 = { 0 };
+   va_list ap;
+ 
++  /* Some applications pass the __IPC_64 flag in cmd, to invoke
++     previously unsupported commands back when there was no EINVAL
++     error checking in glibc.  Mask the flag for the switch statements
++     below.  semctl_syscall adds back the __IPC_64 flag for the actual
++     system call.  */
++  cmd &= ~__IPC_64;
++
+   /* Get the argument only if required.  */
+   switch (cmd)
+     {
 diff --git a/sysdeps/unix/sysv/linux/sh/bits/struct_stat.h b/sysdeps/unix/sysv/linux/sh/bits/struct_stat.h
 new file mode 100644
 index 0000000000..0f7c9cdc89
@@ -6643,6 +6849,89 @@ index 0000000000..0f7c9cdc89
 +
 +
 +#endif /* _BITS_STRUCT_STAT_H  */
+diff --git a/sysdeps/unix/sysv/linux/shmctl.c b/sysdeps/unix/sysv/linux/shmctl.c
+index ea38935497..f00817a6f6 100644
+--- a/sysdeps/unix/sysv/linux/shmctl.c
++++ b/sysdeps/unix/sysv/linux/shmctl.c
+@@ -85,11 +85,19 @@ shmctl_syscall (int shmid, int cmd, shmctl_arg_t *buf)
+ int
+ __shmctl64 (int shmid, int cmd, struct __shmid64_ds *buf)
+ {
+-#if __IPC_TIME64
++#if IPC_CTL_NEED_TRANSLATION
++# if __IPC_TIME64
+   struct kernel_shmid64_ds kshmid, *arg = NULL;
+-#else
++# else
+   shmctl_arg_t *arg;
+-#endif
++# endif
++
++  /* Some applications pass the __IPC_64 flag in cmd, to invoke
++     previously unsupported commands back when there was no EINVAL
++     error checking in glibc.  Mask the flag for the switch statements
++     below.  shmctl_syscall adds back the __IPC_64 flag for the actual
++     system call.  */
++  cmd &= ~__IPC_64;
+ 
+   switch (cmd)
+     {
+@@ -103,19 +111,19 @@ __shmctl64 (int shmid, int cmd, struct __shmid64_ds *buf)
+     case IPC_STAT:
+     case SHM_STAT:
+     case SHM_STAT_ANY:
+-#if __IPC_TIME64
++# if __IPC_TIME64
+       if (buf != NULL)
+ 	{
+ 	  shmid64_to_kshmid64 (buf, &kshmid);
+ 	  arg = &kshmid;
+ 	}
+-# ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
++#  ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
+       if (cmd == IPC_SET)
+         arg->shm_perm.mode *= 0x10000U;
+-# endif
+-#else
++#  endif
++# else
+       arg = buf;
+-#endif
++# endif
+       break;
+ 
+     case IPC_INFO:
+@@ -140,21 +148,25 @@ __shmctl64 (int shmid, int cmd, struct __shmid64_ds *buf)
+       case IPC_STAT:
+       case SHM_STAT:
+       case SHM_STAT_ANY:
+-#ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
++# ifdef __ASSUME_SYSVIPC_BROKEN_MODE_T
+         arg->shm_perm.mode >>= 16;
+-#else
++# else
+       /* Old Linux kernel versions might not clear the mode padding.  */
+       if (sizeof ((struct shmid_ds){0}.shm_perm.mode)
+ 	  != sizeof (__kernel_mode_t))
+ 	arg->shm_perm.mode &= 0xFFFF;
+-#endif
++# endif
+ 
+-#if __IPC_TIME64
++# if __IPC_TIME64
+       kshmid64_to_shmid64 (arg, buf);
+-#endif
++# endif
+     }
+ 
+   return ret;
++
++#else /* !IPC_CTL_NEED_TRANSLATION */
++  return shmctl_syscall (shmid, cmd, buf);
++#endif
+ }
+ #if __TIMESIZE != 64
+ libc_hidden_def (__shmctl64)
 diff --git a/sysdeps/unix/sysv/linux/sys/mount.h b/sysdeps/unix/sysv/linux/sys/mount.h
 index f965986ba8..19841d0738 100644
 --- a/sysdeps/unix/sysv/linux/sys/mount.h
@@ -7345,6 +7634,59 @@ index 4ebe4bde30..c4f8b6bbb5 100644
  	return OPTIMIZE (evex);
  
        if (CPU_FEATURE_USABLE_P (cpu_features, RTM))
+diff --git a/time/mktime.c b/time/mktime.c
+index 494c89bf54..e9a6006710 100644
+--- a/time/mktime.c
++++ b/time/mktime.c
+@@ -429,8 +429,13 @@ __mktime_internal (struct tm *tp,
+ 	 time with the right value, and use its UTC offset.
+ 
+ 	 Heuristic: probe the adjacent timestamps in both directions,
+-	 looking for the desired isdst.  This should work for all real
+-	 time zone histories in the tz database.  */
++	 looking for the desired isdst.  If none is found within a
++	 reasonable duration bound, assume a one-hour DST difference.
++	 This should work for all real time zone histories in the tz
++	 database.  */
++
++      /* +1 if we wanted standard time but got DST, -1 if the reverse.  */
++      int dst_difference = (isdst == 0) - (tm.tm_isdst == 0);
+ 
+       /* Distance between probes when looking for a DST boundary.  In
+ 	 tzdata2003a, the shortest period of DST is 601200 seconds
+@@ -441,12 +446,14 @@ __mktime_internal (struct tm *tp,
+ 	 periods when probing.  */
+       int stride = 601200;
+ 
+-      /* The longest period of DST in tzdata2003a is 536454000 seconds
+-	 (e.g., America/Jujuy starting 1946-10-01 01:00).  The longest
+-	 period of non-DST is much longer, but it makes no real sense
+-	 to search for more than a year of non-DST, so use the DST
+-	 max.  */
+-      int duration_max = 536454000;
++      /* In TZDB 2021e, the longest period of DST (or of non-DST), in
++	 which the DST (or adjacent DST) difference is not one hour,
++	 is 457243209 seconds: e.g., America/Cambridge_Bay with leap
++	 seconds, starting 1965-10-31 00:00 in a switch from
++	 double-daylight time (-05) to standard time (-07), and
++	 continuing to 1980-04-27 02:00 in a switch from standard time
++	 (-07) to daylight time (-06).  */
++      int duration_max = 457243209;
+ 
+       /* Search in both directions, so the maximum distance is half
+ 	 the duration; add the stride to avoid off-by-1 problems.  */
+@@ -483,6 +490,11 @@ __mktime_internal (struct tm *tp,
+ 	      }
+ 	  }
+ 
++      /* No unusual DST offset was found nearby.  Assume one-hour DST.  */
++      t += 60 * 60 * dst_difference;
++      if (mktime_min <= t && t <= mktime_max && convert_time (convert, t, &tm))
++	goto offset_found;
++
+       __set_errno (EOVERFLOW);
+       return -1;
+     }
 diff --git a/wcsmbs/Makefile b/wcsmbs/Makefile
 index e6b9e8743a..4af102a3f6 100644
 --- a/wcsmbs/Makefile

@@ -1,4 +1,4 @@
-glibc (2.36-5) UNRELEASED; urgency=medium
+glibc (2.36-5) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-sigtimedwait.diff: Add support for
@@ -15,7 +15,7 @@ glibc (2.36-5) UNRELEASED; urgency=medium
     s390x.  Addresses: #1023531.
   * debian/patches/git-updates.diff: update from upstream stable branch.
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 07 Nov 2022 20:19:11 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 12 Nov 2022 14:23:05 +0100
 
 glibc (2.36-4) unstable; urgency=medium
 

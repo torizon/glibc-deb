@@ -1,4 +1,4 @@
-glibc (2.36-6) UNRELEASED; urgency=medium
+glibc (2.36-6) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/debhelper.in/libc-udeb.install: stop installing (now empty)
@@ -14,7 +14,7 @@ glibc (2.36-6) UNRELEASED; urgency=medium
   [ Helmut Grohne ]
   * Declare packages skipped by noudeb build profile.  Closes: #1024940.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 20 Nov 2022 21:29:52 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 28 Nov 2022 22:26:50 +0100
 
 glibc (2.36-5) unstable; urgency=medium
 

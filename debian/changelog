@@ -3,6 +3,8 @@ glibc (2.36-6) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/debhelper.in/libc-udeb.install: stop installing (now empty)
     libutil.so.1, it is not used by any of the udeb in testing/sid.
+  * debian/rules.d/build.mk: ensure that an empty libanl.a is shipped even on
+    newly added upstream architectures.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 20 Nov 2022 21:29:52 +0100
 

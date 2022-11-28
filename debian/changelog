@@ -5,6 +5,7 @@ glibc (2.36-6) UNRELEASED; urgency=medium
     libutil.so.1, it is not used by any of the udeb in testing/sid.
   * debian/rules.d/build.mk: ensure that an empty libanl.a is shipped even on
     newly added upstream architectures.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
   
   [ Dandan Zhang ]
   * debian/sysdeps/loong64.mk: add support for loong64 architecture.  Closes:

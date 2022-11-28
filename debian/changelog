@@ -10,6 +10,9 @@ glibc (2.36-6) UNRELEASED; urgency=medium
   * debian/sysdeps/loong64.mk: add support for loong64 architecture.  Closes:
     #1024130.
 
+  [ Helmut Grohne ]
+  * Declare packages skipped by noudeb build profile.  Closes: #1024940.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 20 Nov 2022 21:29:52 +0100
 
 glibc (2.36-5) unstable; urgency=medium

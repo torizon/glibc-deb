@@ -4,6 +4,8 @@ glibc (2.36-7) UNRELEASED; urgency=medium
     debian/debhelper.in/libc.preinst: Note that upgrading a kernel also means
     rebooting it. Also, the libc package is usually in an odd state at that
     point and apt -f install needs to be used.
+  * debian/patches/hurd-i386/git-getrandom-chroot.diff: Fix calling getrandom
+    inside a minimal chroot. Fixes openssh-server >= 1:9.1.
 
  -- Samuel Thibault <sthibault@debian.org>  Tue, 29 Nov 2022 20:36:31 +0100
 

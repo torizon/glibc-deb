@@ -11,6 +11,9 @@ glibc (2.36-7) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/glibc-source.filelist: update following recent changes.
 
+  [ Helmut Grohne ]
+  * Use conjunction for libgd-dev profiles.
+
  -- Samuel Thibault <sthibault@debian.org>  Tue, 29 Nov 2022 20:36:31 +0100
 
 glibc (2.36-6) unstable; urgency=medium

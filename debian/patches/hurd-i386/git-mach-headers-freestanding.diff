@@ -9,76 +9,74 @@ Date:   Sun Dec 18 19:46:15 2022 -0500
     the freestanding header files provided by GCC such as stdint.h.
     Message-Id: <Y5+0V9osFc/zXMq0@mars>
 
-diff --git a/sysdeps/mach/configure b/sysdeps/mach/configure
-index 739f1028a4..36f556a663 100644
+commit 7685630b98ca2a3f5de86eadf130993e6cf998a0
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Mon Dec 19 02:34:55 2022 +0100
+
+    mach: Fix passing -ffreestanding when checking for gnumach headers
+    
+    8b8c768e3c70 ("Force use of -ffreestanding when checking for gnumach
+    headers") was passing -ffreestanding to CFLAGS only, but headers checks are
+    performed with the preprocessor, so we rather need to pass it to CPPFLAGS.
+
+commit 0fb10e49ad169374650534509767ec1d4232e230
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Mon Dec 19 02:38:38 2022 +0100
+
+    mach: Drop remnants of old_CFLAGS
+
+---
+ sysdeps/mach/configure    |    9 ++++-----
+ sysdeps/mach/configure.ac |    7 +++----
+ 2 files changed, 7 insertions(+), 9 deletions(-)
+
 --- a/sysdeps/mach/configure
 +++ b/sysdeps/mach/configure
-@@ -133,6 +133,8 @@ if test -n "$sysheaders"; then
+@@ -127,12 +127,13 @@ fi
+ config_vars="$config_vars
+ MIG = $MIG"
+ 
++OLD_CPPFLAGS=$CPPFLAGS
+ if test -n "$sysheaders"; then
+-  OLD_CPPFLAGS=$CPPFLAGS
+   CPPFLAGS="$CPPFLAGS $SYSINCLUDES"
  fi
  
  ### Sanity checks for Mach header installation
-+old_CFLAGS=$CFLAGS
-+CFLAGS="$CFLAGS -ffreestanding"
++CPPFLAGS="$CPPFLAGS -ffreestanding"
  
  
  ac_fn_c_check_header_preproc "$LINENO" "mach/mach_types.h" "ac_cv_header_mach_mach_types_h"
-@@ -143,6 +145,7 @@ else
+@@ -521,6 +522,4 @@ if test $hurd_cv_mig_retcode = yes; then
+ 
  fi
  
- 
-+CFLAGS=$old_CFLAGS
- ac_fn_c_check_header_preproc "$LINENO" "mach/mach_types.defs" "ac_cv_header_mach_mach_types_defs"
- if test "x$ac_cv_header_mach_mach_types_defs" = xyes; then :
- 
-@@ -216,7 +219,9 @@ $as_echo_n "checking for creation_time in task_basic_info... " >&6; }
- if ${libc_cv_mach_task_creation_time+:} false; then :
-   $as_echo_n "(cached) " >&6
- else
--  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-+  old_CFLAGS=$CFLAGS
-+CFLAGS="$CFLAGS -ffreestanding"
-+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
- /* end confdefs.h.  */
- #include <mach/task_info.h>
- int
-@@ -242,6 +247,7 @@ $as_echo "$libc_cv_mach_task_creation_time" >&6; }
- if test $libc_cv_mach_task_creation_time = no; then
-   as_fn_error $? "you need Mach headers supporting task_info.creation_time" "$LINENO" 5
- fi
-+CFLAGS=$old_CFLAGS
- 
- mach_interface_list=
- for ifc in mach mach4 gnumach \
-diff --git a/sysdeps/mach/configure.ac b/sysdeps/mach/configure.ac
-index 61b00d66b1..5816c3d4ad 100644
+-if test -n "$sysheaders"; then
+-  CPPFLAGS=$OLD_CPPFLAGS
+-fi
++CPPFLAGS=$OLD_CPPFLAGS
 --- a/sysdeps/mach/configure.ac
 +++ b/sysdeps/mach/configure.ac
-@@ -12,8 +12,11 @@ if test -n "$sysheaders"; then
+@@ -6,12 +6,13 @@ if test "x$MIG" = xMISSING; then
+ fi
+ LIBC_CONFIG_VAR([MIG], [$MIG])
+ 
++OLD_CPPFLAGS=$CPPFLAGS
+ if test -n "$sysheaders"; then
+-  OLD_CPPFLAGS=$CPPFLAGS
+   CPPFLAGS="$CPPFLAGS $SYSINCLUDES"
  fi
  
  ### Sanity checks for Mach header installation
-+old_CFLAGS=$CFLAGS
-+CFLAGS="$CFLAGS -ffreestanding"
++CPPFLAGS="$CPPFLAGS -ffreestanding"
  AC_CHECK_HEADER(mach/mach_types.h,,
                  [AC_MSG_ERROR([cannot find Mach headers])], -)
-+CFLAGS=$old_CFLAGS
  AC_CHECK_HEADER(mach/mach_types.defs,, [dnl
- AC_MSG_ERROR([cannot find Mach .defs files])], -)
+@@ -130,6 +131,4 @@ fi])
  
-@@ -42,6 +45,8 @@ dnl The creation_time field is a GNU Mach addition the other variants lack.
- dnl
- AC_CACHE_CHECK(for creation_time in task_basic_info,
- 	       libc_cv_mach_task_creation_time, [dnl
-+old_CFLAGS=$CFLAGS
-+CFLAGS="$CFLAGS -ffreestanding"
- AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <mach/task_info.h>]], [[
- extern struct task_basic_info *i;
- long s = i->creation_time.seconds;
-@@ -49,6 +54,7 @@ long s = i->creation_time.seconds;
- if test $libc_cv_mach_task_creation_time = no; then
-   AC_MSG_ERROR([you need Mach headers supporting task_info.creation_time])
- fi
-+CFLAGS=$old_CFLAGS
+ hurd_MIG_RETCODE
  
- dnl
- dnl The Darwin variant no longer has <mach/mach.defs>
+-if test -n "$sysheaders"; then
+-  CPPFLAGS=$OLD_CPPFLAGS
+-fi
++CPPFLAGS=$OLD_CPPFLAGS

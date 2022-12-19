@@ -40,6 +40,7 @@ hurd-i386/git-readlink-fifo.diff
 hurd-i386/git-net-route.h.diff
 hurd-i386/git-SOMAXCONN.diff
 hurd-i386/git-sigtimedwait.diff
+hurd-i386/git-getrandom-chroot.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
@@ -111,4 +112,3 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-hurd-i386/git-getrandom-chroot.diff

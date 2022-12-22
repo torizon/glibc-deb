@@ -9,6 +9,7 @@ glibc (2.36-7) UNRELEASED; urgency=medium
     inside a minimal chroot. Fixes openssh-server >= 1:9.1.
   * debian/patches/hurd-i386/local-static_pthread_setcancelstate.diff: Fix
     ldconfig crashing on libxeddsa2.
+  * debian/testsuite-xfail-debian.mk: Update hurd results.
 
   [ Flavio Cruz ]
   * debian/patches/hurd-i386/git-mach-headers-freestanding.diff: Force use of

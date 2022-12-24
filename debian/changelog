@@ -20,6 +20,8 @@ glibc (2.36-7) UNRELEASED; urgency=medium
   * debian/patches/any/git-floatn-gcc-13-support.diff: backport FloatN support
     for GCC 13 from upstream.  Closes: #1022166.
   * Update Spanish debconf translation, by Camaleón.  Closes: #1026786.
+  * debian/debhelper.in/locales-all.NEWS: drop to make lintian happy, as it
+    only contains a very old entry.
 
   [ Helmut Grohne ]
   * Use conjunction for libgd-dev profiles.

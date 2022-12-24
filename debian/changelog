@@ -17,6 +17,8 @@ glibc (2.36-7) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/glibc-source.filelist: update following recent changes.
+  * debian/patches/any/git-floatn-gcc-13-support.diff: backport FloatN support
+    for GCC 13 from upsttream.  Closes: #1022166.
 
   [ Helmut Grohne ]
   * Use conjunction for libgd-dev profiles.

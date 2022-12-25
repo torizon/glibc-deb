@@ -22,6 +22,8 @@ glibc (2.36-7) UNRELEASED; urgency=medium
   * Update Spanish debconf translation, by Camaleón.  Closes: #1026786.
   * debian/debhelper.in/locales-all.NEWS: drop to make lintian happy, as it
     only contains a very old entry.
+  * debian/local/manpages/locale.gen.5, debian/local/manpages/update-locale.8:
+    fix issues reported by the manpage-l10n project.  Closes: #1026321.
 
   [ Helmut Grohne ]
   * Use conjunction for libgd-dev profiles.

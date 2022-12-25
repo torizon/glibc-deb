@@ -1,4 +1,4 @@
-glibc (2.36-7) UNRELEASED; urgency=medium
+glibc (2.36-7) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/debhelper.in/libc.templates (glibc/kernel-too-old),
@@ -29,7 +29,7 @@ glibc (2.36-7) UNRELEASED; urgency=medium
   * Use conjunction for libgd-dev profiles.
   * Annotate B-D libcap-dev with stage2 profile.
 
- -- Samuel Thibault <sthibault@debian.org>  Tue, 29 Nov 2022 20:36:31 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 25 Dec 2022 19:42:32 +0100
 
 glibc (2.36-6) unstable; urgency=medium
 

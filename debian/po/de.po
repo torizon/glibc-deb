@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: glibc 2.36-7\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-01-02 16:21+0000\n"
+"Report-Msgid-Bugs-To: glibc@packages.debian.org\n"
+"POT-Creation-Date: 2023-01-03 21:34+0100\n"
 "PO-Revision-Date: 2023-01-03 09:57+0100\n"
 "Last-Translator: Helge Kreutzmann <debian@helgefjell.de>\n"
 "Language-Team: de <debian-l10n-german@lists.debian.org>\n"
@@ -260,8 +260,8 @@ msgid ""
 msgstr ""
 "Diese Version der GNU-Libc benötigt Kernel Version ${kernel_ver} oder neuer. "
 "Bitte führen Sie vor der Installation der Glibc ein Upgrade durch und "
-"starten Sie das System neu. Nach dem Neustart könnte es sein, dass Sie »apt "
-"-f install« verwenden müssen, um Abhängigkeiten aufzulösen."
+"starten Sie das System neu. Nach dem Neustart könnte es sein, dass Sie »apt -"
+"f install« verwenden müssen, um Abhängigkeiten aufzulösen."
 
 #. Type: note
 #. Description

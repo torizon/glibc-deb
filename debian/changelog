@@ -6,6 +6,7 @@ glibc (2.36-8) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/local/manpages/po/de.po: update German manpages translations, by
     Helge Kreutzmann. Closes: #1027782.
+  * debian/local/manpages/po/*: update with debconf-updatepo.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 29 Dec 2022 23:45:51 +0000
 

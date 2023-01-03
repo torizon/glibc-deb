@@ -1,6 +1,11 @@
 glibc (2.36-8) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-sem_wait_race.diff: Fix sem_wait race.
+
+  [ Aurelien Jarno ]
+  * debian/local/manpages/po/de.po: update German manpages translations, by
+    Helge Kreutzmann. Closes: #1027782.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 29 Dec 2022 23:45:51 +0000
 

@@ -7,6 +7,8 @@ glibc (2.36-8) UNRELEASED; urgency=medium
   * debian/po/de.po: update German debconf templates translation, by Helge
     Kreutzmann. Closes: #1027782.
   * debian/local/manpages/po/*: update with debconf-updatepo.
+  * debian/po/ko.po: update Korean debconf templates translation, by Changwoo
+    Ryu.  Closes: #1027986.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 29 Dec 2022 23:45:51 +0000
 

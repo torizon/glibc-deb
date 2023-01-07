@@ -13,6 +13,7 @@ glibc (2.36-8) UNRELEASED; urgency=medium
     Camaleón.
   * debian/po/sk.po: update Slovak debconf templates translation, by Marek
     Sýkora.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 29 Dec 2022 23:45:51 +0000
 

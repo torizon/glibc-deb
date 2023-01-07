@@ -14,6 +14,7 @@ glibc (2.36-8) UNRELEASED; urgency=medium
   * debian/po/sk.po: update Slovak debconf templates translation, by Marek
     Sýkora.
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/control.in/main: bump Standards-Version to 4.6.2 (no changes).
 
  -- Samuel Thibault <sthibault@debian.org>  Thu, 29 Dec 2022 23:45:51 +0000
 

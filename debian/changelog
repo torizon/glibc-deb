@@ -5,6 +5,8 @@ glibc (2.36-10) UNRELEASED; urgency=medium
     Closes: #1028133.
   * debian/po/tr.po: Update Turkish debconf translation, by Atila KOÇ.
     Closes: #1028306.
+  * debian/po/cs.po: Update Czech debconf translation, by Miroslav Kure.
+    Closes: #1028326.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
 

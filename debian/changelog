@@ -1,3 +1,11 @@
+glibc (2.36-9) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/po/it.po: Update Italian debconf translation, by Luca Monducci.
+    Closes: #1028133.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:22:12 +0100
+
 glibc (2.36-8) unstable; urgency=medium
 
   [ Samuel Thibault ]

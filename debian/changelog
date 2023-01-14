@@ -10,6 +10,7 @@ glibc (2.36-10) UNRELEASED; urgency=medium
   * debian/po/zh_CN.po: Update Chinese debconf translation, by Tianyu Chen.
   * debian/po/pt.po: Update Portugues debconf translation, by Pedro Ribeiro.
     Closes: #1028353.
+  * debian/po/sk.po: Fix invalid control sequence in Slovak translation.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
 

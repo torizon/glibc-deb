@@ -8,6 +8,8 @@ glibc (2.36-10) UNRELEASED; urgency=medium
   * debian/po/cs.po: Update Czech debconf translation, by Miroslav Kure.
     Closes: #1028326.
   * debian/po/zh_CN.po: Update Chinese debconf translation, by Tianyu Chen.
+  * debian/po/pt.po: Update Portugues debconf translation, by Pedro Ribeiro.
+    Closes: #1028353.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
 

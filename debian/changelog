@@ -13,6 +13,8 @@ glibc (2.36-10) UNRELEASED; urgency=medium
   * debian/po/sk.po: Fix invalid control sequence in Slovak translation.
   * debian/po/pt_BR.po: Update Brazilian Portuguese debconf translation, by
     Adriano Rafael Gomes. Closes: #1029005.
+  * debian/po/nl.po: Update Dutch debconf translation, by Frans Spiesschaert.
+    Closes: #1029018.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
 

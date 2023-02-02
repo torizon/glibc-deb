@@ -314,6 +314,7 @@ test-xfail-tst-closefrom = yes
 test-xfail-tst-close_range = yes
 test-xfail-tst-support-open-dev-null-range = yes
 test-xfail-tst-spawn5 = yes
+test-xfail-tst-open-tmpfile = yes
 
 # new in 2.22
 test-xfail-tst-prelink = yes

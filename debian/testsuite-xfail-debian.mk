@@ -306,6 +306,7 @@ tests-unsupported += test-lfs
 test-xfail-tst-tzset = yes
 
 # want /proc/self/fd
+# TODO: make them use FD_TO_FILENAME_PREFIX from <arch-fd_to_filename.h>
 test-xfail-tst-if_index-long = yes
 test-xfail-tst-support_descriptors = yes
 test-xfail-tst-updwtmpx = yes

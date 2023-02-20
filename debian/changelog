@@ -27,6 +27,7 @@ glibc (2.36-9) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: Update hurd results.
   * debian/patches/hurd-i386/git-intr-msg-cfa.diff: Fix stack unwinding over
     _hurd_intr_rpc_mach_msg, for go runtime.
+  * debian/libc0.3.symbols.hurd-i386: Update symbols with new RPCs.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
 

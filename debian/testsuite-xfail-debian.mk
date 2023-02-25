@@ -225,24 +225,6 @@ ifeq ($(config-machine)-$(config-os),i686-gnu-gnu)
 # creating files.
 test-xfail-tst-null-argv = yes
 
-# bounding memory allocation is not supported yet
-tests-unsupported += tst-malloc-thread-fail
-tests-unsupported += tst-malloc-thread-fail-malloc-check
-tests-unsupported += tst-malloc-thread-fail-mcheck
-tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb1
-tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb2
-tests-unsupported += tst-dynarray-fail
-
-# This overflows pflocal with select requests
-tests-unsupported += tst-pthread_cancel-select-loop
-
-# These stay stuck
-tests-unsupported += tst-audit14
-tests-unsupported += tst-audit14a
-tests-unsupported += tst-audit15
-tests-unsupported += tst-audit16
-tests-unsupported += tst-audit17
-
 # We don't provide /proc/cpuinfo yet
 test-xfail-test-multiarch = yes
 test-xfail-tst-cpu-features-cpuinfo = yes
@@ -394,6 +376,20 @@ tests-unsupported += tst-spawn6
 test-xfail-tst-arc4random-fork = yes
 test-xfail-tst-arc4random-thread = yes
 test-xfail-tst-nss-gai-actions = yes
+
+# upstreamed in 2.38
+tests-unsupported += tst-malloc-thread-fail
+tests-unsupported += tst-malloc-thread-fail-malloc-check
+tests-unsupported += tst-malloc-thread-fail-mcheck
+tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb1
+tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb2
+tests-unsupported += tst-dynarray-fail
+tests-unsupported += tst-pthread_cancel-select-loop
+tests-unsupported += tst-audit14
+tests-unsupported += tst-audit14a
+tests-unsupported += tst-audit15
+tests-unsupported += tst-audit16
+tests-unsupported += tst-audit17
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes

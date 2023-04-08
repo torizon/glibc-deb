@@ -14,7 +14,7 @@ glibc (2.36-9) UNRELEASED; urgency=medium
   * debian/po/pt_BR.po: Update Brazilian Portuguese debconf translation, by
     Adriano Rafael Gomes. Closes: #1029005.
   * debian/po/nl.po: Update Dutch debconf translation, by Frans Spiesschaert.
-    Closes: #1029018.
+    Closes: #1029018, #1033905.
   * debian/po/ro.po: Update Romanian debconf translation, by Remus-Gabriel
     Chelu. Closes: #1031163.
   * debian/patches/git-updates.diff: update from upstream stable branch:

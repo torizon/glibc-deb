@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the glibc package.
 # Bart Cornelis <cobaco@skolelinux.no>, 2008.
 # Vincent Zweije <vincent@zweije.nl>, 2011.
-# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2016, 2017, 2023.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2016-2017, 2023.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: glibc 2.36-8\n"
 "Report-Msgid-Bugs-To: glibc@packages.debian.org\n"
 "POT-Creation-Date: 2023-01-03 21:34+0100\n"
-"PO-Revision-Date: 2023-01-04 15:54+0100\n"
+"PO-Revision-Date: 2023-03-18 21:31+0100\n"
 "Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
 "Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
 "Language: nl\n"
@@ -263,10 +263,10 @@ msgid ""
 "later.  Please upgrade your kernel and reboot before installing glibc. You "
 "may need to use \"apt -f install\" after reboot to solve dependencies."
 msgstr ""
-"Deze versie van GNU libc heeft kernelversie ${kernel_ver} of een meer "
-"recente versie nodig. Gelieve de kernel op te waarderen vooraleer glibc te "
-"installeren. Mogelijk zult u na het herstarten van de computer \"apt -f "
-"install\" moeten gebruiken voor het oplossen van de vereisten."
+"Deze versie van GNU libc heeft kernel versie ${kernel_ver} of een meer "
+"recente versie nodig. Gelieve uw kernel op te waarderen en de computer te "
+"herstarten voor u glibc installeert. Mogelijk moet u na de herstart \"apt -f "
+"install\" gebruiken om vereisten op te lossen."
 
 #. Type: note
 #. Description

@@ -17,7 +17,7 @@ glibc (2.36-9) UNRELEASED; urgency=medium
     Closes: #1029018.
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Prevent SIGSEGV in the SSE2 version of memcmp when data is concurrently
-      modified.
+      modified. Closes: #1033931.
     - Fix a corner case in daylight computation affecting the Africa/Tripoli
       zone since tzdata 2022g.
     - Fix elf/tst-tlsopt-powerpc failure when compiled with -mcpu=power10.

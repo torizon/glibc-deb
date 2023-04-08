@@ -15,6 +15,8 @@ glibc (2.36-9) UNRELEASED; urgency=medium
     Adriano Rafael Gomes. Closes: #1029005.
   * debian/po/nl.po: Update Dutch debconf translation, by Frans Spiesschaert.
     Closes: #1029018.
+  * debian/po/ro.po: Update Romanian debconf translation, by Remus-Gabriel
+    Chelu. Closes: #1031163.
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Prevent SIGSEGV in the SSE2 version of memcmp when data is concurrently
       modified. Closes: #1033931.

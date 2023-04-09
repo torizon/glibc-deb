@@ -118,3 +118,4 @@ any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
 any/git-floatn-gcc-13-support.diff
+any/local-disable-tst-bz29951.diff

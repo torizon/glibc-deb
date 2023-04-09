@@ -23,6 +23,9 @@ glibc (2.36-9) UNRELEASED; urgency=medium
     - Fix a corner case in daylight computation affecting the Africa/Tripoli
       zone since tzdata 2022g.
     - Fix elf/tst-tlsopt-powerpc failure when compiled with -mcpu=power10.
+  * patches/any/local-disable-tst-bz29951.diff: disable new test included in
+    the latest update from upstream stable branch, as git-updates.diff can't
+    include the corresponding binary test file.
 
   [ Samuel Thibault ]
   * debian/sysdeps/hurd.mk: Add -fno-omit-frame-pointer to extra_cflags.

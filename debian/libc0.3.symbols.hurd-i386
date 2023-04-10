@@ -854,7 +854,6 @@ libmachuser.so.1 #PACKAGE# #MINVER#
  __gsync_wait@Base 2.23-4
  __gsync_wake@Base 2.23-4
  __host_adjust_time@Base 2.11
- __host_get_boot_info@Base 2.11
  __host_get_time@Base 2.11
  __host_info@Base 2.11
  __host_kernel_version@Base 2.11
@@ -1018,7 +1017,6 @@ libmachuser.so.1 #PACKAGE# #MINVER#
  gsync_wait@Base 2.23-4
  gsync_wake@Base 2.23-4
  host_adjust_time@Base 2.11
- host_get_boot_info@Base 2.11
  host_get_time@Base 2.11
  host_info@Base 2.11
  host_kernel_version@Base 2.11

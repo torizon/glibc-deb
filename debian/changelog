@@ -1,4 +1,4 @@
-glibc (2.36-9) UNRELEASED; urgency=medium
+glibc (2.36-9) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/po/it.po: Update Italian debconf translation, by Luca Monducci.
@@ -34,7 +34,7 @@ glibc (2.36-9) UNRELEASED; urgency=medium
     _hurd_intr_rpc_mach_msg, for go runtime.
   * debian/libc0.3.symbols.hurd-i386: Update symbols with new RPCs.
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 09 Jan 2023 22:23:56 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 10 Apr 2023 10:35:16 +0200
 
 glibc (2.36-8) unstable; urgency=medium
 

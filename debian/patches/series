@@ -46,8 +46,9 @@ hurd-i386/git-sem_wait_race.diff
 
 # 2.38
 hurd-i386/git-intr-msg-cfa.diff
-
 hurd-i386/git-intr-msg-stack.diff
+hurd-i386/git-exception-long.diff
+
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
 hurd-i386/tg-thread-cancel.diff

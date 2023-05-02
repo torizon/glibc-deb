@@ -366,7 +366,6 @@ test-xfail-tst-compathooks-on = yes
 test-xfail-tst-sched_getaffinity = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
-test-xfail-tst-p_align3 = yes
 
 # new in 2.36
 test-xfail-tst-arc4random-fork = yes

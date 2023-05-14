@@ -15,7 +15,7 @@ This patch removes them.
 --- a/sysdeps/alpha/alphaev67/stpncpy.S
 +++ /dev/null
 @@ -1,114 +0,0 @@
--/* Copyright (C) 2000-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 2000-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -132,7 +132,7 @@ This patch removes them.
 --- a/sysdeps/alpha/alphaev67/strncat.S
 +++ /dev/null
 @@ -1,85 +0,0 @@
--/* Copyright (C) 2000-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 2000-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -220,7 +220,7 @@ This patch removes them.
 --- a/sysdeps/alpha/stpncpy.S
 +++ /dev/null
 @@ -1,105 +0,0 @@
--/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -328,7 +328,7 @@ This patch removes them.
 --- a/sysdeps/alpha/strcmp.S
 +++ /dev/null
 @@ -1,193 +0,0 @@
--/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -524,7 +524,7 @@ This patch removes them.
 --- a/sysdeps/alpha/strncat.S
 +++ /dev/null
 @@ -1,93 +0,0 @@
--/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -620,7 +620,7 @@ This patch removes them.
 --- a/sysdeps/alpha/strncmp.S
 +++ /dev/null
 @@ -1,276 +0,0 @@
--/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or
@@ -899,7 +899,7 @@ This patch removes them.
 --- a/sysdeps/alpha/strncpy.S
 +++ /dev/null
 @@ -1,86 +0,0 @@
--/* Copyright (C) 1996-2022 Free Software Foundation, Inc.
+-/* Copyright (C) 1996-2023 Free Software Foundation, Inc.
 -   This file is part of the GNU C Library.
 -
 -   The GNU C Library is free software; you can redistribute it and/or

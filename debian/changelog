@@ -1,3 +1,39 @@
+glibc (2.37-1) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * New upstream release:
+    - Fix GL(dl_phdr) and GL(dl_phnum) for static builds.  Closes: #1028200.
+    - debian/symbols.wildcard: add 2.36 and GLIBC_ABI_DT_RELR.
+    - debian/patches/localedata/locales-fr.diff: rebased.
+    - debian/patches/alpha/local-string-functions.diff: rebased.
+    - debian/patches/arm/git-atomic-compiler-builtins.diff: upstreamed.
+    - debian/patches/hurd-i386/git-htl-pthread-self-early.diff: upstreamed.
+    - debian/patches/hurd-i386/git-static-pie.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ipv6.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ip_mreqn.diff: upstreamed.
+    - debian/patches/hurd-i386/git-bootstrap-enable_secure.diff: upstreamed.
+    - debian/patches/hurd-i386/git-cond-destroy.diff: upstreamed.
+    - debian/patches/hurd-i386/git-strerror_X.diff: upstreamed.
+    - debian/patches/hurd-i386/git-xpg_strerror.diff: upstreamed.
+    - debian/patches/hurd-i386/git-readlink-fifo.diff: upstreamed.
+    - debian/patches/hurd-i386/git-net-route.h.diff: upstreamed.
+    - debian/patches/hurd-i386/git-SOMAXCONN.diff: upstreamed.
+    - debian/patches/hurd-i386/git-sigtimedwait.diff: upstreamed.
+    - debian/patches/hurd-i386/git-getrandom-chroot.diff: upstreamed.
+    - debian/patches/hurd-i386/git-mach-headers-freestanding.diff: upstreamed.
+    - debian/patches/hurd-i386/git-sem_wait_race.diff: upstreamed.
+    - debian/patches/hurd-i386/local-enable-ldconfig.diff: rebased.
+    - debian/patches/any/local-ldso-disable-hwcap.diff: removed, obsolete.
+    - debian/patches/any/local-ldconfig-multiarch.diff: rebased.
+    - debian/patches/any/git-floatn-gcc-13-support.diff: upstreamed.
+    - debian/patches/hurd-i386/submitted-net.diff: rebased.
+    - debian/patches/hurd-i386/local-no-bootstrap-fs-access.diff: removed,
+      obsolete.
+    - debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: removed,
+      obsolete.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 14 May 2023 15:19:07 +0200
+
 glibc (2.36-10) UNRELEASED; urgency=medium
 
   * debian/patches/hurd-i386/git-intr-msg-stack.diff: Fix potential crash when

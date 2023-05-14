@@ -51,6 +51,8 @@ glibc (2.37-1) UNRELEASED; urgency=medium
     - debian/debhelper.in/glibc-source.lintian-overrides: removed otherbuild
       entries.
     - debian/debhelper.in/libc-otherbuild.*: removed.
+  * debian/sysdeps/alpha.mk: temporarily build for EV56 until the baseline is
+    raised at the GCC level.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 14 May 2023 15:19:07 +0200
 

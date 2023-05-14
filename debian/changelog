@@ -31,6 +31,15 @@ glibc (2.37-1) UNRELEASED; urgency=medium
       obsolete.
     - debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: removed,
       obsolete.
+  * Stop building libc6.1-alphaev67 package, as support for legacy hwcaps has
+    been removed upstream:
+    - debian/control.in/libc: add a conflicts against libc6.1-alphaev67 on
+      alpha.
+    - debian/control.in/opt: remove libc6.1-alphaev67 entry.
+    - debian/patches/alpha/local-string-functions.diff: remove, obsolete.
+    - debian/rules: drop DEBUG_libc6.1-alphaev67.
+    - debian/script.in/nohwcap.sh: drop code to support libc6.1-alphaev67.
+    debian/testsuite-xfail-debian.mk: simplify alpha condition.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 14 May 2023 15:19:07 +0200
 

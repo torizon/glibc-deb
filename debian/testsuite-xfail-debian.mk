@@ -12,9 +12,9 @@ test-xfail-tst-timer = yes
 test-xfail-tst-create-detached = yes
 
 ######################################################################
-# alpha (including optimized flavours)
+# alpha
 ######################################################################
-ifneq (,$(filter $(config-machine)-$(config-os), alpha-linux-gnu alphaev67-linux-gnu))
+ifeq ($(config-machine)-$(config-os),alpha-linux-gnu)
 test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-cancel19 = yes

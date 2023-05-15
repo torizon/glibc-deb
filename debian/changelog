@@ -52,6 +52,9 @@ glibc (2.37-1) UNRELEASED; urgency=medium
   * debian/sysdeps/alpha.mk: temporarily build for EV56 until the baseline is
     raised at the GCC level.
 
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-tst-system.diff: Fix tst-system link.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 14 May 2023 15:19:07 +0200
 
 glibc (2.36-10) UNRELEASED; urgency=medium

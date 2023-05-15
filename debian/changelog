@@ -29,8 +29,6 @@ glibc (2.37-1) UNRELEASED; urgency=medium
     - debian/patches/hurd-i386/submitted-net.diff: rebased.
     - debian/patches/hurd-i386/local-no-bootstrap-fs-access.diff: removed,
       obsolete.
-    - debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: removed,
-      obsolete.
   * Stop building libc6.1-alphaev67 package, as support for legacy hwcaps has
     been removed upstream:
     - debian/control.in/libc: add a conflicts against libc6.1-alphaev67 on

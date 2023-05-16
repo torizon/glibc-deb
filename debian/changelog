@@ -1,4 +1,4 @@
-glibc (2.37-1) UNRELEASED; urgency=medium
+glibc (2.37-1) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * New upstream release:
@@ -55,7 +55,7 @@ glibc (2.37-1) UNRELEASED; urgency=medium
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-tst-system.diff: Fix tst-system link.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 14 May 2023 15:19:07 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 16 May 2023 21:17:22 +0200
 
 glibc (2.36-10) UNRELEASED; urgency=medium
 

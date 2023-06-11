@@ -13,6 +13,10 @@ glibc (2.37-2) UNRELEASED; urgency=medium
   [ Andrej Shadura ]
   * debian/po/sk.po: Fix typos in the Slovak translation.
 
+  [ Helmut Grohne ]
+  * debian/rules.d/build.mk: disable -Werror when dpkg-builflags contains
+    -Wno-error.
+
  -- Samuel Thibault <sthibault@debian.org>  Wed, 17 May 2023 19:21:55 +0200
 
 glibc (2.37-1) experimental; urgency=medium

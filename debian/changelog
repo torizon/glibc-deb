@@ -4,6 +4,8 @@ glibc (2.36-10) UNRELEASED; urgency=medium
     signals or cancellation happens while pushing mach_msg args.
   * debian/patches/hurd-i386/git-exception-long.diff: Fix hurd build against
     newer gnumach.
+  * debian/patches/hurd-i386/git-ctty.diff: Fix background processes reading
+    input.
   * debian/libc0.3.symbols.hurd-i386: Refresh against newer gnumach.
   * debian/testsuite-xfail-debian.mk: Drop Hurd XPASS.
 

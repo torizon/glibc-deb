@@ -372,6 +372,9 @@ test-xfail-tst-arc4random-fork = yes
 test-xfail-tst-arc4random-thread = yes
 test-xfail-tst-nss-gai-actions = yes
 
+# new in 2.37
+test-xfail-tst-fcntl-lock = yes
+
 # upstreamed in 2.38
 tests-unsupported += tst-malloc-thread-fail
 tests-unsupported += tst-malloc-thread-fail-malloc-check

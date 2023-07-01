@@ -218,9 +218,9 @@ endif
 
 
 ######################################################################
-# hurd-i386 (including optimized flavours)
+# hurd-i386 and hurd-amd64 (including optimized flavours)
 ######################################################################
-ifeq ($(config-machine)-$(config-os),i686-gnu-gnu)
+ifeq ($(config-os),gnu-gnu)
 # sysdeps/mach/hurd/dl-sysdep.c's open_file does not support the linker
 # creating files.
 test-xfail-tst-null-argv = yes

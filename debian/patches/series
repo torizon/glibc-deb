@@ -16,39 +16,22 @@ localedata/submitted-es_MX-decimal_point.diff
 
 alpha/local-gcc4.1.diff
 alpha/submitted-dl-support.diff
-alpha/local-string-functions.diff
 alpha/submitted-fts64.diff
 alpha/submitted-makecontext.diff
 
 arm/local-sigaction.diff
 arm/unsubmitted-ldso-multilib.diff
 arm/local-arm-futex.diff
-arm/git-atomic-compiler-builtins.diff
 
 hppa/local-inlining.diff
-
-# 2.37
-hurd-i386/git-htl-pthread-self-early.diff
-hurd-i386/git-static-pie.diff
-hurd-i386/git-ipv6.diff
-hurd-i386/git-ip_mreqn.diff
-hurd-i386/git-bootstrap-enable_secure.diff
-hurd-i386/git-cond-destroy.diff
-hurd-i386/git-strerror_X.diff
-hurd-i386/git-xpg_strerror.diff
-hurd-i386/git-readlink-fifo.diff
-hurd-i386/git-net-route.h.diff
-hurd-i386/git-SOMAXCONN.diff
-hurd-i386/git-sigtimedwait.diff
-hurd-i386/git-getrandom-chroot.diff
-hurd-i386/git-mach-headers-freestanding.diff
-hurd-i386/git-sem_wait_race.diff
 
 # 2.38
 hurd-i386/git-intr-msg-cfa.diff
 hurd-i386/git-intr-msg-stack.diff
 hurd-i386/git-exception-long.diff
 hurd-i386/git-ctty.diff
+hurd-i386/git-tst-system.diff
+hurd-i386/git-task_info_count.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
@@ -104,7 +87,6 @@ any/local-asserth-decls.diff
 any/local-fhs-linux-paths.diff
 any/local-fhs-nscd.diff
 any/local-ld-multiarch.diff
-any/local-ldso-disable-hwcap.diff
 any/local-stubs_h.diff
 any/local-tcsetaddr.diff
 any/local-nss-overflow.diff
@@ -120,5 +102,4 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/git-floatn-gcc-13-support.diff
 any/local-disable-tst-bz29951.diff

@@ -12,9 +12,9 @@ test-xfail-tst-timer = yes
 test-xfail-tst-create-detached = yes
 
 ######################################################################
-# alpha (including optimized flavours)
+# alpha
 ######################################################################
-ifneq (,$(filter $(config-machine)-$(config-os), alpha-linux-gnu alphaev67-linux-gnu))
+ifeq ($(config-machine)-$(config-os),alpha-linux-gnu)
 test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 test-xfail-tst-cancel19 = yes
@@ -371,6 +371,9 @@ test-xfail-tst-malloc-tcache-leak-malloc-hugetlb2 = yes
 test-xfail-tst-arc4random-fork = yes
 test-xfail-tst-arc4random-thread = yes
 test-xfail-tst-nss-gai-actions = yes
+
+# new in 2.37
+test-xfail-tst-fcntl-lock = yes
 
 # upstreamed in 2.38
 tests-unsupported += tst-malloc-thread-fail

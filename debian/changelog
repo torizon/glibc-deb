@@ -1,3 +1,93 @@
+glibc (2.37-3) UNRELEASED; urgency=medium
+
+  * debian/testsuite-xfail-debian.mk: Update hurd results.
+
+ -- Samuel Thibault <sthibault@debian.org>  Sat, 17 Jun 2023 22:23:10 +0200
+
+glibc (2.37-2) experimental; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-task_info_count.diff: Fix passing size to
+    task_info.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix FTBFS on hppa.
+  * debian/sysdeps/alpha.mk, debian/control.in/main: build-depends on g++-12
+    (>= 12.3.0-2) on alpha instead of forcing -mcpu=ev56.
+
+  [ Andrej Shadura ]
+  * debian/po/sk.po: Fix typos in the Slovak translation.
+
+  [ Helmut Grohne ]
+  * debian/rules.d/build.mk: disable -Werror when dpkg-builflags contains
+    -Wno-error.
+
+  [ наб ]
+  * debian/local/usr_sbin/locale-gen: parallelise locales generation if
+    possible.  Closes: #1037198.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 17 Jun 2023 11:10:20 +0200
+
+glibc (2.37-1) experimental; urgency=medium
+
+  [ Aurelien Jarno ]
+  * New upstream release:
+    - Fix GL(dl_phdr) and GL(dl_phnum) for static builds.  Closes: #1028200.
+    - debian/symbols.wildcard: add 2.36 and GLIBC_ABI_DT_RELR.
+    - debian/patches/localedata/locales-fr.diff: rebased.
+    - debian/patches/alpha/local-string-functions.diff: rebased.
+    - debian/patches/arm/git-atomic-compiler-builtins.diff: upstreamed.
+    - debian/patches/hurd-i386/git-htl-pthread-self-early.diff: upstreamed.
+    - debian/patches/hurd-i386/git-static-pie.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ipv6.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ip_mreqn.diff: upstreamed.
+    - debian/patches/hurd-i386/git-bootstrap-enable_secure.diff: upstreamed.
+    - debian/patches/hurd-i386/git-cond-destroy.diff: upstreamed.
+    - debian/patches/hurd-i386/git-strerror_X.diff: upstreamed.
+    - debian/patches/hurd-i386/git-xpg_strerror.diff: upstreamed.
+    - debian/patches/hurd-i386/git-readlink-fifo.diff: upstreamed.
+    - debian/patches/hurd-i386/git-net-route.h.diff: upstreamed.
+    - debian/patches/hurd-i386/git-SOMAXCONN.diff: upstreamed.
+    - debian/patches/hurd-i386/git-sigtimedwait.diff: upstreamed.
+    - debian/patches/hurd-i386/git-getrandom-chroot.diff: upstreamed.
+    - debian/patches/hurd-i386/git-mach-headers-freestanding.diff: upstreamed.
+    - debian/patches/hurd-i386/git-sem_wait_race.diff: upstreamed.
+    - debian/patches/hurd-i386/local-enable-ldconfig.diff: rebased.
+    - debian/patches/any/local-ldso-disable-hwcap.diff: removed, obsolete.
+    - debian/patches/any/local-ldconfig-multiarch.diff: rebased.
+    - debian/patches/any/git-floatn-gcc-13-support.diff: upstreamed.
+    - debian/patches/hurd-i386/submitted-net.diff: rebased.
+    - debian/patches/hurd-i386/local-no-bootstrap-fs-access.diff: removed,
+      obsolete.
+  * Stop building libc6.1-alphaev67 package, as support for legacy hwcaps has
+    been removed upstream:
+    - debian/control.in/libc: add a conflicts against libc6.1-alphaev67 on
+      alpha.
+    - debian/control.in/opt: remove libc6.1-alphaev67 entry.
+    - debian/patches/alpha/local-string-functions.diff: remove, obsolete.
+    - debian/rules: drop DEBUG_libc6.1-alphaev67.
+    - debian/script.in/nohwcap.sh: drop code to support libc6.1-alphaev67.
+    debian/testsuite-xfail-debian.mk: simplify alpha condition.
+  * Drop support for optimized packages from the packaging (Closes: #806912):
+    - debian/control.in/opt: removed.
+    - debian/rules.d/control.mk: drop support for including control.in/opt.
+    - debian/script.in/nohwcap.sh: removed.
+    - debian/rules.d/debhelper.mk: dropped code to include nohwcap.sh.
+    - debian/debhelper.in/libc.postinst: removed call to nohwcap code.
+    - debian/debhelper.in/libc.preinst: remove code creating
+      /etc/ld.so.nohwcap.
+    - debian/debhelper.in/glibc-source.lintian-overrides: removed otherbuild
+      entries.
+    - debian/debhelper.in/libc-otherbuild.*: removed.
+  * debian/sysdeps/alpha.mk: temporarily build for EV56 until the baseline is
+    raised at the GCC level.
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-tst-system.diff: Fix tst-system link.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 16 May 2023 21:17:22 +0200
+
 glibc (2.36-10) UNRELEASED; urgency=medium
 
   * debian/patches/hurd-i386/git-intr-msg-stack.diff: Fix potential crash when

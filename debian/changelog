@@ -1,3 +1,11 @@
+glibc (2.37-4) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/control.in/main: drop obsolete dependency on lsb-base (>= 3.0-6)
+    from nscd.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 02 Jul 2023 11:52:36 +0200
+
 glibc (2.37-3) unstable; urgency=medium
 
   [ Samuel Thibault ]

@@ -1,4 +1,4 @@
-glibc (2.37-4) UNRELEASED; urgency=medium
+glibc (2.37-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/control.in/main: drop obsolete dependency on lsb-base (>= 3.0-6)
@@ -8,7 +8,7 @@ glibc (2.37-4) UNRELEASED; urgency=medium
   * debian/sysdeps/sparc64.mk: do not run testsuite for 32-bit builds on
     sparc64.  Closes: #1040462.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 02 Jul 2023 11:52:36 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 06 Jul 2023 19:33:24 +0200
 
 glibc (2.37-3) unstable; urgency=medium
 

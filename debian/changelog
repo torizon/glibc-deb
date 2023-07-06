@@ -5,6 +5,8 @@ glibc (2.37-4) UNRELEASED; urgency=medium
     from nscd.
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix realloc causing high virtual memory usage.  Closes: #1040140.
+  * debian/sysdeps/sparc64.mk: do not run testsuite for 32-bit builds on
+    sparc64.  Closes: #1040462.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 02 Jul 2023 11:52:36 +0200
 

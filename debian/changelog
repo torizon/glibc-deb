@@ -3,6 +3,8 @@ glibc (2.37-4) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/control.in/main: drop obsolete dependency on lsb-base (>= 3.0-6)
     from nscd.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix realloc causing high virtual memory usage.  Closes: #1040140.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 02 Jul 2023 11:52:36 +0200
 

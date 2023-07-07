@@ -1,3 +1,11 @@
+glibc (2.37-5) UNRELEASED; urgency=medium
+
+  * debian/local/usr_sbin/locale-gen: revert parallelisation code as running
+    multiple instance of localedef in parallel corrupts locale-archive.
+    Closes: #1040452.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 07 Jul 2023 23:31:44 +0200
+
 glibc (2.37-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]

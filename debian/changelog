@@ -3,6 +3,8 @@ glibc (2.37-6) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/control.in/libc, debian/control.in/main: removed Breaks already
     satisfied in oldstable (bullseye).
+  * debian/debhelper.in/locales.config: stop reading /etc/environment, it has
+    been deprecated for 15+ years.
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

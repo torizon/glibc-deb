@@ -108,7 +108,6 @@ Priority: optional
 Multi-Arch: foreign
 Depends: ${misc:Depends}
 Recommends: xz-utils
-Breaks: cross-toolchain-base (<< 45~), cross-toolchain-base-ports (<< 37~), cross-toolchain-base-mipsen (<< 10)
 Build-Profiles: <!stage1>
 Description: GNU C Library: sources
  This package contains the sources and patches which are needed to

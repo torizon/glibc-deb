@@ -4,6 +4,9 @@ glibc (2.37-6) UNRELEASED; urgency=medium
   * debian/control.in/libc, debian/control.in/main: removed Breaks already
     satisfied in oldstable (bullseye).
 
+  [ Luca Boccassi ]
+  * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.
+
  -- Aurelien Jarno <aurel32@debian.org>  Wed, 12 Jul 2023 20:29:48 +0000
 
 glibc (2.37-5) unstable; urgency=medium

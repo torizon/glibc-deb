@@ -19,7 +19,6 @@ sparc_CXX = $(CXX) -m32
 sparc_rtlddir = /lib
 sparc_slibdir = /lib32
 sparc_libdir = /usr/lib32
-sparc_RUN_TESTSUITE = no
 
 define libc6-dev-sparc_extra_pkg_install
 

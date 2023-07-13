@@ -6,6 +6,8 @@ glibc (2.37-6) UNRELEASED; urgency=medium
     satisfied in oldstable (bullseye).
   * debian/debhelper.in/locales.config: stop reading /etc/environment, it has
     been deprecated for 15+ years.
+  * debian/sysdeps/sparc64.mk: run the testsuite for 32-bit builds on sparc64
+    again.
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

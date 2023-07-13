@@ -1,6 +1,7 @@
 glibc (2.37-6) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch.
   * debian/control.in/libc, debian/control.in/main: removed Breaks already
     satisfied in oldstable (bullseye).
   * debian/debhelper.in/locales.config: stop reading /etc/environment, it has

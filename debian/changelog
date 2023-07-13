@@ -16,6 +16,7 @@ glibc (2.37-6) UNRELEASED; urgency=medium
     - stdlib/isomac
   * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on s390x.
   * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on i386.
+  * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on riscv64.
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

@@ -894,32 +894,9 @@ endif
 # riscv64
 ######################################################################
 ifeq ($(config-machine)-$(config-os),riscv64-linux-gnu)
-test-xfail-tst-cond-except = yes
-test-xfail-tst-cond24 = yes
-test-xfail-tst-cond25 = yes
-test-xfail-tst-malloc-usable-tunables = yes
 test-xfail-tst-resolv-res_init = yes
 test-xfail-tst-resolv-res_init-thread = yes
 test-xfail-tst-resolv-threads = yes
-test-xfail-tst-robust-fork = yes
-test-xfail-tst-strfrom = yes
-test-xfail-tst-strfrom-locale = yes
-test-xfail-tst-tls12 = yes
-
-# Those tests fail due to a kernel bug. See:
-# http://lists.infradead.org/pipermail/linux-riscv/2018-December/002512.html
-test-xfail-test-fenv = yes
-test-xfail-test-fpucw = yes
-test-xfail-test-fpucw-ieee = yes
-test-xfail-test-fpucw-ieee-static = yes
-test-xfail-test-fpucw-static = yes
-
-# Those tests sometimes fail in a QEMU VM, but not on a HiFive Unleashed board
-test-xfail-test-at_quick_exit-race = yes
-test-xfail-test-on_exit-race = yes
-test-xfail-tst-cond16 = yes
-test-xfail-tst-malloc-thread-fail = yes
-test-xfail-tst-stack4 = yes
 endif
 
 

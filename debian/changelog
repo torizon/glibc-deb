@@ -8,6 +8,12 @@ glibc (2.37-6) UNRELEASED; urgency=medium
     been deprecated for 15+ years.
   * debian/sysdeps/sparc64.mk: run the testsuite for 32-bit builds on sparc64
     again.
+  * debian/testsuite-xfail-debian.mk: mark the following tests as XFAIL on
+    sparc64 (Closes: #1040817):
+    - elf/tst-rtld-run-static
+    - nptl/tst-cancel24-static
+    - socket/tst-socket-timestamp
+    - stdlib/isomac
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

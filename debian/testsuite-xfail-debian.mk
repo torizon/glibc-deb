@@ -978,12 +978,16 @@ test-xfail-XOPEN2K/setjmp.h/conform = yes
 test-xfail-XOPEN2K8/pthread.h/conform = yes
 test-xfail-XOPEN2K8/setjmp.h/conform = yes
 test-xfail-XPG4/setjmp.h/conform = yes
+test-xfail-stdlib/isomac = yes
+test-xfail-tst-cancel24-static = yes
 test-xfail-tst-cond8-static = yes
 test-xfail-tst-mutex8-static = yes
 test-xfail-tst-mutexpi8-static = yes
 test-xfail-tst-protected1a = yes
 test-xfail-tst-protected1b = yes
 test-xfail-tst-realloc = yes
+test-xfail-tst-rtld-run-static = yes
+test-xfail-tst-socket-timestamp = yes
 test-xfail-tst-waitid = yes
 test-xfail-test-float64x-float128-mul=yes
 endif

@@ -934,8 +934,6 @@ endif
 # s390x
 ######################################################################
 ifeq ($(config-machine)-$(config-os),s390x-linux-gnu)
-test-xfail-tst-protected1a = yes
-test-xfail-tst-protected1b = yes
 endif
 
 

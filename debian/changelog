@@ -14,6 +14,7 @@ glibc (2.37-6) UNRELEASED; urgency=medium
     - nptl/tst-cancel24-static
     - socket/tst-socket-timestamp
     - stdlib/isomac
+  * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on s390x.
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

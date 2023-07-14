@@ -17,6 +17,7 @@ glibc (2.37-6) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on s390x.
   * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on i386.
   * debian/testsuite-xfail-debian.mk: remove some tests from XFAIL on riscv64.
+  * Remove kfreebsd-amd64 and kfreebsd-i386 leftovers.  Closes: #979160.
 
   [ Luca Boccassi ]
   * Switch from /etc/default/locale to /etc/locale.conf.  Closes: #1038798.

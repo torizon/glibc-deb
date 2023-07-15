@@ -2,6 +2,7 @@ glibc (2.37-7) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/testsuite-xfail-debian.mk: fix XFAIL for stdlib/isomac on sparc64.
+  * debian/patches/hurd-i386/unsubmitted-getaux_at_secure.diff: rebase.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 15 Jul 2023 00:53:20 +0200
 

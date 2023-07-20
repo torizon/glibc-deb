@@ -375,6 +375,9 @@ test-xfail-tst-nss-gai-actions = yes
 # new in 2.37
 test-xfail-tst-fcntl-lock = yes
 
+# new in 2.38
+test-xfail-tst-sprof-basic = yes
+
 # upstreamed in 2.38
 tests-unsupported += tst-malloc-thread-fail
 tests-unsupported += tst-malloc-thread-fail-malloc-check

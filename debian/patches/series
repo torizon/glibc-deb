@@ -1,4 +1,4 @@
-git-updates.diff
+#git-updates.diff
 
 locale/check-unknown-symbols.diff
 locale/locale-print-LANGUAGE.diff
@@ -25,14 +25,6 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
-# 2.38
-hurd-i386/git-intr-msg-cfa.diff
-hurd-i386/git-intr-msg-stack.diff
-hurd-i386/git-exception-long.diff
-hurd-i386/git-ctty.diff
-hurd-i386/git-tst-system.diff
-hurd-i386/git-task_info_count.diff
-
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
 hurd-i386/tg-thread-cancel.diff
@@ -41,7 +33,7 @@ hurd-i386/tg-sendmsg-SCM_CREDS.diff
 hurd-i386/tg-mach-hurd-link.diff
 hurd-i386/local-ED.diff
 hurd-i386/local-madvise_warn.diff
-hurd-i386/tg-hooks.diff
+#hurd-i386/tg-hooks.diff
 hurd-i386/local-usr.diff
 hurd-i386/tg-ifaddrs_v6.diff
 hurd-i386/unsubmitted-clock_t_centiseconds.diff

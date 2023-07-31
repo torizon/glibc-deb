@@ -1,3 +1,24 @@
+glibc (2.38-1) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * New upstream release.
+    - debian/symbols.wildcard: add 2.38.
+    - debian/patches/hurd-i386/git-intr-msg-cfa.diff: upstreamed.
+    - debian/patches/hurd-i386/git-intr-msg-stack.diff: upstreamed.
+    - debian/patches/hurd-i386/git-exception-long.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ctty.diff: upstreamed.
+    - debian/patches/hurd-i386/git-tst-system.diff: upstreamed.
+    - debian/patches/hurd-i386/git-task_info_count.diff: upstreamed.
+    - debian/patches/hurd-i386/local-enable-ldconfig.diff: dropped obsolete
+      part and rebased.
+    - debian/patches/hurd-i386/tg-hooks.diff: disabled.
+    - debian/patches/i386/unsubmitted-quiet-ldconfig.diff: rebased.
+    - debian/patches/any/local-ldconfig-multiarch.diff: rebased.
+    - debian/sysdeps/arm64.mk, debian/libc6.symbols.arm64: enable mathvec on
+      arm64.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
+
 glibc (2.37-7) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]

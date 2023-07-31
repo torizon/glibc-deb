@@ -108,6 +108,7 @@ endif
 		--enable-add-ons=$(standard-add-ons)"$(call xx,add-ons)" \
 		--without-selinux \
 		--disable-crypt \
+		--enable-fortify-source \
 		--enable-stackguard-randomization \
 		--enable-stack-protector=strong \
 		--with-pkgversion="Debian GLIBC $(DEB_VERSION)" \

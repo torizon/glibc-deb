@@ -490,6 +490,9 @@ test-xfail-tst-audit24c = yes
 test-xfail-tst-audit24d = yes
 test-xfail-tst-audit25a = yes
 test-xfail-tst-audit25b = yes
+
+# dl_profile is not supported on mips*
+test-xfail-tst-sprof-basic = yes
 endif
 
 
@@ -566,6 +569,9 @@ ifeq ($(config-machine)-$(config-os),riscv64-linux-gnu)
 test-xfail-tst-resolv-res_init = yes
 test-xfail-tst-resolv-res_init-thread = yes
 test-xfail-tst-resolv-threads = yes
+
+# dl_profile is not supported on riscv
+test-xfail-tst-sprof-basic = yes
 endif
 
 

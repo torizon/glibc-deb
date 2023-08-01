@@ -17,6 +17,8 @@ glibc (2.38-1) UNRELEASED; urgency=medium
     - debian/sysdeps/arm64.mk, debian/libc6.symbols.arm64: enable mathvec on
       arm64.
   * debian/rules.d/build.mk: pass --enable-fortify-source to configure.
+  * debian/testsuite-xfail-debian.mk: XFAIL tst-sprof-basic on mips* and
+    riscv64 as dl_profile is not supported on those architectures.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
 

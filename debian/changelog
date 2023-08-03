@@ -29,7 +29,7 @@ glibc (2.38-1) UNRELEASED; urgency=medium
     tst-realpath-toolong.
   * debian/patches/hurd-i386/git-hidden_chk.diff: Fix spurious PLTs.
   * debian/patches/hurd-i386/git-glob_dirent.diff: Fix strcpys in tests.
-
+  * debian/libc0.3.symbols.hurd-i386: Update symbols.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
 

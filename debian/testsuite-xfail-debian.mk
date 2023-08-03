@@ -380,22 +380,6 @@ test-xfail-tst-sprof-basic = yes
 test-xfail-test-canon = yes
 test-xfail-tst-nss-files-hosts-v4mapped = yes
 
-# upstreamed in 2.38
-tests-unsupported += tst-malloc-thread-fail
-tests-unsupported += tst-malloc-thread-fail-malloc-check
-tests-unsupported += tst-malloc-thread-fail-mcheck
-tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb1
-tests-unsupported += tst-malloc-thread-fail-malloc-hugetlb2
-tests-unsupported += tst-dynarray-fail
-tests-unsupported += tst-pthread_cancel-select-loop
-tests-unsupported += tst-audit14
-tests-unsupported += tst-audit14a
-tests-unsupported += tst-audit15
-tests-unsupported += tst-audit16
-tests-unsupported += tst-audit17
-tests-unsupported += test-lfs
-tests-unsupported += tst-spawn6
-
 # actually never succeded
 test-xfail-tst-create_format1 = yes
 test-xfail-tst-getcwd-abspath = yes

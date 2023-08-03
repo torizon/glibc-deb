@@ -23,6 +23,7 @@ glibc (2.38-1) UNRELEASED; urgency=medium
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/submitted-net.diff: Refresh.
   * debian/patches/hurd-i386/unsubmitted-prof-eintr.diff: Refresh.
+  * debian/testsuite-xfail-debian.mk: Update hurd xfails.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
 

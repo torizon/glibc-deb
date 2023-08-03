@@ -377,6 +377,8 @@ test-xfail-tst-fcntl-lock = yes
 
 # new in 2.38
 test-xfail-tst-sprof-basic = yes
+test-xfail-test-canon = yes
+test-xfail-tst-nss-files-hosts-v4mapped = yes
 
 # upstreamed in 2.38
 tests-unsupported += tst-malloc-thread-fail

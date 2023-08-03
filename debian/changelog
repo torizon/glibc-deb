@@ -24,6 +24,12 @@ glibc (2.38-1) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/submitted-net.diff: Refresh.
   * debian/patches/hurd-i386/unsubmitted-prof-eintr.diff: Refresh.
   * debian/testsuite-xfail-debian.mk: Update hurd xfails.
+  * debian/patches/hurd-i386/git-realpath_NULL.diff: Fix realpath(NULL, ...)
+  * debian/patches/hurd-i386/git-tst-realpath-toolong.diff: Fix
+    tst-realpath-toolong.
+  * debian/patches/hurd-i386/git-hidden_chk.diff: Fix spurious PLTs.
+  * debian/patches/hurd-i386/git-glob_dirent.diff: Fix strcpys in tests.
+
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
 

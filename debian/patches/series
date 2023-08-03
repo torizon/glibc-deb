@@ -25,6 +25,12 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
+# Committed for 2.39
+hurd-i386/git-realpath_NULL.diff
+hurd-i386/git-tst-realpath-toolong.diff
+hurd-i386/git-hidden_chk.diff
+hurd-i386/git-glob_dirent.diff
+
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
 hurd-i386/tg-thread-cancel.diff

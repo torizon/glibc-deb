@@ -26,8 +26,6 @@ libmemusage.so #PACKAGE# #MINVER#
  munmap@Base 2.38
  realloc@Base 2.38
 #include "symbols.wildcards"
-libnsl.so.1 #PACKAGE# #MINVER#
-#include "symbols.wildcards"
 libnss_compat.so.2 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
 libnss_dns.so.2 #PACKAGE# #MINVER#
@@ -43,8 +41,6 @@ libpcprofile.so #PACKAGE# #MINVER#
 libresolv.so.2 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
 librt.so.1 #PACKAGE# #MINVER#
-#include "symbols.wildcards"
-libutil.so.1 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
 libanl.so.1 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
@@ -851,11 +847,10 @@ libmachuser.so.1 #PACKAGE# #MINVER#
  __gsync_wake@Base 2.38
  __host_adjust_time64@Base 2.38
  __host_adjust_time@Base 2.38
- __host_kernel_version@Base 2.38
+ __host_get_kernel_version@Base 2.38
  __host_get_time64@Base 2.38
  __host_get_time@Base 2.38
  __host_info@Base 2.38
- __host_kernel_version@Base 2.38
  __host_processor_set_priv@Base 2.38
  __host_processor_sets@Base 2.38
  __host_processors@Base 2.38
@@ -1018,7 +1013,6 @@ libmachuser.so.1 #PACKAGE# #MINVER#
  host_get_time64@Base 2.38
  host_get_time@Base 2.38
  host_info@Base 2.38
- host_kernel_version@Base 2.38
  host_processor_set_priv@Base 2.38
  host_processor_sets@Base 2.38
  host_processors@Base 2.38

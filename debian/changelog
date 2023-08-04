@@ -1,3 +1,9 @@
+glibc (2.37-8) UNRELEASED; urgency=medium
+
+  * debian/libc0.3.symbols.hurd-i386: Update symbols.
+
+ -- Samuel Thibault <sthibault@debian.org>  Fri, 04 Aug 2023 16:23:34 +0200
+
 glibc (2.37-7) unstable; urgency=medium
 
   [ Aurelien Jarno ]

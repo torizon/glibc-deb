@@ -1,4 +1,4 @@
-glibc (2.38-1) UNRELEASED; urgency=medium
+glibc (2.38-1) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * New upstream release.
@@ -43,7 +43,7 @@ glibc (2.38-1) UNRELEASED; urgency=medium
     - debian/sysdeps/hurd-amd64.mk: Add.
     - debian/testsuite-xfail-debian.mk: Use hurd-i386 xfails for hurd-amd64 too.
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 31 Jul 2023 22:53:34 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 04 Aug 2023 12:50:01 +0200
 
 glibc (2.37-7) unstable; urgency=medium
 

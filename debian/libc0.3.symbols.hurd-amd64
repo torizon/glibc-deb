@@ -3,11 +3,6 @@ ld-x86-64.so.1 #PACKAGE# #MINVER#
 libc.so.0.3 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
  (symver|optional)HURD_CTHREADS_0.3 2.38
- __errno_location@GLIBC_2.2.6 2.38
- __h_errno_location@GLIBC_2.2.6 2.38
-### sysconf(_SC_MINSIGSTKSZ) and sysconf(_SC_SIGSTKSZ) added in glibc 2.38
- __sysconf@GLIBC_2.2.6 2.38
- sysconf@GLIBC_2.2.6 2.38
 libBrokenLocale.so.1 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
 libc_malloc_debug.so.0 #PACKAGE# #MINVER#
@@ -1148,6 +1143,3 @@ libmachuser.so.1 #PACKAGE# #MINVER#
  vm_write@Base 2.38
 libpthread.so.0.3 #PACKAGE# #MINVER#
 #include "symbols.wildcards"
- *@GLIBC_2.2.6 2.38
- __errno_location@GLIBC_2.2.6 2.38
- __h_errno_location@GLIBC_2.2.6 2.38

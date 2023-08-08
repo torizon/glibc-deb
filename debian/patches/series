@@ -33,6 +33,10 @@ hurd-i386/git-ctty.diff
 hurd-i386/git-tst-system.diff
 hurd-i386/git-task_info_count.diff
 
+# 2.39
+hurd-i386/git-jemalloc.diff
+hurd-i386/git-jemalloc2.diff
+
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
 hurd-i386/tg-thread-cancel.diff

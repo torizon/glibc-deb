@@ -1,0 +1,100 @@
+commit 53da64d1cf3694a132287d1ab6e9655031124e32
+Author: Samuel Thibault <samuel.thibault@ens-lyon.org>
+Date:   Tue Aug 8 12:19:29 2023 +0200
+
+    htl: Initialize ___pthread_self early
+    
+    When using jemalloc, malloc() needs to use TSD, while libpthread
+    initialization needs malloc(). Having ___pthread_self set early to some
+    static storage allows TSD to work early, thus allowing jemalloc and
+    libpthread to initialize together.
+    
+    This incidentaly simplifies __pthread_enable/disable_asynccancel and
+    __pthread_self, now that ___pthread_self is always initialized.
+
+diff --git a/htl/cancellation.c b/htl/cancellation.c
+index 9cc61b9f23..5a67083188 100644
+--- a/htl/cancellation.c
++++ b/htl/cancellation.c
+@@ -25,10 +25,6 @@ int __pthread_enable_asynccancel (void)
+   struct __pthread *p = _pthread_self ();
+   int oldtype;
+ 
+-  if (___pthread_self == NULL)
+-    /* We are not initialized yet, we can't be cancelled anyway.  */
+-    return PTHREAD_CANCEL_DEFERRED;
+-
+   __pthread_mutex_lock (&p->cancel_lock);
+   oldtype = p->cancel_type;
+   p->cancel_type = PTHREAD_CANCEL_ASYNCHRONOUS;
+@@ -43,10 +39,6 @@ void __pthread_disable_asynccancel (int oldtype)
+ {
+   struct __pthread *p = _pthread_self ();
+ 
+-  if (___pthread_self == NULL)
+-    /* We are not initialized yet, we can't be cancelled anyway.  */
+-    return;
+-
+   __pthread_mutex_lock (&p->cancel_lock);
+   p->cancel_type = oldtype;
+   __pthread_mutex_unlock (&p->cancel_lock);
+diff --git a/htl/pt-self.c b/htl/pt-self.c
+index f7e9cb88c4..1278908397 100644
+--- a/htl/pt-self.c
++++ b/htl/pt-self.c
+@@ -24,15 +24,7 @@
+ pthread_t
+ __pthread_self (void)
+ {
+-  struct __pthread *self;
+-
+-  if (___pthread_self == NULL)
+-    /* We are not initialized yet, we are the first thread.  */
+-    return 1;
+-
+-  self = _pthread_self ();
+-  assert (self != NULL);
+-
++  struct __pthread *self = _pthread_self ();
+   return self->thread;
+ }
+ 
+diff --git a/sysdeps/mach/hurd/htl/pt-sysdep.c b/sysdeps/mach/hurd/htl/pt-sysdep.c
+index 55b1a86e00..030a7c7a9e 100644
+--- a/sysdeps/mach/hurd/htl/pt-sysdep.c
++++ b/sysdeps/mach/hurd/htl/pt-sysdep.c
+@@ -26,6 +26,10 @@
+ #include <pt-internal.h>
+ #include <pthreadP.h>
+ 
++/* Initial thread structure used temporarily during initialization, so various
++ * functions can already work at least basically.  */
++static struct __pthread init_thread;
++
+ static void
+ reset_pthread_total (void)
+ {
+@@ -47,6 +51,10 @@ _init_routine (void *stack)
+     /* Already initialized */
+     return;
+ 
++  /* Initialize early thread structure.  */
++  init_thread.thread = 1;
++  ___pthread_self = &init_thread;
++
+   /* Initialize the library.  */
+   ___pthread_init ();
+ 
+@@ -74,6 +82,12 @@ _init_routine (void *stack)
+   __pthread_default_attr.__guardsize = __vm_page_size;
+ #endif
+ 
++  /* Copy over the thread-specific state */
++  assert (!init_thread.thread_specifics);
++  memcpy (&thread->static_thread_specifics,
++          &init_thread.static_thread_specifics,
++          sizeof (thread->static_thread_specifics));
++
+   ___pthread_self = thread;
+ 
+   /* Decrease the number of threads, to take into account that the

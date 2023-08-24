@@ -8,6 +8,7 @@ glibc (2.38-2) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/rules.d/build.mk: pass --enable-bind-now to configure.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Samuel Thibault <sthibault@debian.org>  Fri, 04 Aug 2023 14:08:45 +0200
 

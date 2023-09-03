@@ -7,6 +7,8 @@ glibc (2.37-8) UNRELEASED; urgency=medium
     early.
   * debian/patches/hurd-i386/git-error_t.diff: Make error_t an int on C++.
   * debian/patches/hurd-i386/git-tls_dtors.diff: Fix TLS destructors.
+  * debian/patches/hurd-i386/git-main_stack.diff: Fix stack information for main
+    thread.
 
  -- Samuel Thibault <sthibault@debian.org>  Fri, 04 Aug 2023 16:23:34 +0200
 

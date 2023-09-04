@@ -98,4 +98,3 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/local-disable-tst-bz29951.diff

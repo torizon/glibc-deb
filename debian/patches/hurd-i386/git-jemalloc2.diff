@@ -12,10 +12,10 @@ Date:   Tue Aug 8 12:19:29 2023 +0200
     This incidentaly simplifies __pthread_enable/disable_asynccancel and
     __pthread_self, now that ___pthread_self is always initialized.
 
-diff --git a/htl/cancellation.c b/htl/cancellation.c
-index 9cc61b9f23..5a67083188 100644
---- a/htl/cancellation.c
-+++ b/htl/cancellation.c
+Index: glibc-2.37/htl/cancellation.c
+===================================================================
+--- glibc-2.37.orig/htl/cancellation.c
++++ glibc-2.37/htl/cancellation.c
 @@ -25,10 +25,6 @@ int __pthread_enable_asynccancel (void)
    struct __pthread *p = _pthread_self ();
    int oldtype;
@@ -27,7 +27,7 @@ index 9cc61b9f23..5a67083188 100644
    __pthread_mutex_lock (&p->cancel_lock);
    oldtype = p->cancel_type;
    p->cancel_type = PTHREAD_CANCEL_ASYNCHRONOUS;
-@@ -43,10 +39,6 @@ void __pthread_disable_asynccancel (int oldtype)
+@@ -43,10 +39,6 @@ void __pthread_disable_asynccancel (int
  {
    struct __pthread *p = _pthread_self ();
  
@@ -38,10 +38,10 @@ index 9cc61b9f23..5a67083188 100644
    __pthread_mutex_lock (&p->cancel_lock);
    p->cancel_type = oldtype;
    __pthread_mutex_unlock (&p->cancel_lock);
-diff --git a/htl/pt-self.c b/htl/pt-self.c
-index f7e9cb88c4..1278908397 100644
---- a/htl/pt-self.c
-+++ b/htl/pt-self.c
+Index: glibc-2.37/htl/pt-self.c
+===================================================================
+--- glibc-2.37.orig/htl/pt-self.c
++++ glibc-2.37/htl/pt-self.c
 @@ -24,15 +24,7 @@
  pthread_t
  __pthread_self (void)
@@ -59,10 +59,10 @@ index f7e9cb88c4..1278908397 100644
    return self->thread;
  }
  
-diff --git a/sysdeps/mach/hurd/htl/pt-sysdep.c b/sysdeps/mach/hurd/htl/pt-sysdep.c
-index 55b1a86e00..030a7c7a9e 100644
---- a/sysdeps/mach/hurd/htl/pt-sysdep.c
-+++ b/sysdeps/mach/hurd/htl/pt-sysdep.c
+Index: glibc-2.37/sysdeps/mach/hurd/htl/pt-sysdep.c
+===================================================================
+--- glibc-2.37.orig/sysdeps/mach/hurd/htl/pt-sysdep.c
++++ glibc-2.37/sysdeps/mach/hurd/htl/pt-sysdep.c
 @@ -26,6 +26,10 @@
  #include <pt-internal.h>
  #include <pthreadP.h>
@@ -74,7 +74,7 @@ index 55b1a86e00..030a7c7a9e 100644
  static void
  reset_pthread_total (void)
  {
-@@ -47,6 +51,10 @@ _init_routine (void *stack)
+@@ -49,6 +53,10 @@ _init_routine (void *stack)
      /* Already initialized */
      return;
  
@@ -85,7 +85,7 @@ index 55b1a86e00..030a7c7a9e 100644
    /* Initialize the library.  */
    ___pthread_init ();
  
-@@ -74,6 +82,12 @@ _init_routine (void *stack)
+@@ -76,6 +84,12 @@ _init_routine (void *stack)
    __pthread_default_attr.__guardsize = __vm_page_size;
  #endif
  

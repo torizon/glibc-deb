@@ -34,6 +34,8 @@ hurd-i386/git-powerpc-longjmp.diff
 hurd-i386/git-jemalloc.diff
 hurd-i386/git-jemalloc2.diff
 hurd-i386/git-error_t.diff
+hurd-i386/git-tls_dtors.diff
+hurd-i386/git-main_stack.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
@@ -93,4 +95,4 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/local-disable-tst-bz29951.diff
+any/git-c-utf-8-language.diff

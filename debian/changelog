@@ -59,16 +59,29 @@ glibc (2.38-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 04 Aug 2023 12:50:01 +0200
 
-glibc (2.37-8) UNRELEASED; urgency=medium
+glibc (2.37-8) unstable; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/libc0.3.symbols.hurd-i386: Update symbols.
   * debian/patches/hurd-i386/git-jemalloc.diff: Add support for static TSD
     data.
   * debian/patches/hurd-i386/git-jemalloc2.diff: Initialize ___pthread_self
     early.
   * debian/patches/hurd-i386/git-error_t.diff: Make error_t an int on C++.
+  * debian/patches/hurd-i386/git-tls_dtors.diff: Fix TLS destructors.
+  * debian/patches/hurd-i386/git-main_stack.diff: Fix stack information for main
+    thread.
 
- -- Samuel Thibault <sthibault@debian.org>  Fri, 04 Aug 2023 16:23:34 +0200
+  [ Aurelien Jarno ]
+  * debian/patches/local-disable-tst-bz29951.diff: removed, obsolete.
+  * debian/patches/any/git-c-utf-8-language.diff: backport support from
+    upstream to treat C.<encoding> locale like C locale.  Closes: #874160.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix the value of F_GETLK/F_SETLK/F_SETLKW with __USE_FILE_OFFSET64 on
+      ppc64el.  Closes: #1050592.
+    - debian/patches/hurd-i386/git-exception-long.diff: upstreamed.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 08 Sep 2023 20:39:29 +0200
 
 glibc (2.37-7) unstable; urgency=medium
 

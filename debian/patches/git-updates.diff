@@ -1,7 +1,7 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.37/master from glibc-2.37
 
 diff --git a/NEWS b/NEWS
-index ad5196a5f1..0ec70a1b97 100644
+index ad5196a5f1..e8a318e631 100644
 --- a/NEWS
 +++ b/NEWS
 @@ -5,6 +5,32 @@ See the end for copying conditions.
@@ -37,6 +37,15 @@ index ad5196a5f1..0ec70a1b97 100644
  Version 2.37
  
  Major new features:
+@@ -105,6 +131,8 @@ The following bugs are resolved with this release:
+     coincides with offset change
+   [30039] stdio: __vsprintf_internal does not handle unspecified buffer
+     length in fortify mode
++  [30804] F_GETLK, F_SETLK, and F_SETLKW value change for powerpc64 with
++    -D_FILE_OFFSET_BITS=64
+ 
+ Version 2.36
+ 
 diff --git a/elf/Makefile b/elf/Makefile
 index b509b3eada..0d19964d42 100644
 --- a/elf/Makefile
@@ -926,20 +935,80 @@ index 0000000000..0370c10fd0
 +}
 +
 +#include <support/test-driver.c>
+diff --git a/hurd/catch-exc.c b/hurd/catch-exc.c
+index e8a9c7981f..5ee2233aa9 100644
+--- a/hurd/catch-exc.c
++++ b/hurd/catch-exc.c
+@@ -31,7 +31,7 @@ _S_catch_exception_raise (mach_port_t port,
+ 			  mach_msg_type_number_t codeCnt
+ #else				/* Vanilla Mach 3.0 interface.  */
+ 			  integer_t exception,
+-			  integer_t code, integer_t subcode
++			  integer_t code, long_integer_t subcode
+ #endif
+ 			  )
+ {
+diff --git a/hurd/hurd/signal.h b/hurd/hurd/signal.h
+index 4e9f79b19d..c33f974b1b 100644
+--- a/hurd/hurd/signal.h
++++ b/hurd/hurd/signal.h
+@@ -51,9 +51,10 @@ struct hurd_signal_preemptor;	/* <hurd/sigpreempt.h> */
+ struct hurd_signal_detail
+   {
+     /* Codes from origination Mach exception_raise message.  */
+-    integer_t exc, exc_code, exc_subcode;
++    integer_t exc, exc_code;
++    long_integer_t exc_subcode;
+     /* Sigcode as passed or computed from exception codes.  */
+-    integer_t code;
++    long_integer_t code;
+     /* Error code as passed or extracted from exception codes.  */
+     error_t error;
+   };
+diff --git a/hurd/hurdfault.c b/hurd/hurdfault.c
+index 069c1c262c..a81e72803f 100644
+--- a/hurd/hurdfault.c
++++ b/hurd/hurdfault.c
+@@ -45,7 +45,7 @@ _hurdsig_fault_catch_exception_raise (mach_port_t port,
+ 				      mach_msg_type_number_t codeCnt
+ #else				/* Vanilla Mach 3.0 interface.  */
+ 				      integer_t exception,
+-				      integer_t code, integer_t subcode
++				      integer_t code, long_integer_t subcode
+ #endif
+ 				      )
+ {
 diff --git a/io/Makefile b/io/Makefile
-index f72571cdae..587b057209 100644
+index f72571cdae..069e675188 100644
 --- a/io/Makefile
 +++ b/io/Makefile
-@@ -80,7 +80,8 @@ tests		:= test-utime test-stat test-stat2 test-lfs tst-getcwd \
+@@ -59,6 +59,7 @@ routines :=								\
+ 	ftw64-time64							\
+ 	closefrom close_range
+ 
++
+ others		:= pwd
+ test-srcs	:= ftwtest ftwtest-time64
+ tests		:= test-utime test-stat test-stat2 test-lfs tst-getcwd \
+@@ -80,7 +81,9 @@ tests		:= test-utime test-stat test-stat2 test-lfs tst-getcwd \
  		   tst-utimensat \
  		   tst-closefrom \
  		   tst-close_range \
 -		   tst-ftw-bz28126
 +		   tst-ftw-bz28126 \
-+		   tst-fcntl-lock
++		   tst-fcntl-lock \
++		   tst-fcntl-lock-lfs
  
  tests-time64 := \
    tst-fcntl-time64 \
+diff --git a/io/tst-fcntl-lock-lfs.c b/io/tst-fcntl-lock-lfs.c
+new file mode 100644
+index 0000000000..f2a909fb02
+--- /dev/null
++++ b/io/tst-fcntl-lock-lfs.c
+@@ -0,0 +1,2 @@
++#define _FILE_OFFSET_BITS 64
++#include <io/tst-fcntl-lock.c>
 diff --git a/io/tst-fcntl-lock.c b/io/tst-fcntl-lock.c
 new file mode 100644
 index 0000000000..357c4b7b56
@@ -2005,14 +2074,14 @@ index c89ec83182..2e031e2f8a 100644
 +test-xfail-tst-ssp-1 = $(have-ssp)
 +endif # $(subdir) == debug
 diff --git a/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h b/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
-index 0905cd833c..f7615a447e 100644
+index 0905cd833c..d8a291a331 100644
 --- a/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
 +++ b/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
 @@ -33,6 +33,12 @@
  # define __O_LARGEFILE	0200000
  #endif
  
-+#if __WORDSIZE == 64
++#if __WORDSIZE == 64 && !defined __USE_FILE_OFFSET64
 +# define F_GETLK	5
 +# define F_SETLK	6
 +# define F_SETLKW	7
@@ -2040,6 +2109,183 @@ index 0bba893064..92b78a877c 100644
          linux_version_glibc > linux_version_headers,
          linux_version_headers > linux_version_glibc))
  
+diff --git a/sysdeps/x86/dl-cacheinfo.h b/sysdeps/x86/dl-cacheinfo.h
+index a0474af8d1..32b175eaf6 100644
+--- a/sysdeps/x86/dl-cacheinfo.h
++++ b/sysdeps/x86/dl-cacheinfo.h
+@@ -408,7 +408,7 @@ handle_zhaoxin (int name)
+ }
+ 
+ static void
+-get_common_cache_info (long int *shared_ptr, unsigned int *threads_ptr,
++get_common_cache_info (long int *shared_ptr, long int * shared_per_thread_ptr, unsigned int *threads_ptr,
+                 long int core)
+ {
+   unsigned int eax;
+@@ -427,6 +427,7 @@ get_common_cache_info (long int *shared_ptr, unsigned int *threads_ptr,
+   unsigned int family = cpu_features->basic.family;
+   unsigned int model = cpu_features->basic.model;
+   long int shared = *shared_ptr;
++  long int shared_per_thread = *shared_per_thread_ptr;
+   unsigned int threads = *threads_ptr;
+   bool inclusive_cache = true;
+   bool support_count_mask = true;
+@@ -442,6 +443,7 @@ get_common_cache_info (long int *shared_ptr, unsigned int *threads_ptr,
+       /* Try L2 otherwise.  */
+       level  = 2;
+       shared = core;
++      shared_per_thread = core;
+       threads_l2 = 0;
+       threads_l3 = -1;
+     }
+@@ -598,29 +600,27 @@ get_common_cache_info (long int *shared_ptr, unsigned int *threads_ptr,
+         }
+       else
+         {
+-intel_bug_no_cache_info:
+-          /* Assume that all logical threads share the highest cache
+-             level.  */
+-          threads
+-            = ((cpu_features->features[CPUID_INDEX_1].cpuid.ebx >> 16)
+-	       & 0xff);
+-        }
+-
+-        /* Cap usage of highest cache level to the number of supported
+-           threads.  */
+-        if (shared > 0 && threads > 0)
+-          shared /= threads;
++	intel_bug_no_cache_info:
++	  /* Assume that all logical threads share the highest cache
++	     level.  */
++	  threads = ((cpu_features->features[CPUID_INDEX_1].cpuid.ebx >> 16)
++		     & 0xff);
++	}
++      /* Get per-thread size of highest level cache.  */
++      if (shared_per_thread > 0 && threads > 0)
++	shared_per_thread /= threads;
+     }
+ 
+   /* Account for non-inclusive L2 and L3 caches.  */
+   if (!inclusive_cache)
+     {
+-      if (threads_l2 > 0)
+-        core /= threads_l2;
++      long int core_per_thread = threads_l2 > 0 ? (core / threads_l2) : core;
++      shared_per_thread += core_per_thread;
+       shared += core;
+     }
+ 
+   *shared_ptr = shared;
++  *shared_per_thread_ptr = shared_per_thread;
+   *threads_ptr = threads;
+ }
+ 
+@@ -630,6 +630,7 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+   /* Find out what brand of processor.  */
+   long int data = -1;
+   long int shared = -1;
++  long int shared_per_thread = -1;
+   long int core = -1;
+   unsigned int threads = 0;
+   unsigned long int level1_icache_size = -1;
+@@ -650,6 +651,7 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+       data = handle_intel (_SC_LEVEL1_DCACHE_SIZE, cpu_features);
+       core = handle_intel (_SC_LEVEL2_CACHE_SIZE, cpu_features);
+       shared = handle_intel (_SC_LEVEL3_CACHE_SIZE, cpu_features);
++      shared_per_thread = shared;
+ 
+       level1_icache_size
+ 	= handle_intel (_SC_LEVEL1_ICACHE_SIZE, cpu_features);
+@@ -673,13 +675,14 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+       level4_cache_size
+ 	= handle_intel (_SC_LEVEL4_CACHE_SIZE, cpu_features);
+ 
+-      get_common_cache_info (&shared, &threads, core);
++      get_common_cache_info (&shared, &shared_per_thread, &threads, core);
+     }
+   else if (cpu_features->basic.kind == arch_kind_zhaoxin)
+     {
+       data = handle_zhaoxin (_SC_LEVEL1_DCACHE_SIZE);
+       core = handle_zhaoxin (_SC_LEVEL2_CACHE_SIZE);
+       shared = handle_zhaoxin (_SC_LEVEL3_CACHE_SIZE);
++      shared_per_thread = shared;
+ 
+       level1_icache_size = handle_zhaoxin (_SC_LEVEL1_ICACHE_SIZE);
+       level1_icache_linesize = handle_zhaoxin (_SC_LEVEL1_ICACHE_LINESIZE);
+@@ -693,13 +696,14 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+       level3_cache_assoc = handle_zhaoxin (_SC_LEVEL3_CACHE_ASSOC);
+       level3_cache_linesize = handle_zhaoxin (_SC_LEVEL3_CACHE_LINESIZE);
+ 
+-      get_common_cache_info (&shared, &threads, core);
++      get_common_cache_info (&shared, &shared_per_thread, &threads, core);
+     }
+   else if (cpu_features->basic.kind == arch_kind_amd)
+     {
+       data  = handle_amd (_SC_LEVEL1_DCACHE_SIZE, cpu_features);
+       core = handle_amd (_SC_LEVEL2_CACHE_SIZE, cpu_features);
+       shared = handle_amd (_SC_LEVEL3_CACHE_SIZE, cpu_features);
++      shared_per_thread = shared;
+ 
+       level1_icache_size = handle_amd (_SC_LEVEL1_ICACHE_SIZE, cpu_features);
+       level1_icache_linesize
+@@ -720,7 +724,10 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+ 
+       if (shared <= 0)
+         /* No shared L3 cache.  All we have is the L2 cache.  */
+-         shared = core;
++        shared = core;
++
++      if (shared_per_thread <= 0)
++	shared_per_thread = shared;
+     }
+ 
+   cpu_features->level1_icache_size = level1_icache_size;
+@@ -736,17 +743,34 @@ dl_init_cacheinfo (struct cpu_features *cpu_features)
+   cpu_features->level3_cache_linesize = level3_cache_linesize;
+   cpu_features->level4_cache_size = level4_cache_size;
+ 
+-  /* The default setting for the non_temporal threshold is 3/4 of one
+-     thread's share of the chip's cache. For most Intel and AMD processors
+-     with an initial release date between 2017 and 2020, a thread's typical
+-     share of the cache is from 500 KBytes to 2 MBytes. Using the 3/4
+-     threshold leaves 125 KBytes to 500 KBytes of the thread's data
+-     in cache after a maximum temporal copy, which will maintain
+-     in cache a reasonable portion of the thread's stack and other
+-     active data. If the threshold is set higher than one thread's
+-     share of the cache, it has a substantial risk of negatively
+-     impacting the performance of other threads running on the chip. */
+-  unsigned long int non_temporal_threshold = shared * 3 / 4;
++  /* The default setting for the non_temporal threshold is 1/4 of size
++     of the chip's cache. For most Intel and AMD processors with an
++     initial release date between 2017 and 2023, a thread's typical
++     share of the cache is from 18-64MB. Using the 1/4 L3 is meant to
++     estimate the point where non-temporal stores begin out-competing
++     REP MOVSB. As well the point where the fact that non-temporal
++     stores are forced back to main memory would already occurred to the
++     majority of the lines in the copy. Note, concerns about the
++     entire L3 cache being evicted by the copy are mostly alleviated
++     by the fact that modern HW detects streaming patterns and
++     provides proper LRU hints so that the maximum thrashing
++     capped at 1/associativity. */
++  unsigned long int non_temporal_threshold = shared / 4;
++
++  /* If the computed non_temporal_threshold <= 3/4 * per-thread L3, we most
++     likely have incorrect/incomplete cache info in which case, default to
++     3/4 * per-thread L3 to avoid regressions.  */
++  unsigned long int non_temporal_threshold_lowbound
++      = shared_per_thread * 3 / 4;
++  if (non_temporal_threshold < non_temporal_threshold_lowbound)
++    non_temporal_threshold = non_temporal_threshold_lowbound;
++
++  /* If no ERMS, we use the per-thread L3 chunking. Normal cacheable stores run
++     a higher risk of actually thrashing the cache as they don't have a HW LRU
++     hint. As well, their performance in highly parallel situations is
++     noticeably worse.  */
++  if (!CPU_FEATURE_USABLE_P (cpu_features, ERMS))
++    non_temporal_threshold = non_temporal_threshold_lowbound;
+   /* SIZE_MAX >> 4 because memmove-vec-unaligned-erms right-shifts the value of
+      'x86_non_temporal_threshold' by `LOG_4X_MEMCPY_THRESH` (4) and it is best
+      if that operation cannot overflow. Minimum of 0x4040 (16448) because the
 diff --git a/sysdeps/x86_64/fpu/fraiseexcpt.c b/sysdeps/x86_64/fpu/fraiseexcpt.c
 index 924eed96a9..e7430a4158 100644
 --- a/sysdeps/x86_64/fpu/fraiseexcpt.c

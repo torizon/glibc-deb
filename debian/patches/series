@@ -28,7 +28,6 @@ hppa/local-inlining.diff
 # 2.38
 hurd-i386/git-intr-msg-cfa.diff
 hurd-i386/git-intr-msg-stack.diff
-hurd-i386/git-exception-long.diff
 hurd-i386/git-ctty.diff
 hurd-i386/git-tst-system.diff
 hurd-i386/git-task_info_count.diff

@@ -1,4 +1,4 @@
-glibc (2.37-8) UNRELEASED; urgency=medium
+glibc (2.37-8) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/libc0.3.symbols.hurd-i386: Update symbols.
@@ -20,7 +20,7 @@ glibc (2.37-8) UNRELEASED; urgency=medium
       ppc64el.  Closes: #1050592.
     - debian/patches/hurd-i386/git-exception-long.diff: upstreamed.
 
- -- Samuel Thibault <sthibault@debian.org>  Fri, 04 Aug 2023 16:23:34 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 08 Sep 2023 20:39:29 +0200
 
 glibc (2.37-7) unstable; urgency=medium
 

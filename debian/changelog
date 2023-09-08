@@ -1,9 +1,9 @@
-glibc (2.38-3) UNRELEASED; urgency=medium
+glibc (2.38-3) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch.
 
- -- Aurelien Jarno <aurel32@debian.org>  Fri, 08 Sep 2023 21:08:22 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 08 Sep 2023 22:58:54 +0200
 
 glibc (2.38-2) experimental; urgency=medium
 

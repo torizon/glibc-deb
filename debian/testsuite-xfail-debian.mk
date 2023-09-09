@@ -374,6 +374,7 @@ test-xfail-tst-nss-gai-actions = yes
 
 # new in 2.37
 test-xfail-tst-fcntl-lock = yes
+test-xfail-tst-fcntl-lock-lfs = yes
 
 # new in 2.38
 test-xfail-tst-sprof-basic = yes

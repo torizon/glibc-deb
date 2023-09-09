@@ -1,6 +1,8 @@
 glibc (2.37-9) UNRELEASED; urgency=medium
 
   * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
+  * debian/patches/hurd-i386/git-main_stack.diff: Avoid exposing the vm_region
+    symbol.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 09 Sep 2023 09:45:08 +0200
 

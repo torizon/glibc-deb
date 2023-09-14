@@ -1,8 +1,14 @@
 glibc (2.37-9) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
   * debian/patches/hurd-i386/git-main_stack.diff: Avoid exposing the vm_region
     symbol.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a stack read overflow in getaddrinfo in no-aaaa mode
+      (CVE-2023-4527).  Closes: #1051958.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 09 Sep 2023 09:45:08 +0200
 

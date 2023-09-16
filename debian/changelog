@@ -1,3 +1,10 @@
+glibc (2.37-10) UNRELEASED; urgency=medium
+
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix use after free in getcanonname (CVE-2023-4806).
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 16 Sep 2023 11:00:20 +0200
+
 glibc (2.37-9) unstable; urgency=medium
 
   [ Samuel Thibault ]

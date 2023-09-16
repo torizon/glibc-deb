@@ -376,6 +376,10 @@ test-xfail-tst-nss-gai-actions = yes
 test-xfail-tst-fcntl-lock = yes
 test-xfail-tst-fcntl-lock-lfs = yes
 
+# missing RLIMIT_AS support
+test-xfail-tst-vfprintf-width-prec-mem = yes
+test-xfail-tst-vfprintf-width-prec = yes
+
 # new in 2.38
 test-xfail-tst-sprof-basic = yes
 

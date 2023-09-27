@@ -1,6 +1,12 @@
 glibc (2.37-11) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a memory leak in getaddrinfo introduced by fix for CVE-2023-4806
+      (CVE-2023-5156).  Closes: #1053002.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 16 Sep 2023 13:23:00 +0200
 

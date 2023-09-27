@@ -4,6 +4,9 @@ glibc (2.38-4) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix oversized __io_vtables in libio.  Closes: #1050371.
 
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-ucontext.diff: Fix spurious ucontext content.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 10 Sep 2023 11:30:32 +0200
 
 glibc (2.38-3) experimental; urgency=medium

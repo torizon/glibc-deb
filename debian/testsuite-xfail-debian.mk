@@ -375,6 +375,7 @@ test-xfail-tst-nss-gai-actions = yes
 # new in 2.37
 test-xfail-tst-fcntl-lock = yes
 test-xfail-tst-fcntl-lock-lfs = yes
+test-xfail-tst-nss-gai-hv2-canonname = yes
 
 # missing RLIMIT_AS support
 test-xfail-tst-vfprintf-width-prec-mem = yes

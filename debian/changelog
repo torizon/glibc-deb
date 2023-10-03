@@ -1,4 +1,4 @@
-glibc (2.37-12) UNRELEASED; urgency=medium
+glibc (2.37-12) unstable; urgency=critical
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
@@ -7,8 +7,9 @@ glibc (2.37-12) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix a buffer overflow in the dynamic loader's processing of the
       GLIBC_TUNABLES environment variable (CVE-2023-4911).
+  * Set urgency to critical given the security issue.
 
- -- Samuel Thibault <sthibault@debian.org>  Thu, 28 Sep 2023 01:22:54 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 03 Oct 2023 19:14:06 +0200
 
 glibc (2.37-11) unstable; urgency=medium
 

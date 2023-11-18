@@ -37,6 +37,7 @@ hurd-i386/git-error_t.diff
 hurd-i386/git-tls_dtors.diff
 hurd-i386/git-main_stack.diff
 hurd-i386/git-ucontext.diff
+hurd-i386/git-clean_ports.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

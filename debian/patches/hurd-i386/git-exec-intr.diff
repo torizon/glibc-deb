@@ -1,0 +1,34 @@
+Index: glibc-2.37/sysdeps/mach/hurd/spawni.c
+===================================================================
+--- glibc-2.37.orig/sysdeps/mach/hurd/spawni.c
++++ glibc-2.37/sysdeps/mach/hurd/spawni.c
+@@ -991,6 +991,11 @@ retry:
+ 
+     inline error_t exec (file_t file)
+       {
++	sigset_t old, new;
++
++	__sigfillset(&new);
++	__sigprocmask (SIG_SETMASK, &new, &old);
++
+ 	error_t err = __file_exec_paths
+ 	  (file, task,
+ 	   __sigismember (&_hurdsig_traced, SIGKILL) ? EXEC_SIGTRAP : 0,
+@@ -1019,7 +1024,7 @@ retry:
+ 	/* Fallback for backwards compatibility.  This can just be removed
+ 	   when __file_exec goes away.  */
+ 	if (err == MIG_BAD_ID)
+-	  return __file_exec (file, task,
++	  err = __file_exec (file, task,
+ 			      (__sigismember (&_hurdsig_traced, SIGKILL)
+ 			      ? EXEC_SIGTRAP : 0),
+ 			      args, argslen, env, envlen,
+@@ -1028,6 +1033,8 @@ retry:
+ 			      ints, INIT_INT_MAX,
+ 			      NULL, 0, NULL, 0);
+ 
++	__sigprocmask (SIG_SETMASK, &old, NULL);
++
+ 	return err;
+       }
+ 

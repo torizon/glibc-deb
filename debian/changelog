@@ -10,6 +10,8 @@ glibc (2.37-13) UNRELEASED; urgency=medium
     interrupts.
   * debian/patches/hurd-i386/git-exec-intr.diff: Fix "invalid destination"
     errors during ghc builds.
+  * debian/patches/hurd-i386/git-ioctls-bsd.diff: Fix missing BSD macros after
+    including termios.h then ioctl.h
 
  -- Aurelien Jarno <aurel32@debian.org>  Thu, 12 Oct 2023 20:25:42 +0200
 

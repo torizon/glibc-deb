@@ -1,4 +1,4 @@
-glibc (2.37-13) UNRELEASED; urgency=medium
+glibc (2.37-13) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/rules.d/control.mk: enable build on loong64.  Closes: #1053717.
@@ -22,7 +22,7 @@ glibc (2.37-13) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/git-dtable_reauth.diff: Fix restarting
     reauth_dtable on signal.
 
- -- Aurelien Jarno <aurel32@debian.org>  Thu, 12 Oct 2023 20:25:42 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 03 Dec 2023 14:23:52 +0100
 
 glibc (2.37-12) unstable; urgency=critical
 

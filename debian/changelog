@@ -1,4 +1,4 @@
-glibc (2.38-4) UNRELEASED; urgency=medium
+glibc (2.38-4) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
@@ -13,7 +13,7 @@ glibc (2.38-4) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/git-clean_ports.diff: Handle message iteration
     correctly.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 10 Sep 2023 11:30:32 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 03 Dec 2023 17:05:48 +0100
 
 glibc (2.38-3) experimental; urgency=medium
 

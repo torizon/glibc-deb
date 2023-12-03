@@ -7,6 +7,8 @@ glibc (2.37-13) UNRELEASED; urgency=medium
     CREAD, CSIZE, PARENB bits in tcsetaddr(). Thanks to Ian Abbott for the
     hint.  Closes: #1050290.
   * Update Swedish debconf translation, by Martin Bagge.  Closes: #1056957.
+  * debian/local/manpages/getconf.1: fix issues reported py mandoc.  Closes:
+    #1052267.
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-statfs_f_ffree.patch: Add missing f_ffree

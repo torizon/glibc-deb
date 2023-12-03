@@ -3,6 +3,9 @@ glibc (2.37-13) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/rules.d/control.mk: enable build on loong64.  Closes: #1053717.
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/patches/any/local-tcsetaddr.diff: fix a thinko in handling of
+    CREAD, CSIZE, PARENB bits in tcsetaddr(). Thanks to Ian Abbott for the
+    hint.  Closes: #1050290.
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-statfs_f_ffree.patch: Add missing f_ffree

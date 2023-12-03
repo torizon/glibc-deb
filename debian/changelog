@@ -6,6 +6,7 @@ glibc (2.37-13) UNRELEASED; urgency=medium
   * debian/patches/any/local-tcsetaddr.diff: fix a thinko in handling of
     CREAD, CSIZE, PARENB bits in tcsetaddr(). Thanks to Ian Abbott for the
     hint.  Closes: #1050290.
+  * Update Swedish debconf translation, by Martin Bagge.  Closes: #1056957.
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-statfs_f_ffree.patch: Add missing f_ffree

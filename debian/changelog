@@ -83,6 +83,78 @@ glibc (2.38-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 04 Aug 2023 12:50:01 +0200
 
+glibc (2.37-13) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/rules.d/control.mk: enable build on loong64.  Closes: #1053717.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/patches/any/local-tcsetaddr.diff: fix a thinko in handling of
+    CREAD, CSIZE, PARENB bits in tcsetaddr(). Thanks to Ian Abbott for the
+    hint.  Closes: #1050290.
+  * Update Swedish debconf translation, by Martin Bagge.  Closes: #1056957.
+  * debian/local/manpages/getconf.1: fix issues reported py mandoc.  Closes:
+    #1052267.
+
+  [ Samuel Thibault ]
+  * debian/patches/hurd-i386/git-statfs_f_ffree.patch: Add missing f_ffree
+    conversion.
+  * debian/patches/hurd-i386/git-send_interrupt.diff: Fix spurious send
+    interrupts.
+  * debian/patches/hurd-i386/git-exec-intr.diff: Fix "invalid destination"
+    errors during ghc builds.
+  * debian/patches/hurd-i386/git-ioctls-bsd.diff: Fix missing BSD macros after
+    including termios.h then ioctl.h
+  * debian/patches/hurd-i386/git-dtable_reauth.diff: Fix restarting
+    reauth_dtable on signal.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 03 Dec 2023 14:23:52 +0100
+
+glibc (2.37-12) unstable; urgency=critical
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a buffer overflow in the dynamic loader's processing of the
+      GLIBC_TUNABLES environment variable (CVE-2023-4911).
+  * Set urgency to critical given the security issue.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 03 Oct 2023 19:14:06 +0200
+
+glibc (2.37-11) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a memory leak in getaddrinfo introduced by fix for CVE-2023-4806
+      (CVE-2023-5156).  Closes: #1053002.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 27 Sep 2023 20:50:25 +0200
+
+glibc (2.37-10) unstable; urgency=medium
+
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix use after free in getcanonname (CVE-2023-4806).
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 16 Sep 2023 11:12:43 +0200
+
+glibc (2.37-9) unstable; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update xfails for hurd-i386.
+  * debian/patches/hurd-i386/git-main_stack.diff: Avoid exposing the vm_region
+    symbol.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a stack read overflow in getaddrinfo in no-aaaa mode
+      (CVE-2023-4527).  Closes: #1051958.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 15 Sep 2023 07:33:43 +0200
+
 glibc (2.37-8) unstable; urgency=medium
 
   [ Samuel Thibault ]

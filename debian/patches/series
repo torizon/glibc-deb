@@ -43,6 +43,8 @@ hurd-i386/git-send_interrupt.diff
 hurd-i386/git-exec-intr.diff
 hurd-i386/git-ioctls-bsd.diff
 hurd-i386/git-dtable_reauth.diff
+hurd-i386/git-intr-msg-iter.diff
+hurd-i386/git-64bit-abi.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

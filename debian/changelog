@@ -1,7 +1,6 @@
 glibc (2.38-5) UNRELEASED; urgency=medium
 
-  [ Samuel Thibault ]
-  * debian/patches/hurd-i386/git-intr-msg-iter.diff: Fix intr-msg iteration.
+  [ Flavio Cruz ]
   * debian/patches/hurd-i386/git-64bit-abi.diff: Finalize hurd-amd64 ABI.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 18 Dec 2023 01:41:13 +0100

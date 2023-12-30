@@ -78,6 +78,8 @@ mips/submitted-rld_map.diff
 
 powerpc/local-powerpc8xx-dcbz.diff
 
+riscv64/git-risc-v-add-support-for-dl_runtime_profile.diff
+
 sh4/local-fpscr_values.diff
 
 all/local-alias-et_EE.diff

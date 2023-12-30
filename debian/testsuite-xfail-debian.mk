@@ -634,9 +634,6 @@ ifeq ($(config-machine)-$(config-os),riscv64-linux-gnu)
 test-xfail-tst-resolv-res_init = yes
 test-xfail-tst-resolv-res_init-thread = yes
 test-xfail-tst-resolv-threads = yes
-
-# dl_profile is not supported on riscv
-test-xfail-tst-sprof-basic = yes
 endif
 
 

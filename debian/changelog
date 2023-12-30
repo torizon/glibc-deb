@@ -7,6 +7,8 @@ glibc (2.38-5) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch.
   * debian/patches/riscv64/git-risc-v-add-support-for-dl_runtime_profile.diff:
     backport upstream support for profile/audit PLT setup on RISC-V.
+  * debian/testsuite-xfail-debian.mk: drop tst-sprof-basic XFAIL from riscv64,
+    now that dl_profile is supported.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 18 Dec 2023 01:41:13 +0100
 

@@ -1,4 +1,4 @@
-glibc (2.38-5) UNRELEASED; urgency=medium
+glibc (2.38-5) experimental; urgency=medium
 
   [ Flavio Cruz ]
   * debian/patches/hurd-i386/git-64bit-abi.diff: Finalize hurd-amd64 ABI.
@@ -10,7 +10,7 @@ glibc (2.38-5) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: drop tst-sprof-basic XFAIL from riscv64,
     now that dl_profile is supported.
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 18 Dec 2023 01:41:13 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 30 Dec 2023 12:18:33 +0100
 
 glibc (2.38-4) experimental; urgency=medium
 

@@ -1,10 +1,10 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.37/master from glibc-2.37
 
 diff --git a/NEWS b/NEWS
-index ad5196a5f1..a2f7c96b4f 100644
+index ad5196a5f1..c0d9993372 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -5,6 +5,54 @@ See the end for copying conditions.
+@@ -5,6 +5,60 @@ See the end for copying conditions.
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
  
@@ -43,6 +43,7 @@ index ad5196a5f1..a2f7c96b4f 100644
 +
 +  [20975] Deferred cancellation triggers in __check_pf and looses lock leading to deadlock
 +  [27576] gmon: improve mcount overflow handling
++  [29039] Corrupt DTV after reuse of a TLS module ID following dlclose with unused TLS
 +  [29444] gmon: Fix allocated buffer overflow (bug 29444)
 +  [30053] time: strftime %s returns -1 after 2038 on 32 bits systems
 +  [30101] gmon: fix memory corruption issues
@@ -54,12 +55,17 @@ index ad5196a5f1..a2f7c96b4f 100644
 +  [30428] AMD cache size computation does not work for some CPUs, hypervisors
 +  [30477] libc: [RISCV]: time64 does not work on riscv32
 +  [30515] _dl_find_object incorrectly returns 1 during early startup
++  [30745] Slight bug in cache info codes for x86
 +  [30842] Stack read overflow in getaddrinfo in no-aaaa mode (CVE-2023-4527)
++  [30843] potential use-after-free in getcanonname (CVE-2023-4806)
++  [31183] Wide stream buffer size reduced MB_LEN_MAX bytes after bug 17522 fix
++  [31184] FAIL: elf/tst-tlsgap
++  [31185] Incorrect thread point access in _dl_tlsdesc_undefweak and _dl_tlsdesc_dynamic
 +
  Version 2.37
  
  Major new features:
-@@ -105,6 +153,8 @@ The following bugs are resolved with this release:
+@@ -105,6 +159,8 @@ The following bugs are resolved with this release:
      coincides with offset change
    [30039] stdio: __vsprintf_internal does not handle unspecified buffer
      length in fortify mode
@@ -194,6 +200,18 @@ index d35a725415..32a8bfcf74 100644
  #endif
  
        /* Store the result for later runs.  */
+diff --git a/elf/dl-tls.c b/elf/dl-tls.c
+index 8943a3b4ae..b1e85bde9d 100644
+--- a/elf/dl-tls.c
++++ b/elf/dl-tls.c
+@@ -160,6 +160,7 @@ _dl_assign_tls_modid (struct link_map *l)
+ 	      {
+ 		/* Mark the entry as used, so any dependency see it.  */
+ 		atomic_store_relaxed (&runp->slotinfo[result - disp].map, l);
++		atomic_store_relaxed (&runp->slotinfo[result - disp].gen, 0);
+ 		break;
+ 	      }
+ 
 diff --git a/elf/dl-tunables.c b/elf/dl-tunables.c
 index 327b9eb52f..985b69c180 100644
 --- a/elf/dl-tunables.c
@@ -349,6 +367,18 @@ index 166dccb528..5b1c9139f6 100644
  
        /* A link may just point to itself.  */
        if (is_link)
+diff --git a/elf/readelflib.c b/elf/readelflib.c
+index f5b8c80e38..64f1d662a9 100644
+--- a/elf/readelflib.c
++++ b/elf/readelflib.c
+@@ -107,6 +107,7 @@ process_elf_file (const char *file_name, const char *lib, int *flag,
+ 	case PT_INTERP:
+ 	  program_interpreter = (char *) (file_contents + segment->p_offset);
+ 	  check_ptr (program_interpreter);
++	  break;
+ 
+ 	case PT_GNU_PROPERTY:
+ 	  /* The NT_GNU_PROPERTY_TYPE_0 note must be aligned to 4 bytes
 diff --git a/elf/readlib.c b/elf/readlib.c
 index c5c3591eef..bc13d9acc6 100644
 --- a/elf/readlib.c
@@ -1444,6 +1474,19 @@ index eda04b5417..cf8d3001c3 100644
        }
      }
  
+diff --git a/libio/wfileops.c b/libio/wfileops.c
+index cecea21c1c..e81924529e 100644
+--- a/libio/wfileops.c
++++ b/libio/wfileops.c
+@@ -55,7 +55,7 @@ _IO_wdo_write (FILE *fp, const wchar_t *data, size_t to_do)
+ 	  char mb_buf[MB_LEN_MAX];
+ 	  char *write_base, *write_ptr, *buf_end;
+ 
+-	  if (fp->_IO_write_ptr - fp->_IO_write_base < sizeof (mb_buf))
++	  if (fp->_IO_buf_end - fp->_IO_write_ptr < sizeof (mb_buf))
+ 	    {
+ 	      /* Make sure we have room for at least one multibyte
+ 		 character.  */
 diff --git a/malloc/malloc.c b/malloc/malloc.c
 index fd8b52bfac..67df9f8c51 100644
 --- a/malloc/malloc.c
@@ -2486,7 +2529,7 @@ index 0e47e529fe..64218fa7bb 100644
 +#define DL_FIXUP_BINDNOW_RELOC(l, reloc, value, new_value, st_value, lazy) \
    (*value) = *(struct fdesc *) (st_value)
 diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
-index fd22dc4fcb..69f38bbfb9 100644
+index fd22dc4fcb..8607486798 100644
 --- a/sysdeps/posix/getaddrinfo.c
 +++ b/sysdeps/posix/getaddrinfo.c
 @@ -120,6 +120,7 @@ struct gaih_result
@@ -2560,7 +2603,23 @@ index fd22dc4fcb..69f38bbfb9 100644
  	/* If the canonical name cannot be determined, use the passed
  	   string.  */
  	s = (char *) name;
-@@ -771,7 +780,7 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
+@@ -607,7 +616,14 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
+      function variant.  */
+   res_ctx = __resolv_context_get ();
+   if (res_ctx == NULL)
+-    no_more = 1;
++    {
++      if (errno == ENOMEM)
++	{
++	  result = -EAI_MEMORY;
++	  goto out;
++	}
++      no_more = 1;
++    }
+ 
+   while (!no_more)
+     {
+@@ -771,7 +787,7 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
  		  if ((req->ai_flags & AI_CANONNAME) != 0
  		      && res->canon == NULL)
  		    {
@@ -2569,7 +2628,7 @@ index fd22dc4fcb..69f38bbfb9 100644
  		      if (canonbuf == NULL)
  			{
  			  __resolv_context_put (res_ctx);
-@@ -1187,9 +1196,7 @@ free_and_return:
+@@ -1187,9 +1203,7 @@ free_and_return:
    if (malloc_name)
      free ((char *) name);
    free (addrmem);
@@ -3258,6 +3317,37 @@ index a0474af8d1..4383eb568b 100644
    /* SIZE_MAX >> 4 because memmove-vec-unaligned-erms right-shifts the value of
       'x86_non_temporal_threshold' by `LOG_4X_MEMCPY_THRESH` (4) and it is best
       if that operation cannot overflow. Minimum of 0x4040 (16448) because the
+diff --git a/sysdeps/x86_64/dl-tlsdesc.S b/sysdeps/x86_64/dl-tlsdesc.S
+index 5593897e29..4579424bf7 100644
+--- a/sysdeps/x86_64/dl-tlsdesc.S
++++ b/sysdeps/x86_64/dl-tlsdesc.S
+@@ -61,7 +61,7 @@ _dl_tlsdesc_return:
+ _dl_tlsdesc_undefweak:
+ 	_CET_ENDBR
+ 	movq	8(%rax), %rax
+-	subq	%fs:0, %rax
++	sub	%fs:0, %RAX_LP
+ 	ret
+ 	cfi_endproc
+ 	.size	_dl_tlsdesc_undefweak, .-_dl_tlsdesc_undefweak
+@@ -102,7 +102,7 @@ _dl_tlsdesc_dynamic:
+ 	/* Preserve call-clobbered registers that we modify.
+ 	   We need two scratch regs anyway.  */
+ 	movq	%rsi, -16(%rsp)
+-	movq	%fs:DTV_OFFSET, %rsi
++	mov	%fs:DTV_OFFSET, %RSI_LP
+ 	movq	%rdi, -8(%rsp)
+ 	movq	TLSDESC_ARG(%rax), %rdi
+ 	movq	(%rsi), %rax
+@@ -116,7 +116,7 @@ _dl_tlsdesc_dynamic:
+ 	addq	TLSDESC_MODOFF(%rdi), %rax
+ .Lret:
+ 	movq	-16(%rsp), %rsi
+-	subq	%fs:0, %rax
++	sub	%fs:0, %RAX_LP
+ 	movq	-8(%rsp), %rdi
+ 	ret
+ .Lslow:
 diff --git a/sysdeps/x86_64/fpu/fraiseexcpt.c b/sysdeps/x86_64/fpu/fraiseexcpt.c
 index 924eed96a9..e7430a4158 100644
 --- a/sysdeps/x86_64/fpu/fraiseexcpt.c

@@ -4,6 +4,7 @@ glibc (2.37-14) UNRELEASED; urgency=medium
   * debian/debhelper.in/locales.config: always ask for the default locale,
     even if none are generated. This enables choosing C.UTF-8 as the default
     locale.  Closes: #1060288.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Aurelien Jarno <aurel32@debian.org>  Tue, 09 Jan 2024 23:13:18 +0100
 

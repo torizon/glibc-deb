@@ -1,4 +1,4 @@
-glibc (2.37-14) UNRELEASED; urgency=medium
+glibc (2.37-14) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/debhelper.in/locales.config: always ask for the default locale,
@@ -9,7 +9,7 @@ glibc (2.37-14) UNRELEASED; urgency=medium
     to do not have enough resources for some of the tests anymore.  Closes:
     #1060202.
 
- -- Aurelien Jarno <aurel32@debian.org>  Tue, 09 Jan 2024 23:13:18 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 23 Jan 2024 07:13:18 +0100
 
 glibc (2.37-13) unstable; urgency=medium
 

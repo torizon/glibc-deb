@@ -5,6 +5,8 @@ glibc (2.37-15) UNRELEASED; urgency=medium
     - Fix an off-by-one heap buffer overflow in __vsyslog_internal
       (CVE-2023-6779).
     - Fix an integer overflow in __vsyslog_internal (CVE-2023-6780).
+  * debian/patches/any/local-qsort-memory-corruption.patch: Fix a memory
+    corruption in qsort() when using nontransitive comparison functions.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 30 Jan 2024 19:06:03 +0100
 

@@ -103,3 +103,4 @@ any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
 any/git-c-utf-8-language.diff
+any/local-qsort-memory-corruption.patch

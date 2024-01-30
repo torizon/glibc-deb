@@ -1,10 +1,10 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.38/master from glibc-2.38
 
 diff --git a/NEWS b/NEWS
-index 872bc8907b..905230b838 100644
+index 872bc8907b..6768c2da6f 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -4,6 +4,48 @@ See the end for copying conditions.
+@@ -4,6 +4,49 @@ See the end for copying conditions.
  
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
@@ -47,6 +47,7 @@ index 872bc8907b..905230b838 100644
 +    -D_FILE_OFFSET_BITS=64
 +  [30842] Stack read overflow in getaddrinfo in no-aaaa mode (CVE-2023-4527)
 +  [30843] potential use-after-free in getcanonname (CVE-2023-4806)
++  [31183] Wide stream buffer size reduced MB_LEN_MAX bytes after bug 17522 fix
 +  [31184] FAIL: elf/tst-tlsgap
 +  [31185] Incorrect thread point access in _dl_tlsdesc_undefweak and _dl_tlsdesc_dynamic
 +
@@ -493,6 +494,19 @@ index 1d8ad612e9..34f7e15f1c 100644
  
  #ifdef SHARED
  
+diff --git a/libio/wfileops.c b/libio/wfileops.c
+index f16f6db1c3..9ab8f2e7f3 100644
+--- a/libio/wfileops.c
++++ b/libio/wfileops.c
+@@ -55,7 +55,7 @@ _IO_wdo_write (FILE *fp, const wchar_t *data, size_t to_do)
+ 	  char mb_buf[MB_LEN_MAX];
+ 	  char *write_base, *write_ptr, *buf_end;
+ 
+-	  if (fp->_IO_write_ptr - fp->_IO_write_base < sizeof (mb_buf))
++	  if (fp->_IO_buf_end - fp->_IO_write_ptr < sizeof (mb_buf))
+ 	    {
+ 	      /* Make sure we have room for at least one multibyte
+ 		 character.  */
 diff --git a/malloc/malloc.c b/malloc/malloc.c
 index e2f1a615a4..d0bbbf3710 100644
 --- a/malloc/malloc.c
@@ -986,6 +1000,219 @@ index f229283dbf..ecd6fa249e 100644
  
    for (i = 0; i < LN; ++ i)
      {
+diff --git a/misc/Makefile b/misc/Makefile
+index fe0d49c1de..90b31952c5 100644
+--- a/misc/Makefile
++++ b/misc/Makefile
+@@ -289,7 +289,10 @@ tests-special += $(objpfx)tst-error1-mem.out \
+   $(objpfx)tst-allocate_once-mem.out
+ endif
+ 
+-tests-container := tst-syslog
++tests-container := \
++  tst-syslog \
++  tst-syslog-long-progname \
++  # tests-container
+ 
+ CFLAGS-select.c += -fexceptions -fasynchronous-unwind-tables
+ CFLAGS-tsearch.c += $(uses-callbacks)
+@@ -351,6 +354,9 @@ $(objpfx)tst-allocate_once-mem.out: $(objpfx)tst-allocate_once.out
+ 	$(common-objpfx)malloc/mtrace $(objpfx)tst-allocate_once.mtrace > $@; \
+ 	$(evaluate-test)
+ 
++tst-syslog-long-progname-ENV = GLIBC_TUNABLES=glibc.malloc.check=3 \
++			       LD_PRELOAD=libc_malloc_debug.so.0
++
+ $(objpfx)tst-select: $(librt)
+ $(objpfx)tst-select-time64: $(librt)
+ $(objpfx)tst-pselect: $(librt)
+diff --git a/misc/syslog.c b/misc/syslog.c
+index 1b8cb722c5..4af87f54fd 100644
+--- a/misc/syslog.c
++++ b/misc/syslog.c
+@@ -41,6 +41,7 @@ static char sccsid[] = "@(#)syslog.c	8.4 (Berkeley) 3/18/94";
+ #include <sys/uio.h>
+ #include <sys/un.h>
+ #include <syslog.h>
++#include <limits.h>
+ 
+ static int LogType = SOCK_DGRAM;	/* type of socket connection */
+ static int LogFile = -1;		/* fd for log */
+@@ -124,8 +125,9 @@ __vsyslog_internal (int pri, const char *fmt, va_list ap,
+ {
+   /* Try to use a static buffer as an optimization.  */
+   char bufs[1024];
+-  char *buf = NULL;
+-  size_t bufsize = 0;
++  char *buf = bufs;
++  size_t bufsize;
++
+   int msgoff;
+   int saved_errno = errno;
+ 
+@@ -177,29 +179,55 @@ __vsyslog_internal (int pri, const char *fmt, va_list ap,
+ #define SYSLOG_HEADER_WITHOUT_TS(__pri, __msgoff)        \
+   "<%d>: %n", __pri, __msgoff
+ 
+-  int l;
++  int l, vl;
+   if (has_ts)
+     l = __snprintf (bufs, sizeof bufs,
+ 		    SYSLOG_HEADER (pri, timestamp, &msgoff, pid));
+   else
+     l = __snprintf (bufs, sizeof bufs,
+ 		    SYSLOG_HEADER_WITHOUT_TS (pri, &msgoff));
+-  if (0 <= l && l < sizeof bufs)
++  if (l < 0)
++    goto out;
++
++  char *pos;
++  size_t len;
++
++  if (l < sizeof bufs)
+     {
+-      va_list apc;
+-      va_copy (apc, ap);
++      /* At this point, there is still a chance that we can print the
++         remaining part of the log into bufs and use that.  */
++      pos = bufs + l;
++      len = sizeof (bufs) - l;
++    }
++  else
++    {
++      buf = NULL;
++      /* We already know that bufs is too small to use for this log message.
++         The next vsnprintf into bufs is used only to calculate the total
++         required buffer length.  We will discard bufs contents and allocate
++         an appropriately sized buffer later instead.  */
++      pos = bufs;
++      len = sizeof (bufs);
++    }
+ 
+-      /* Restore errno for %m format.  */
+-      __set_errno (saved_errno);
++  {
++    va_list apc;
++    va_copy (apc, ap);
+ 
+-      int vl = __vsnprintf_internal (bufs + l, sizeof bufs - l, fmt, apc,
+-                                     mode_flags);
+-      if (0 <= vl && vl < sizeof bufs - l)
+-        buf = bufs;
+-      bufsize = l + vl;
++    /* Restore errno for %m format.  */
++    __set_errno (saved_errno);
+ 
+-      va_end (apc);
+-    }
++    vl = __vsnprintf_internal (pos, len, fmt, apc, mode_flags);
++    va_end (apc);
++
++    if (vl < 0 || vl >= INT_MAX - l)
++      goto out;
++
++    if (vl >= len)
++      buf = NULL;
++
++    bufsize = l + vl;
++  }
+ 
+   if (buf == NULL)
+     {
+@@ -209,25 +237,37 @@ __vsyslog_internal (int pri, const char *fmt, va_list ap,
+ 	  /* Tell the cancellation handler to free this buffer.  */
+ 	  clarg.buf = buf;
+ 
++	  int cl;
+ 	  if (has_ts)
+-	    __snprintf (buf, l + 1,
+-			SYSLOG_HEADER (pri, timestamp, &msgoff, pid));
++	    cl = __snprintf (buf, l + 1,
++			     SYSLOG_HEADER (pri, timestamp, &msgoff, pid));
+ 	  else
+-	    __snprintf (buf, l + 1,
+-			SYSLOG_HEADER_WITHOUT_TS (pri, &msgoff));
++	    cl = __snprintf (buf, l + 1,
++			     SYSLOG_HEADER_WITHOUT_TS (pri, &msgoff));
++	  if (cl != l)
++	    goto out;
+ 
+ 	  va_list apc;
+ 	  va_copy (apc, ap);
+-	  __vsnprintf_internal (buf + l, bufsize - l + 1, fmt, apc,
+-				mode_flags);
++	  cl = __vsnprintf_internal (buf + l, bufsize - l + 1, fmt, apc,
++				     mode_flags);
+ 	  va_end (apc);
++
++	  if (cl != vl)
++	    goto out;
+ 	}
+       else
+         {
++          int bl;
+ 	  /* Nothing much to do but emit an error message.  */
+-          bufsize = __snprintf (bufs, sizeof bufs,
+-                                "out of memory[%d]", __getpid ());
++          bl = __snprintf (bufs, sizeof bufs,
++                           "out of memory[%d]", __getpid ());
++          if (bl < 0 || bl >= sizeof bufs)
++            goto out;
++
++          bufsize = bl;
+           buf = bufs;
++          msgoff = 0;
+         }
+     }
+ 
+diff --git a/misc/tst-syslog-long-progname.c b/misc/tst-syslog-long-progname.c
+new file mode 100644
+index 0000000000..88f37a8a00
+--- /dev/null
++++ b/misc/tst-syslog-long-progname.c
+@@ -0,0 +1,39 @@
++/* Test heap buffer overflow in syslog with long __progname (CVE-2023-6246)
++   Copyright (C) 2023 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <syslog.h>
++#include <string.h>
++
++extern char * __progname;
++
++static int
++do_test (void)
++{
++  char long_progname[2048];
++
++  memset (long_progname, 'X', sizeof (long_progname) - 1);
++  long_progname[sizeof (long_progname) - 1] = '\0';
++
++  __progname = long_progname;
++
++  syslog (LOG_INFO, "Hello, World!");
++
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/misc/tst-syslog-long-progname.root/postclean.req b/misc/tst-syslog-long-progname.root/postclean.req
+new file mode 100644
+index 0000000000..e69de29bb2
 diff --git a/nscd/Makefile b/nscd/Makefile
 index 2a0489f4cf..16b6460ee9 100644
 --- a/nscd/Makefile
@@ -1717,7 +1944,7 @@ index 02375286f8..99fcacab76 100644
  	FREG_L	fa0, sp, 9*SZREG + 0*SZFREG
  	FREG_L	fa1, sp, 9*SZREG + 1*SZFREG
 diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
-index 0356b622be..13082305d3 100644
+index 0356b622be..da573bea24 100644
 --- a/sysdeps/posix/getaddrinfo.c
 +++ b/sysdeps/posix/getaddrinfo.c
 @@ -120,6 +120,7 @@ struct gaih_result
@@ -1791,7 +2018,23 @@ index 0356b622be..13082305d3 100644
  	/* If the canonical name cannot be determined, use the passed
  	   string.  */
  	s = (char *) name;
-@@ -771,7 +780,7 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
+@@ -607,7 +616,14 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
+      function variant.  */
+   res_ctx = __resolv_context_get ();
+   if (res_ctx == NULL)
+-    no_more = 1;
++    {
++      if (errno == ENOMEM)
++	{
++	  result = -EAI_MEMORY;
++	  goto out;
++	}
++      no_more = 1;
++    }
+ 
+   while (!no_more)
+     {
+@@ -771,7 +787,7 @@ get_nss_addresses (const char *name, const struct addrinfo *req,
  		  if ((req->ai_flags & AI_CANONNAME) != 0
  		      && res->canon == NULL)
  		    {
@@ -1800,7 +2043,7 @@ index 0356b622be..13082305d3 100644
  		      if (canonbuf == NULL)
  			{
  			  __resolv_context_put (res_ctx);
-@@ -1187,9 +1196,7 @@ free_and_return:
+@@ -1187,9 +1203,7 @@ free_and_return:
    if (malloc_name)
      free ((char *) name);
    free (addrmem);

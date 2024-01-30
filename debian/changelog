@@ -97,6 +97,32 @@ glibc (2.38-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Fri, 04 Aug 2023 12:50:01 +0200
 
+glibc (2.37-15) unstable; urgency=critical
+
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a heap buffer overflow in __vsyslog_internal (CVE-2023-6246).
+    - Fix an off-by-one heap buffer overflow in __vsyslog_internal
+      (CVE-2023-6779).
+    - Fix an integer overflow in __vsyslog_internal (CVE-2023-6780).
+  * debian/patches/any/local-qsort-memory-corruption.patch: Fix a memory
+    corruption in qsort() when using nontransitive comparison functions.
+  * Set urgency to critical given the security issues.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 30 Jan 2024 19:20:04 +0100
+
+glibc (2.37-14) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/debhelper.in/locales.config: always ask for the default locale,
+    even if none are generated. This enables choosing C.UTF-8 as the default
+    locale.  Closes: #1060288.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/tests/control: disable autopkgtest on arm64, as the debci runners
+    to do not have enough resources for some of the tests anymore.  Closes:
+    #1060202.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 23 Jan 2024 07:13:18 +0100
+
 glibc (2.37-13) unstable; urgency=medium
 
   [ Aurelien Jarno ]

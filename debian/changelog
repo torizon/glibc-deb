@@ -1,3 +1,13 @@
+glibc (2.37-15) UNRELEASED; urgency=medium
+
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix a heap buffer overflow in __vsyslog_internal (CVE-2023-6246).
+    - Fix an off-by-one heap buffer overflow in __vsyslog_internal
+      (CVE-2023-6779).
+    - Fix an integer overflow in __vsyslog_internal (CVE-2023-6780).
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 30 Jan 2024 19:06:03 +0100
+
 glibc (2.37-14) unstable; urgency=medium
 
   [ Aurelien Jarno ]

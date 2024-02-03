@@ -1,3 +1,41 @@
+glibc (2.39-1) UNRELEASED; urgency=medium
+
+  * New upstream release.
+    - debian/symbols.wildcard: add 2.39.
+    - debian/patches/git-updates.diff: update from upstream stable branch.
+    - debian/patches/localedata/sort-UTF8-first.diff: rebased.
+    - debian/patches/localedata/locale-ku_TR.diff: rebased.
+    - debian/patches/localedata/locale-en_DK.diff: rebased.
+    - debian/patches/localedata/locale-zh_TW.diff: rebased.
+    - debian/patches/localedata/submitted-es_MX-decimal_point.diff.
+    - debian/patches/hurd-i386/git-realpath_NULL.diff: upstreamed.
+    - debian/patches/hurd-i386/git-tst-realpath-toolong.diff: upstreamed.
+    - debian/patches/hurd-i386/git-hidden_chk.diff: upstreamed.
+    - debian/patches/hurd-i386/git-glob_dirent.diff: upstreamed.
+    - debian/patches/hurd-i386/git-powerpc-longjmp.diff: upstreamed.
+    - debian/patches/hurd-i386/git-jemalloc.diff: upstreamed.
+    - debian/patches/hurd-i386/git-jemalloc2.diff: upstreamed.
+    - debian/patches/hurd-i386/git-error_t.diff: upstreamed.
+    - debian/patches/hurd-i386/git-tls_dtors.diff: upstreamed.
+    - debian/patches/hurd-i386/git-main_stack.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ucontext.diff: upstreamed.
+    - debian/patches/hurd-i386/git-clean_ports.diff: upstreamed.
+    - debian/patches/hurd-i386/git-statfs_f_ffree.patch: upstreamed.
+    - debian/patches/hurd-i386/git-send_interrupt.diff: upstreamed.
+    - debian/patches/hurd-i386/git-exec-intr.diff: upstreamed.
+    - debian/patches/hurd-i386/git-ioctls-bsd.diff: upstreamed.
+    - debian/patches/hurd-i386/git-dtable_reauth.diff: upstreamed.
+    - debian/patches/hurd-i386/git-64bit-abi.diff: upstreamed.
+    - debian/patches/i386/unsubmitted-quiet-ldconfig.diff: rebased.
+    - debian/patches/i386/local-setcontext-revert-eax-ecx-edx.patch: rebased.
+    - debian/patches/riscv64/git-risc-v-add-support-for-dl_runtime_profile.diff:
+      upstreamed.
+    - debian/patches/all/local-remove-manual.diff: rebased.
+    - debian/patches/any/git-c-utf-8-language.diff: upstreamed.
+    - debian/patches/any/local-qsort-memory-corruption.patch: removed, obsolete.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 03 Feb 2024 12:26:30 +0100
+
 glibc (2.38-6) experimental; urgency=medium
 
   * Merge from unstable.

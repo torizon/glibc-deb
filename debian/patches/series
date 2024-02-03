@@ -25,26 +25,6 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
-# Committed for 2.39
-hurd-i386/git-realpath_NULL.diff
-hurd-i386/git-tst-realpath-toolong.diff
-hurd-i386/git-hidden_chk.diff
-hurd-i386/git-glob_dirent.diff
-hurd-i386/git-powerpc-longjmp.diff
-hurd-i386/git-jemalloc.diff
-hurd-i386/git-jemalloc2.diff
-hurd-i386/git-error_t.diff
-hurd-i386/git-tls_dtors.diff
-hurd-i386/git-main_stack.diff
-hurd-i386/git-ucontext.diff
-hurd-i386/git-clean_ports.diff
-hurd-i386/git-statfs_f_ffree.patch
-hurd-i386/git-send_interrupt.diff
-hurd-i386/git-exec-intr.diff
-hurd-i386/git-ioctls-bsd.diff
-hurd-i386/git-dtable_reauth.diff
-hurd-i386/git-64bit-abi.diff
-
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
 hurd-i386/tg-thread-cancel.diff
@@ -78,8 +58,6 @@ mips/submitted-rld_map.diff
 
 powerpc/local-powerpc8xx-dcbz.diff
 
-riscv64/git-risc-v-add-support-for-dl_runtime_profile.diff
-
 sh4/local-fpscr_values.diff
 
 all/local-alias-et_EE.diff
@@ -105,5 +83,3 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/git-c-utf-8-language.diff
-any/local-qsort-memory-corruption.patch

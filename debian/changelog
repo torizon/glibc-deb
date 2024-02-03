@@ -33,6 +33,7 @@ glibc (2.39-1) UNRELEASED; urgency=medium
     - debian/patches/all/local-remove-manual.diff: rebased.
     - debian/patches/any/git-c-utf-8-language.diff: upstreamed.
     - debian/patches/any/local-qsort-memory-corruption.patch: removed, obsolete.
+  * debian/rules.d/tarball.mk: make tarball creation reproducible.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 03 Feb 2024 12:26:30 +0100
 

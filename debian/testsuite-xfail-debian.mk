@@ -383,6 +383,11 @@ test-xfail-tst-vfprintf-width-prec = yes
 test-xfail-tst-sprof-basic = yes
 test-xfail-tst-nss-files-hosts-v4mapped = yes
 
+# new in 2.39
+test-xfail-tst-initgroups1 = yes
+test-xfail-tst-initgroups2 = yes
+test-xfail-tst-sprintf-fortify-rdonly = yes
+
 # actually never succeded
 test-xfail-tst-create_format1 = yes
 test-xfail-tst-getcwd-abspath = yes

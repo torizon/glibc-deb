@@ -441,7 +441,6 @@ test-xfail-tst-backtrace4 = yes
 test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 
-test-xfail-tst-dlopen-nodelete-reloc = yes
 test-xfail-tst-platform-1 = yes
 test-xfail-tst-audit4 = yes
 test-xfail-tst-audit5 = yes

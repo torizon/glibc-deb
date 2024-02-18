@@ -414,18 +414,6 @@ test-xfail-test-ldouble-log2 = yes
 test-xfail-test-ldouble-y0 = yes
 test-xfail-test-ldouble-y1 = yes
 
-# TODO context support
-test-xfail-bug-getcontext = yes
-test-xfail-tst-setcontext2 = yes
-test-xfail-tst-setcontext4 = yes
-test-xfail-tst-setcontext5 = yes
-test-xfail-tst-setcontext6 = yes
-test-xfail-tst-setcontext7 = yes
-test-xfail-tst-setcontext8 = yes
-test-xfail-tst-setcontext9 = yes
-test-xfail-tst-swapcontext1 = yes
-test-xfail-tst-xbzero-opt = yes
-
 # Bus error
 test-xfail-test-bz22786 = yes
 

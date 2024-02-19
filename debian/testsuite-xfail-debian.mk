@@ -437,6 +437,11 @@ test-xfail-bug18240 = yes
 # cmsg bug
 test-xfail-tst-cmsghdr = yes
 
+# missing support
+test-xfail-tst-map-32bit-1a = yes
+test-xfail-tst-map-32bit-1b = yes
+test-xfail-tst-map-32bit-2 = yes
+
 # TODO support (for signals I guess)
 test-xfail-tst-backtrace4 = yes
 test-xfail-tst-backtrace5 = yes

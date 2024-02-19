@@ -5,7 +5,9 @@ glibc (2.38-7) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: Update hurd-amd64-specific xfails
     accordingly.
   * debian/patches/hurd-i386/local-no-bootstrap-fs-access.2.diff: Also update
-    localplt.data on hurd-amd64
+    localplt.data on hurd-amd64.
+  * debian/patches/hurd-i386/local-stack_chk_guard.diff: Also update
+    ld.abilist on hurd-amd64.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 17 Feb 2024 22:20:02 +0100
 

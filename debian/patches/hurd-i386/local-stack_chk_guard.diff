@@ -23,3 +23,12 @@ Index: glibc-2.32/sysdeps/mach/hurd/i386/ld.abilist
  GLIBC_2.3 __tls_get_addr F
  GLIBC_2.34 __rtld_version_placeholder F
 +GLIBC_2.4 __stack_chk_guard D 0x4
+Index: glibc-2.38/sysdeps/mach/hurd/x86_64/ld.abilist
+===================================================================
+--- glibc-2.38/sysdeps/mach/hurd/x86_64/ld.abilist.original	2024-02-19 00:30:47.000000000 +0000
++++ glibc-2.38/sysdeps/mach/hurd/x86_64/ld.abilist	2024-02-19 00:30:48.000000000 +0000
+@@ -15,3 +15,4 @@
+ GLIBC_2.38 _hurd_intr_rpc_mach_msg F
+ GLIBC_2.38 _r_debug D 0x28
+ GLIBC_2.38 abort F
++GLIBC_2.38 __stack_chk_guard D 0x8

@@ -8,6 +8,8 @@ glibc (2.38-7) UNRELEASED; urgency=medium
     localplt.data on hurd-amd64.
   * debian/patches/hurd-i386/local-stack_chk_guard.diff: Also update
     ld.abilist on hurd-amd64.
+  * debian/patches/hurd-i386/local-exec_filename.diff: Also update
+    libc.abilist on hurd-amd64.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 17 Feb 2024 22:20:02 +0100
 

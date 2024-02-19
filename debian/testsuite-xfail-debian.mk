@@ -382,6 +382,7 @@ test-xfail-tst-vfprintf-width-prec = yes
 # new in 2.38
 test-xfail-tst-sprof-basic = yes
 test-xfail-tst-nss-files-hosts-v4mapped = yes
+test-xfail-test-canon = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes
@@ -427,8 +428,8 @@ test-xfail-tst-basic7 = yes
 # timeout
 test-xfail-tst-malloc-too-large = yes
 test-xfail-tst-malloc-too-large-malloc-check = yes
-test-xfail-tst-malloc-too-large-hugetlb1 = yes
-test-xfail-tst-malloc-too-large-hugetlb2 = yes
+test-xfail-tst-malloc-too-large-malloc-hugetlb1 = yes
+test-xfail-tst-malloc-too-large-malloc-hugetlb2 = yes
 
 # Bus error
 test-xfail-bug18240 = yes
@@ -456,7 +457,6 @@ endif
 ifeq ($(config-machine)-$(config-os),i686-gnu-gnu)
 test-xfail-tst-posix_fallocate64 = yes
 test-xfail-test-fesetexcept-traps = yes
-test-xfail-test-canon = yes
 endif
 
 

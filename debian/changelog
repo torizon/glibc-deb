@@ -1,5 +1,6 @@
 glibc (2.38-7) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-context.diff: Add hurd-amd64 version of
     *context.
   * debian/testsuite-xfail-debian.mk: Update hurd-amd64-specific xfails
@@ -12,6 +13,11 @@ glibc (2.38-7) UNRELEASED; urgency=medium
     libc.abilist on hurd-amd64.
   * debian/patches/hurd-i386/local-usr.diff: Also update libc.abilist on
     hurd-amd64.
+
+  [ Aurelien Jarno ]
+  * debian/patches/any/git-test-epoll.diff: improve test-epoll robustness
+    improvements from upstream, useful when running the testsuite on
+    overloaded hosts.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 17 Feb 2024 22:20:02 +0100
 

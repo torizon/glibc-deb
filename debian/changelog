@@ -13,6 +13,9 @@ glibc (2.37-16) UNRELEASED; urgency=medium
     found by the testsuite, but there is a consensus that this is the way to
     go for now. Thanks to Helmut Grohne for the hint and starting the
     discussion.  Closes: #1068251.
+  * debian/debhelper.in/glibc-doc.{links,manpages},
+    debian/local/manpages/pthread_*: drop the man pages for libpthread
+    functions, as they are now included in manpages-dev.  Closes: #1068188.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 05 Feb 2024 23:20:47 +0000
 

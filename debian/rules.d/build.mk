@@ -97,8 +97,8 @@ endif
 	echo -n "Build started: " ; date --rfc-2822; \
 	echo "---------------"; \
 	cd $(DEB_BUILDDIR) && \
-		CC="$(call xx,CC)" \
-		CXX=$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),:,"$(call xx,CXX)") \
+		CC="$(call xx,CC) -U_FILE_OFFSET_BITS -U_TIME_BITS" \
+		CXX=$(if $(filter nocheck,$(DEB_BUILD_OPTIONS)),:,"$(call xx,CXX) -U_FILE_OFFSET_BITS -U_TIME_BITS") \
 		MIG="$(call xx,MIG)" \
 		AUTOCONF=false \
 		MAKEINFO=: \

@@ -1,4 +1,4 @@
-glibc (2.37-16) UNRELEASED; urgency=medium
+glibc (2.37-16) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/submitted-AF_ROUTE.diff: Also comment out
@@ -36,7 +36,7 @@ glibc (2.37-16) UNRELEASED; urgency=medium
   * debian/debhelper.in/locales.config: Extract default environment LANG using
     only sed.
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 05 Feb 2024 23:20:47 +0000
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 10 Apr 2024 00:15:44 +0200
 
 glibc (2.37-15) unstable; urgency=critical
 

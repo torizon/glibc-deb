@@ -21,6 +21,9 @@ glibc (2.37-16) UNRELEASED; urgency=medium
   * debian/control.in/main: downgrade the Recommends from libc-dev-bin to
     libc-devtools to a Suggests.  Closes: #1067909.
   * debian/patches/git-updates.diff: update from upstream stable branch.
+  * debian/patches/sparc/submitted-sparc-clone.diff: pull patch from the
+    upstream BTS to workaround issues with the clone syscall on sparc.
+    Closes: #1063937.
 
   [ Johannes Schauer Marin Rodrigues]
   * debian/debhelper.in/libc.preinst: skip kernel check in chrootless mode.

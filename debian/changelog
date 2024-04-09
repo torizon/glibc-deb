@@ -20,6 +20,7 @@ glibc (2.37-16) UNRELEASED; urgency=medium
     of the pthread manpages.
   * debian/control.in/main: downgrade the Recommends from libc-dev-bin to
     libc-devtools to a Suggests.  Closes: #1067909.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
   [ Steve Langasek ]
   * Drop transitional dependency from libc6-dev to libnsl-dev.

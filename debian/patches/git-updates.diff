@@ -1193,6 +1193,21 @@ index 1d74feb2bd..69bda3ed17 100644
      /* List of the dependencies introduced through symbol binding.  */
      struct link_map_reldeps
        {
+diff --git a/include/sys/sysinfo.h b/include/sys/sysinfo.h
+index c490561581..65742b1036 100644
+--- a/include/sys/sysinfo.h
++++ b/include/sys/sysinfo.h
+@@ -14,10 +14,6 @@ libc_hidden_proto (__get_nprocs_conf)
+ extern int __get_nprocs (void);
+ libc_hidden_proto (__get_nprocs)
+ 
+-/* Return the number of available processors which the process can
+-   be scheduled.  */
+-extern int __get_nprocs_sched (void) attribute_hidden;
+-
+ /* Return number of physical pages of memory in the system.  */
+ extern long int __get_phys_pages (void);
+ libc_hidden_proto (__get_phys_pages)
 diff --git a/io/Makefile b/io/Makefile
 index f72571cdae..069e675188 100644
 --- a/io/Makefile
@@ -1487,6 +1502,19 @@ index cecea21c1c..e81924529e 100644
  	    {
  	      /* Make sure we have room for at least one multibyte
  		 character.  */
+diff --git a/malloc/arena.c b/malloc/arena.c
+index ccd193953b..78416205b6 100644
+--- a/malloc/arena.c
++++ b/malloc/arena.c
+@@ -934,7 +934,7 @@ arena_get2 (size_t size, mstate avoid_arena)
+             narenas_limit = mp_.arena_max;
+           else if (narenas > mp_.arena_test)
+             {
+-              int n = __get_nprocs_sched ();
++              int n = __get_nprocs ();
+ 
+               if (n >= 1)
+                 narenas_limit = NARENAS_FROM_NCORES (n);
 diff --git a/malloc/malloc.c b/malloc/malloc.c
 index fd8b52bfac..67df9f8c51 100644
 --- a/malloc/malloc.c
@@ -1549,6 +1577,23 @@ index 1a09f777fa..5db6f28719 100644
  $(objpfx)tst-select: $(librt)
  $(objpfx)tst-select-time64: $(librt)
  $(objpfx)tst-pselect: $(librt)
+diff --git a/misc/getsysstats.c b/misc/getsysstats.c
+index 5f36adc0e8..23cc112074 100644
+--- a/misc/getsysstats.c
++++ b/misc/getsysstats.c
+@@ -44,12 +44,6 @@ weak_alias (__get_nprocs, get_nprocs)
+ link_warning (get_nprocs, "warning: get_nprocs will always return 1")
+ 
+ 
+-int
+-__get_nprocs_sched (void)
+-{
+-  return 1;
+-}
+-
+ long int
+ __get_phys_pages (void)
+ {
 diff --git a/misc/sys/cdefs.h b/misc/sys/cdefs.h
 index 66d6702123..c37a3ff637 100644
 --- a/misc/sys/cdefs.h
@@ -1767,6 +1812,51 @@ index 0000000000..88f37a8a00
 diff --git a/misc/tst-syslog-long-progname.root/postclean.req b/misc/tst-syslog-long-progname.root/postclean.req
 new file mode 100644
 index 0000000000..e69de29bb2
+diff --git a/nptl/descr.h b/nptl/descr.h
+index f8b5ac7c22..e196ab7562 100644
+--- a/nptl/descr.h
++++ b/nptl/descr.h
+@@ -34,7 +34,6 @@
+ #include <bits/types/res_state.h>
+ #include <kernel-features.h>
+ #include <tls-internal-struct.h>
+-#include <sys/rseq.h>
+ #include <internal-sigset.h>
+ 
+ #ifndef TCB_ALIGNMENT
+@@ -405,14 +404,25 @@ struct pthread
+   /* Used on strsignal.  */
+   struct tls_internal_t tls_state;
+ 
+-  /* rseq area registered with the kernel.  */
+-  struct rseq rseq_area;
+-
+-  /* This member must be last.  */
+-  char end_padding[];
+-
++  /* rseq area registered with the kernel.  Use a custom definition
++     here to isolate from kernel struct rseq changes.  The
++     implementation of sched_getcpu needs acccess to the cpu_id field;
++     the other fields are unused and not included here.  */
++  union
++  {
++    struct
++    {
++      uint32_t cpu_id_start;
++      uint32_t cpu_id;
++    };
++    char pad[32];		/* Original rseq area size.  */
++  } rseq_area __attribute__ ((aligned (32)));
++
++  /* Amount of end padding, if any, in this structure.
++     This definition relies on rseq_area being last.  */
+ #define PTHREAD_STRUCT_END_PADDING \
+-  (sizeof (struct pthread) - offsetof (struct pthread, end_padding))
++  (sizeof (struct pthread) - offsetof (struct pthread, rseq_area) \
++   + sizeof ((struct pthread) {}.rseq_area))
+ } __attribute ((aligned (TCB_ALIGNMENT)));
+ 
+ static inline bool
 diff --git a/nss/Makefile b/nss/Makefile
 index 3a9ea065ac..6ef5bf23b3 100644
 --- a/nss/Makefile
@@ -2510,7 +2600,7 @@ index dd2cb1b441..6641d25625 100644
    if (netname[i - 1] == '.')
      netname[i - 1] = '\0';
 diff --git a/support/Makefile b/support/Makefile
-index b29b7eb505..48cd74581d 100644
+index b29b7eb505..45a879a05e 100644
 --- a/support/Makefile
 +++ b/support/Makefile
 @@ -32,6 +32,8 @@ libsupport-routines = \
@@ -2522,6 +2612,31 @@ index b29b7eb505..48cd74581d 100644
    ignore_stderr \
    next_to_fault \
    oom_error \
+@@ -238,6 +240,24 @@ CFLAGS-support_paths.c = \
+ CFLAGS-timespec.c += -fexcess-precision=standard
+ CFLAGS-timespec-time64.c += -fexcess-precision=standard
+ 
++# Ensure that general support files use 64-bit time_t
++CFLAGS-delayed_exit.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-shell-container.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_can_chroot.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_copy_file.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_copy_file_range.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_descriptor_supports_holes.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_descriptors.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_process_state.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_stat_nanoseconds.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_subprocess.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-support_test_main.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-test-container.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++CFLAGS-xmkdirp.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++# This is required to get an mkstemp which can create large files on some
++# 32-bit platforms.
++CFLAGS-temp_file.c += -D_FILE_OFFSET_BITS=64 -D_TIME_BITS=64
++
+ ifeq (,$(CXX))
+ LINKS_DSO_PROGRAM = links-dso-program-c
+ else
 diff --git a/support/dtotimespec-time64.c b/support/dtotimespec-time64.c
 new file mode 100644
 index 0000000000..b3d5e351e3
@@ -2612,10 +2727,19 @@ index 0000000000..cde5b4d74c
 +    }
 +}
 diff --git a/support/shell-container.c b/support/shell-container.c
-index e9ac9b6d04..66cf0c8b1f 100644
+index e9ac9b6d04..b1f9e793c1 100644
 --- a/support/shell-container.c
 +++ b/support/shell-container.c
-@@ -39,6 +39,7 @@
+@@ -16,8 +16,6 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#define _FILE_OFFSET_BITS 64
+-
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <string.h>
+@@ -39,6 +37,7 @@
  #include <error.h>
  
  #include <support/support.h>
@@ -2623,7 +2747,7 @@ index e9ac9b6d04..66cf0c8b1f 100644
  
  /* Design considerations
  
-@@ -171,6 +172,32 @@ kill_func (char **argv)
+@@ -171,6 +170,32 @@ kill_func (char **argv)
    return 0;
  }
  
@@ -2656,7 +2780,7 @@ index e9ac9b6d04..66cf0c8b1f 100644
  /* This is a list of all the built-in commands we understand.  */
  static struct {
    const char *name;
-@@ -181,6 +208,7 @@ static struct {
+@@ -181,6 +206,7 @@ static struct {
    { "cp", copy_func },
    { "exit", exit_func },
    { "kill", kill_func },
@@ -2664,6 +2788,66 @@ index e9ac9b6d04..66cf0c8b1f 100644
    { NULL, NULL }
  };
  
+diff --git a/support/support_can_chroot.c b/support/support_can_chroot.c
+index 7d9f91205d..7b4f491b53 100644
+--- a/support/support_can_chroot.c
++++ b/support/support_can_chroot.c
+@@ -29,14 +29,14 @@ static void
+ callback (void *closure)
+ {
+   int *result = closure;
+-  struct stat64 before;
++  struct stat before;
+   xstat ("/dev", &before);
+   if (chroot ("/dev") != 0)
+     {
+       *result = errno;
+       return;
+     }
+-  struct stat64 after;
++  struct stat after;
+   xstat ("/", &after);
+   TEST_VERIFY (before.st_dev == after.st_dev);
+   TEST_VERIFY (before.st_ino == after.st_ino);
+diff --git a/support/support_copy_file.c b/support/support_copy_file.c
+index 50ff87b9f1..f3e0a2d1b7 100644
+--- a/support/support_copy_file.c
++++ b/support/support_copy_file.c
+@@ -24,7 +24,7 @@
+ void
+ support_copy_file (const char *from, const char *to)
+ {
+-  struct stat64 st;
++  struct stat st;
+   xstat (from, &st);
+   int fd_from = xopen (from, O_RDONLY, 0);
+   mode_t mode = st.st_mode & 0777;
+diff --git a/support/support_descriptor_supports_holes.c b/support/support_descriptor_supports_holes.c
+index 7af5934808..91db216bf0 100644
+--- a/support/support_descriptor_supports_holes.c
++++ b/support/support_descriptor_supports_holes.c
+@@ -40,7 +40,7 @@ support_descriptor_supports_holes (int fd)
+       block_headroom = 32,
+     };
+ 
+-  struct stat64 st;
++  struct stat st;
+   xfstat (fd, &st);
+   if (!S_ISREG (st.st_mode))
+     FAIL_EXIT1 ("descriptor %d does not refer to a regular file", fd);
+diff --git a/support/test-container.c b/support/test-container.c
+index f1a68b224a..e68f16eecf 100644
+--- a/support/test-container.c
++++ b/support/test-container.c
+@@ -16,8 +16,6 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#define _FILE_OFFSET_BITS 64
+-
+ #include <array_length.h>
+ #include <stdio.h>
+ #include <stdlib.h>
 diff --git a/support/timespec.h b/support/timespec.h
 index 77b1e4e8d6..9559836d4c 100644
 --- a/support/timespec.h
@@ -2686,6 +2870,18 @@ index 77b1e4e8d6..9559836d4c 100644
  #endif
  
  /* Check that the timespec on the left represents a time before the
+diff --git a/sysdeps/arm/dl-machine.h b/sysdeps/arm/dl-machine.h
+index d720c02c96..77dc7415e9 100644
+--- a/sysdeps/arm/dl-machine.h
++++ b/sysdeps/arm/dl-machine.h
+@@ -137,7 +137,6 @@ _start:\n\
+ _dl_start_user:\n\
+ 	adr	r6, .L_GET_GOT\n\
+ 	add	sl, sl, r6\n\
+-	ldr	r4, [sl, r4]\n\
+ 	@ save the entry point in another register\n\
+ 	mov	r6, r0\n\
+ 	@ get the original arg count\n\
 diff --git a/sysdeps/generic/dl-lookupcfg.h b/sysdeps/generic/dl-lookupcfg.h
 index cc5e9d619b..e4f6358f88 100644
 --- a/sysdeps/generic/dl-lookupcfg.h
@@ -2760,6 +2956,33 @@ index 0e47e529fe..64218fa7bb 100644
 -#define DL_FIXUP_BINDNOW_RELOC(value, new_value, st_value) \
 +#define DL_FIXUP_BINDNOW_RELOC(l, reloc, value, new_value, st_value, lazy) \
    (*value) = *(struct fdesc *) (st_value)
+diff --git a/sysdeps/loongarch/fpu/e_scalbf.c b/sysdeps/loongarch/fpu/e_scalbf.c
+index c37b0fd19d..4690224621 100644
+--- a/sysdeps/loongarch/fpu/e_scalbf.c
++++ b/sysdeps/loongarch/fpu/e_scalbf.c
+@@ -57,4 +57,4 @@ __ieee754_scalbf (float x, float fn)
+ 
+   return x;
+ }
+-libm_alias_finite (__ieee754_scalb, __scalb)
++libm_alias_finite (__ieee754_scalbf, __scalbf)
+diff --git a/sysdeps/mach/getsysstats.c b/sysdeps/mach/getsysstats.c
+index 5184e5eee1..d3834f3b69 100644
+--- a/sysdeps/mach/getsysstats.c
++++ b/sysdeps/mach/getsysstats.c
+@@ -62,12 +62,6 @@ __get_nprocs (void)
+ libc_hidden_def (__get_nprocs)
+ weak_alias (__get_nprocs, get_nprocs)
+ 
+-int
+-__get_nprocs_sched (void)
+-{
+-  return __get_nprocs ();
+-}
+-
+ /* Return the number of physical pages on the system. */
+ long int
+ __get_phys_pages (void)
 diff --git a/sysdeps/posix/getaddrinfo.c b/sysdeps/posix/getaddrinfo.c
 index fd22dc4fcb..8607486798 100644
 --- a/sysdeps/posix/getaddrinfo.c
@@ -2986,6 +3209,61 @@ index 0000000000..3a5a5c1d8c
 +         DL_SPARC_FIXUP (l, __r, value, new_value);                          \
 +       }                                                                     \
 +  })
+diff --git a/sysdeps/sparc/sparc32/memset.S b/sysdeps/sparc/sparc32/memset.S
+index ca29ff5685..1dc3a640e8 100644
+--- a/sysdeps/sparc/sparc32/memset.S
++++ b/sysdeps/sparc/sparc32/memset.S
+@@ -55,7 +55,7 @@ ENTRY(memset)
+ 
+ 	andcc		%o0, 3, %o2
+ 	bne		3f
+-4:	 andcc		%o0, 4, %g0
++5:	 andcc		%o0, 4, %g0
+ 
+ 	be		2f
+ 	 mov		%g3, %g2
+@@ -139,7 +139,7 @@ ENTRY(memset)
+ 	stb		%g3, [%o0 + 0x02]
+ 2:	sub		%o2, 4, %o2
+ 	add		%o1, %o2, %o1
+-	b		4b
++	b		5b
+ 	 sub		%o0, %o2, %o0
+ END(memset)
+ libc_hidden_builtin_def (memset)
+diff --git a/sysdeps/sparc/sparc64/memmove.S b/sysdeps/sparc/sparc64/memmove.S
+index e38343a702..7e9a963e77 100644
+--- a/sysdeps/sparc/sparc64/memmove.S
++++ b/sysdeps/sparc/sparc64/memmove.S
+@@ -38,7 +38,7 @@ ENTRY(memmove)
+ /*
+  * normal, copy forwards
+  */
+-2:	ble	%XCC, .Ldbytecp
++2:	bleu	%XCC, .Ldbytecp
+ 	 andcc	%o1, 3, %o5	/* is src word aligned  */
+ 	bz,pn	%icc, .Laldst
+ 	 cmp	%o5, 2		/* is src half-word aligned  */
+diff --git a/sysdeps/sparc/sysdep.h b/sysdeps/sparc/sysdep.h
+index 687e626182..151baa5e10 100644
+--- a/sysdeps/sparc/sysdep.h
++++ b/sysdeps/sparc/sysdep.h
+@@ -76,6 +76,15 @@ C_LABEL(name)				\
+ 	cfi_endproc;			\
+ 	.size name, . - name
+ 
++#define ENTRY_NOCFI(name)			\
++	.align	4;			\
++	.global	C_SYMBOL_NAME(name);	\
++	.type	name, @function;	\
++C_LABEL(name)
++
++#define END_NOCFI(name)			\
++	.size name, . - name
++
+ #undef LOC
+ #define LOC(name)  .L##name
+ 
 diff --git a/sysdeps/unix/sysv/linux/Makefile b/sysdeps/unix/sysv/linux/Makefile
 index f298878e8f..94747b37a6 100644
 --- a/sysdeps/unix/sysv/linux/Makefile
@@ -3052,6 +3330,19 @@ index de207122b0..50654cb28d 100644
    __libc_lock_unlock (lock);
  
    if (data != NULL)
+diff --git a/sysdeps/unix/sysv/linux/getsysstats.c b/sysdeps/unix/sysv/linux/getsysstats.c
+index b0b6c154ac..1ea7f1f01f 100644
+--- a/sysdeps/unix/sysv/linux/getsysstats.c
++++ b/sysdeps/unix/sysv/linux/getsysstats.c
+@@ -29,7 +29,7 @@
+ #include <sys/sysinfo.h>
+ #include <sysdep.h>
+ 
+-int
++static int
+ __get_nprocs_sched (void)
+ {
+   enum
 diff --git a/sysdeps/unix/sysv/linux/hppa/Makefile b/sysdeps/unix/sysv/linux/hppa/Makefile
 index c89ec83182..2e031e2f8a 100644
 --- a/sysdeps/unix/sysv/linux/hppa/Makefile
@@ -3064,6 +3355,86 @@ index c89ec83182..2e031e2f8a 100644
 +ifeq ($(subdir),debug)
 +test-xfail-tst-ssp-1 = $(have-ssp)
 +endif # $(subdir) == debug
+diff --git a/sysdeps/unix/sysv/linux/i386/tst-bz21269.c b/sysdeps/unix/sysv/linux/i386/tst-bz21269.c
+index 1850240c34..822c41fceb 100644
+--- a/sysdeps/unix/sysv/linux/i386/tst-bz21269.c
++++ b/sysdeps/unix/sysv/linux/i386/tst-bz21269.c
+@@ -52,7 +52,14 @@ xset_thread_area (struct user_desc *u_info)
+ static void
+ xmodify_ldt (int func, const void *ptr, unsigned long bytecount)
+ {
+-  TEST_VERIFY_EXIT (syscall (SYS_modify_ldt, 1, ptr, bytecount) == 0);
++  long ret = syscall (SYS_modify_ldt, func, ptr, bytecount);
++
++  if (ret == -1)
++    {
++      if (errno == ENOSYS)
++	FAIL_UNSUPPORTED ("modify_ldt not supported");
++      FAIL_EXIT1 ("modify_ldt failed (errno=%d)", errno);
++    }
+ }
+ 
+ static int
+@@ -135,7 +142,14 @@ threadproc (void *ctx)
+ {
+   while (1)
+     {
+-      futex ((int *) &ftx, FUTEX_WAIT, 1, NULL, NULL, 0);
++      /* Continue to wait here until we've successfully waited, unless
++	 we're supposed to be clearing the LDT already.  */
++      while (futex ((int *) &ftx, FUTEX_WAIT, 1, NULL, NULL, 0) < 0)
++	if (atomic_load (&ftx) >= 2)
++	  break;
++
++      /* Normally there's time to hit this busy loop and wait for ftx
++	 to be set to 2.  */
+       while (atomic_load (&ftx) != 2)
+ 	{
+ 	  if (atomic_load (&ftx) >= 3)
+@@ -189,7 +203,14 @@ do_test (void)
+       if (sigsetjmp (jmpbuf, 1) != 0)
+ 	continue;
+ 
+-      /* Make sure the thread is ready after the last test. */
++      /* We may have longjmp'd before triggering the thread.  If so,
++	 trigger the thread now and wait for it.  */
++      if (atomic_load (&ftx) == 1)
++	atomic_store (&ftx, 2);
++
++      /* Make sure the thread is ready after the last test.  FTX is
++	 initially zero for the first loop, and set to zero each time
++	 the thread clears the LDT.  */
+       while (atomic_load (&ftx) != 0)
+ 	;
+ 
+@@ -207,15 +228,24 @@ do_test (void)
+ 
+       xmodify_ldt (0x11, &desc, sizeof (desc));
+ 
+-      /* Arm the thread.  */
+-      ftx = 1;
+-      futex ((int*) &ftx, FUTEX_WAKE, 0, NULL, NULL, 0);
++      /* Arm the thread.  We loop here until we've woken up one thread.  */
++      atomic_store (&ftx, 1);
++      while (futex ((int*) &ftx, FUTEX_WAKE, 1, NULL, NULL, 0) < 1)
++	;
++
++      /* Give the thread a chance to get into it's busy loop.  */
++      usleep (5);
+ 
++      /* At *ANY* point after this instruction, we may segfault and
++	 longjump back to the top of the loop.  The intention is to
++	 have this happen when the thread clears the LDT, but it could
++	 happen elsewhen.  */
+       asm volatile ("mov %0, %%ss" : : "r" (0x7));
+ 
+       /* Fire up thread modify_ldt call.  */
+       atomic_store (&ftx, 2);
+ 
++      /* And wait for it.  */
+       while (atomic_load (&ftx) != 0)
+ 	;
+ 
 diff --git a/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h b/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
 index 0905cd833c..d8a291a331 100644
 --- a/sysdeps/unix/sysv/linux/powerpc/bits/fcntl.h
@@ -3081,6 +3452,200 @@ index 0905cd833c..d8a291a331 100644
  struct flock
    {
      short int l_type;	/* Type of lock: F_RDLCK, F_WRLCK, or F_UNLCK.	*/
+diff --git a/sysdeps/unix/sysv/linux/s390/s390-32/clone.S b/sysdeps/unix/sysv/linux/s390/s390-32/clone.S
+index 5d8d873383..fd1e509cf4 100644
+--- a/sysdeps/unix/sysv/linux/s390/s390-32/clone.S
++++ b/sysdeps/unix/sysv/linux/s390/s390-32/clone.S
+@@ -53,6 +53,7 @@ ENTRY(__clone)
+ 	br	%r14
+ error:
+ 	lhi	%r2,-EINVAL
++	lm	%r6,%r7,24(%r15)	/* Load registers.  */
+ 	j	SYSCALL_ERROR_LABEL
+ PSEUDO_END (__clone)
+ 
+diff --git a/sysdeps/unix/sysv/linux/s390/s390-64/clone.S b/sysdeps/unix/sysv/linux/s390/s390-64/clone.S
+index f1c4288a3d..7b37b18010 100644
+--- a/sysdeps/unix/sysv/linux/s390/s390-64/clone.S
++++ b/sysdeps/unix/sysv/linux/s390/s390-64/clone.S
+@@ -54,6 +54,7 @@ ENTRY(__clone)
+ 	br	%r14
+ error:
+ 	lghi	%r2,-EINVAL
++	lmg	%r6,%r7,48(%r15)	/* Restore registers.  */
+ 	jg	SYSCALL_ERROR_LABEL
+ PSEUDO_END (__clone)
+ 
+diff --git a/sysdeps/unix/sysv/linux/sched_getcpu.c b/sysdeps/unix/sysv/linux/sched_getcpu.c
+index 4457d714bc..22700ef846 100644
+--- a/sysdeps/unix/sysv/linux/sched_getcpu.c
++++ b/sysdeps/unix/sysv/linux/sched_getcpu.c
+@@ -33,17 +33,9 @@ vsyscall_sched_getcpu (void)
+   return r == -1 ? r : cpu;
+ }
+ 
+-#ifdef RSEQ_SIG
+ int
+ sched_getcpu (void)
+ {
+   int cpu_id = THREAD_GETMEM_VOLATILE (THREAD_SELF, rseq_area.cpu_id);
+   return __glibc_likely (cpu_id >= 0) ? cpu_id : vsyscall_sched_getcpu ();
+ }
+-#else /* RSEQ_SIG */
+-int
+-sched_getcpu (void)
+-{
+-  return vsyscall_sched_getcpu ();
+-}
+-#endif /* RSEQ_SIG */
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S b/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
+index cf509c8d5c..1962f9053c 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
++++ b/sysdeps/unix/sysv/linux/sparc/sparc32/sigreturn_stub.S
+@@ -23,12 +23,15 @@
+ 
+    [1] https://lkml.org/lkml/2016/5/27/465  */
+ 
+-ENTRY (__rt_sigreturn_stub)
++	nop
++	nop
++
++ENTRY_NOCFI (__rt_sigreturn_stub)
+ 	mov	__NR_rt_sigreturn, %g1
+ 	ta	0x10
+-END (__rt_sigreturn_stub)
++END_NOCFI (__rt_sigreturn_stub)
+ 
+-ENTRY (__sigreturn_stub)
++ENTRY_NOCFI (__sigreturn_stub)
+ 	mov	__NR_sigreturn, %g1
+ 	ta	0x10
+-END (__sigreturn_stub)
++END_NOCFI (__sigreturn_stub)
+diff --git a/sysdeps/unix/sysv/linux/sparc/sparc64/sigreturn_stub.S b/sysdeps/unix/sysv/linux/sparc/sparc64/sigreturn_stub.S
+index 7fac04f657..f089bcaf68 100644
+--- a/sysdeps/unix/sysv/linux/sparc/sparc64/sigreturn_stub.S
++++ b/sysdeps/unix/sysv/linux/sparc/sparc64/sigreturn_stub.S
+@@ -23,7 +23,10 @@
+ 
+    [1] https://lkml.org/lkml/2016/5/27/465  */
+ 
+-ENTRY (__rt_sigreturn_stub)
++	nop
++	nop
++
++ENTRY_NOCFI (__rt_sigreturn_stub)
+ 	mov	__NR_rt_sigreturn, %g1
+ 	ta	0x6d
+-END (__rt_sigreturn_stub)
++END_NOCFI (__rt_sigreturn_stub)
+diff --git a/sysdeps/unix/sysv/linux/tst-clone.c b/sysdeps/unix/sysv/linux/tst-clone.c
+index 56348707d4..95bd0f6ccb 100644
+--- a/sysdeps/unix/sysv/linux/tst-clone.c
++++ b/sysdeps/unix/sysv/linux/tst-clone.c
+@@ -16,12 +16,16 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-/* BZ #2386 */
++/* BZ #2386, BZ #31402 */
+ #include <errno.h>
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <unistd.h>
+ #include <sched.h>
++#include <stackinfo.h>  /* For _STACK_GROWS_{UP,DOWN}.  */
++#include <support/check.h>
++
++volatile unsigned v = 0xdeadbeef;
+ 
+ #ifdef __ia64__
+ extern int __clone2 (int (*__fn) (void *__arg), void *__child_stack_base,
+@@ -35,26 +39,72 @@ int child_fn(void *arg)
+ }
+ 
+ static int
+-do_test (void)
++__attribute__((noinline))
++do_clone (int (*fn)(void *), void *stack)
+ {
+   int result;
++  unsigned int a = v;
++  unsigned int b = v;
++  unsigned int c = v;
++  unsigned int d = v;
++  unsigned int e = v;
++  unsigned int f = v;
++  unsigned int g = v;
++  unsigned int h = v;
++  unsigned int i = v;
++  unsigned int j = v;
++  unsigned int k = v;
++  unsigned int l = v;
++  unsigned int m = v;
++  unsigned int n = v;
++  unsigned int o = v;
+ 
+ #ifdef __ia64__
+-  result = __clone2 (child_fn, NULL, 0, 0, NULL, NULL, NULL);
++  result = __clone2 (fn, stack, stack != NULL ? 128 * 1024 : 0, 0, NULL, NULL,
++		     NULL);
++#else
++  result = clone (fn, stack, 0, NULL);
++#endif
++
++  /* Check that clone does not clobber call-saved registers.  */
++  TEST_VERIFY (a == v && b == v && c == v && d == v && e == v && f == v
++	       && g == v && h == v && i == v && j == v && k == v && l == v
++	       && m == v && n == v && o == v);
++
++  return result;
++}
++
++static void
++__attribute__((noinline))
++do_test_single (int (*fn)(void *), void *stack)
++{
++  printf ("%s (fn=%p, stack=%p)\n", __FUNCTION__, fn, stack);
++  errno = 0;
++
++  int result = do_clone (fn, stack);
++
++  TEST_COMPARE (errno, EINVAL);
++  TEST_COMPARE (result, -1);
++}
++
++static int
++do_test (void)
++{
++  char st[128 * 1024] __attribute__ ((aligned));
++  void *stack = NULL;
++#if defined __ia64__ || _STACK_GROWS_UP
++  stack = st;
++#elif _STACK_GROWS_DOWN
++  stack = st + sizeof (st);
+ #else
+-  result = clone (child_fn, NULL, 0, NULL);
++# error "Define either _STACK_GROWS_DOWN or _STACK_GROWS_UP"
+ #endif
+ 
+-  if (errno != EINVAL || result != -1)
+-    {
+-      printf ("FAIL: clone()=%d (wanted -1) errno=%d (wanted %d)\n",
+-              result, errno, EINVAL);
+-      return 1;
+-    }
++  do_test_single (child_fn, NULL);
++  do_test_single (NULL, stack);
++  do_test_single (NULL, NULL);
+ 
+-  puts ("All OK");
+   return 0;
+ }
+ 
+-#define TEST_FUNCTION do_test ()
+-#include "../test-skeleton.c"
++#include <support/test-driver.c>
 diff --git a/sysdeps/unix/sysv/linux/tst-mman-consts.py b/sysdeps/unix/sysv/linux/tst-mman-consts.py
 index 0bba893064..92b78a877c 100644
 --- a/sysdeps/unix/sysv/linux/tst-mman-consts.py
@@ -3100,6 +3665,18 @@ index 0bba893064..92b78a877c 100644
          linux_version_glibc > linux_version_headers,
          linux_version_headers > linux_version_glibc))
  
+diff --git a/sysdeps/unix/sysv/linux/tst-rseq-disable.c b/sysdeps/unix/sysv/linux/tst-rseq-disable.c
+index d0db81b29d..cc7e94b3fe 100644
+--- a/sysdeps/unix/sysv/linux/tst-rseq-disable.c
++++ b/sysdeps/unix/sysv/linux/tst-rseq-disable.c
+@@ -22,6 +22,7 @@
+ #include <support/xthread.h>
+ #include <sysdep.h>
+ #include <thread_pointer.h>
++#include <sys/rseq.h>
+ #include <unistd.h>
+ 
+ #ifdef RSEQ_SIG
 diff --git a/sysdeps/x86/dl-cacheinfo.h b/sysdeps/x86/dl-cacheinfo.h
 index a0474af8d1..4383eb568b 100644
 --- a/sysdeps/x86/dl-cacheinfo.h
@@ -3580,6 +4157,29 @@ index 5593897e29..4579424bf7 100644
  	movq	-8(%rsp), %rdi
  	ret
  .Lslow:
+diff --git a/sysdeps/x86_64/ffsll.c b/sysdeps/x86_64/ffsll.c
+index a1c13d4906..0c6680735c 100644
+--- a/sysdeps/x86_64/ffsll.c
++++ b/sysdeps/x86_64/ffsll.c
+@@ -26,13 +26,13 @@ int
+ ffsll (long long int x)
+ {
+   long long int cnt;
+-  long long int tmp;
+ 
+-  asm ("bsfq %2,%0\n"		/* Count low bits in X and store in %1.  */
+-       "cmoveq %1,%0\n"		/* If number was zero, use -1 as result.  */
+-       : "=&r" (cnt), "=r" (tmp) : "rm" (x), "1" (-1));
++  asm ("mov $-1,%k0\n"	/* Initialize cnt to -1.  */
++       "bsf %1,%0\n"	/* Count low bits in x and store in cnt.  */
++       "inc %k0\n"	/* Increment cnt by 1.  */
++       : "=&r" (cnt) : "r" (x));
+ 
+-  return cnt + 1;
++  return cnt;
+ }
+ 
+ #ifndef __ILP32__
 diff --git a/sysdeps/x86_64/fpu/fraiseexcpt.c b/sysdeps/x86_64/fpu/fraiseexcpt.c
 index 924eed96a9..e7430a4158 100644
 --- a/sysdeps/x86_64/fpu/fraiseexcpt.c

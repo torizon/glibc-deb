@@ -29,6 +29,10 @@ glibc (2.37-16) UNRELEASED; urgency=medium
   [ Steve Langasek ]
   * Drop transitional dependency from libc6-dev to libnsl-dev.
 
+  [ Gioele Barabucci ]
+  * debian/debhelper.in/locales.config: Extract default environment LANG using
+    only sed.
+
  -- Samuel Thibault <sthibault@debian.org>  Mon, 05 Feb 2024 23:20:47 +0000
 
 glibc (2.37-15) unstable; urgency=critical

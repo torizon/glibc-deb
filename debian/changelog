@@ -19,6 +19,9 @@ glibc (2.37-16) UNRELEASED; urgency=medium
   * debian/control.in/main: update glibc-doc description following the removal
     of the pthread manpages.
 
+  [ Steve Langasek ]
+  * Drop transitional dependency from libc6-dev to libnsl-dev.
+
  -- Samuel Thibault <sthibault@debian.org>  Mon, 05 Feb 2024 23:20:47 +0000
 
 glibc (2.37-15) unstable; urgency=critical

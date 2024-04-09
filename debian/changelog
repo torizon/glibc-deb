@@ -22,6 +22,10 @@ glibc (2.37-16) UNRELEASED; urgency=medium
     libc-devtools to a Suggests.  Closes: #1067909.
   * debian/patches/git-updates.diff: update from upstream stable branch.
 
+  [ Johannes Schauer Marin Rodrigues]
+  * debian/debhelper.in/libc.preinst: skip kernel check in chrootless mode.
+    Closes: #1063624.
+
   [ Steve Langasek ]
   * Drop transitional dependency from libc6-dev to libnsl-dev.
 

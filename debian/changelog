@@ -16,6 +16,8 @@ glibc (2.37-16) UNRELEASED; urgency=medium
   * debian/debhelper.in/glibc-doc.{links,manpages},
     debian/local/manpages/pthread_*: drop the man pages for libpthread
     functions, as they are now included in manpages-dev.  Closes: #1068188.
+  * debian/control.in/main: update glibc-doc description following the removal
+    of the pthread manpages.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 05 Feb 2024 23:20:47 +0000
 

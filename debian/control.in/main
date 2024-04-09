@@ -96,9 +96,8 @@ Depends: ${misc:Depends}
 Suggests: glibc-doc-reference
 Build-Profiles: <!stage1>
 Description: GNU C Library: Documentation
- Contains man pages for libpthread functions and the complete GNU C Library
- ChangeLog.  The GNU C Library Reference manual has been moved into
- glibc-doc-reference for licensing reasons.
+ Contains the complete GNU C Library ChangeLog.  The GNU C Library Reference
+ manual has been moved into glibc-doc-reference for licensing reasons.
 
 Package: glibc-source
 Architecture: all

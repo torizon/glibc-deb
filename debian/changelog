@@ -1,3 +1,10 @@
+glibc (2.37-17) UNRELEASED; urgency=medium
+
+  * debian/debhelper.in/locales.config: revert to the version that has been
+    working for 20+ years.  Closes: #1068737.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 10 Apr 2024 23:21:32 +0200
+
 glibc (2.37-16) unstable; urgency=medium
 
   [ Samuel Thibault ]

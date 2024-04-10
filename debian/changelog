@@ -1,11 +1,11 @@
-glibc (2.37-17) UNRELEASED; urgency=medium
+glibc (2.37-17) unstable; urgency=medium
 
   * debian/debhelper.in/locales.config: revert to the version that has been
     working for 20+ years.  Closes: #1068737.
   * debian/debhelper.in/locales.config: define LEGACY_EE and use $EE and
     $LEGACY_EE to refer the the locales config files, as done in the postinst.
 
- -- Aurelien Jarno <aurel32@debian.org>  Wed, 10 Apr 2024 23:21:32 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Wed, 10 Apr 2024 23:43:53 +0200
 
 glibc (2.37-16) unstable; urgency=medium
 

@@ -2,6 +2,8 @@ glibc (2.39-1) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * New upstream release.
+    - Add support for fchmodat with flags != 0, using the fchmodat2 syscall.
+      Closes: #1041415.
     - debian/symbols.wildcard: add 2.39.
     - debian/patches/git-updates.diff: update from upstream stable branch.
     - debian/patches/localedata/sort-UTF8-first.diff: rebased.

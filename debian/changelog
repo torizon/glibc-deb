@@ -1,4 +1,4 @@
-glibc (2.37-19) UNRELEASED; urgency=medium
+glibc (2.37-19) unstable; urgency=medium
 
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix a stack-based buffer overflow in nscd netgroup cache
@@ -10,7 +10,7 @@ glibc (2.37-19) UNRELEASED; urgency=medium
       function does not use the buffer space to store all strings
       (CVE-2024-33602).
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 27 Apr 2024 21:59:47 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 27 Apr 2024 23:59:01 +0200
 
 glibc (2.37-18) unstable; urgency=medium
 

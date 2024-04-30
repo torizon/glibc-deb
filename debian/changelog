@@ -1,3 +1,10 @@
+glibc (2.37-20) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-AT_NO_AUTOMOUNT.diff: Stop mapping
+    AT_NO_AUTOMOUNT to O_NOTRANS.
+
+ -- Samuel Thibault <sthibault@debian.org>  Tue, 30 Apr 2024 22:30:56 +0200
+
 glibc (2.37-19) unstable; urgency=medium
 
   * debian/patches/git-updates.diff: update from upstream stable branch:

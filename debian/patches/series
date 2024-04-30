@@ -46,6 +46,7 @@ hurd-i386/git-dtable_reauth.diff
 
 # 2.40
 hurd-i386/git-proc_getchildren_rusage.diff
+hurd-i386/git-AT_NO_AUTOMOUNT.diff
 
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

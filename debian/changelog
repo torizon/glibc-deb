@@ -18,6 +18,9 @@ glibc (2.38-7) UNRELEASED; urgency=medium
   * debian/patches/any/git-test-epoll.diff: improve test-epoll robustness
     improvements from upstream, useful when running the testsuite on
     overloaded hosts.
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fix utmp handling in 32-bit programs when using -D_TIME_BITS=64.
+      Closes: #1042562.
 
  -- Samuel Thibault <sthibault@debian.org>  Sat, 17 Feb 2024 22:20:02 +0100
 

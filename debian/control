@@ -49,7 +49,8 @@ Section: libdevel
 Priority: optional
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: manpages, manpages-dev, libc-devtools (>> 2.39)
+Recommends: manpages, manpages-dev
+Suggests: libc-devtools (>> 2.39)
 Build-Profiles: <!stage1>
 Description: GNU C Library: Development binaries
  This package contains utility programs related to the GNU C Library
@@ -96,9 +97,8 @@ Depends: ${misc:Depends}
 Suggests: glibc-doc-reference
 Build-Profiles: <!stage1>
 Description: GNU C Library: Documentation
- Contains man pages for libpthread functions and the complete GNU C Library
- ChangeLog.  The GNU C Library Reference manual has been moved into
- glibc-doc-reference for licensing reasons.
+ Contains the complete GNU C Library ChangeLog.  The GNU C Library Reference
+ manual has been moved into glibc-doc-reference for licensing reasons.
 
 Package: glibc-source
 Architecture: all
@@ -190,7 +190,7 @@ Architecture: amd64 arc arm64 armel armhf hppa i386 loong64 m68k mips mipsel mip
 Section: libdevel
 Priority: optional
 Multi-Arch: same
-Depends: libc6 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${libnsl-dev:Depends}, ${rpcsvc-proto:Depends}
+Depends: libc6 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${rpcsvc-proto:Depends}
 Replaces: hurd-dev (<< 20120408-3) [hurd-any], libc6 (<= 2.32-1)
 Suggests: glibc-doc, manpages-dev
 Provides: libc-dev (= ${binary:Version}), libc6-dev [alpha ia64 hurd-any]
@@ -262,7 +262,7 @@ Architecture: alpha ia64
 Section: libdevel
 Priority: optional
 Multi-Arch: same
-Depends: libc6.1 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${libnsl-dev:Depends}, ${rpcsvc-proto:Depends}
+Depends: libc6.1 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${rpcsvc-proto:Depends}
 Replaces: hurd-dev (<< 20120408-3) [hurd-any], libc6.1 (<= 2.32-1)
 Suggests: glibc-doc, manpages-dev
 Provides: libc-dev (= ${binary:Version}), libc6-dev [alpha ia64 hurd-any]
@@ -334,7 +334,7 @@ Architecture: hurd-i386 hurd-amd64
 Section: libdevel
 Priority: optional
 Multi-Arch: same
-Depends: libc0.3 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${libnsl-dev:Depends}, ${rpcsvc-proto:Depends}
+Depends: libc0.3 (= ${binary:Version}) <!stage1>, libc-dev-bin (= ${binary:Version}), ${misc:Depends}, linux-libc-dev [linux-any], gnumach-dev [hurd-any], hurd-dev (>= 20080607-3) [hurd-any] | hurd-headers-dev [hurd-any], ${libcrypt-dev:Depends}, ${rpcsvc-proto:Depends}
 Replaces: hurd-dev (<< 20120408-3) [hurd-any], libc0.3 (<= 2.32-1)
 Suggests: glibc-doc, manpages-dev
 Provides: libc-dev (= ${binary:Version}), libc6-dev [alpha ia64 hurd-any]

@@ -382,6 +382,7 @@ test-xfail-tst-vfprintf-width-prec = yes
 # new in 2.38
 test-xfail-tst-sprof-basic = yes
 test-xfail-tst-nss-files-hosts-v4mapped = yes
+test-xfail-test-canon = yes
 
 # new in 2.39
 test-xfail-tst-initgroups1 = yes
@@ -419,18 +420,6 @@ test-xfail-test-ldouble-log2 = yes
 test-xfail-test-ldouble-y0 = yes
 test-xfail-test-ldouble-y1 = yes
 
-# TODO context support
-test-xfail-bug-getcontext = yes
-test-xfail-tst-setcontext2 = yes
-test-xfail-tst-setcontext4 = yes
-test-xfail-tst-setcontext5 = yes
-test-xfail-tst-setcontext6 = yes
-test-xfail-tst-setcontext7 = yes
-test-xfail-tst-setcontext8 = yes
-test-xfail-tst-setcontext9 = yes
-test-xfail-tst-swapcontext1 = yes
-test-xfail-tst-xbzero-opt = yes
-
 # Bus error
 test-xfail-test-bz22786 = yes
 
@@ -444,8 +433,8 @@ test-xfail-tst-basic7 = yes
 # timeout
 test-xfail-tst-malloc-too-large = yes
 test-xfail-tst-malloc-too-large-malloc-check = yes
-test-xfail-tst-malloc-too-large-hugetlb1 = yes
-test-xfail-tst-malloc-too-large-hugetlb2 = yes
+test-xfail-tst-malloc-too-large-malloc-hugetlb1 = yes
+test-xfail-tst-malloc-too-large-malloc-hugetlb2 = yes
 
 # Bus error
 test-xfail-bug18240 = yes
@@ -453,12 +442,16 @@ test-xfail-bug18240 = yes
 # cmsg bug
 test-xfail-tst-cmsghdr = yes
 
+# missing support
+test-xfail-tst-map-32bit-1a = yes
+test-xfail-tst-map-32bit-1b = yes
+test-xfail-tst-map-32bit-2 = yes
+
 # TODO support (for signals I guess)
 test-xfail-tst-backtrace4 = yes
 test-xfail-tst-backtrace5 = yes
 test-xfail-tst-backtrace6 = yes
 
-test-xfail-tst-dlopen-nodelete-reloc = yes
 test-xfail-tst-platform-1 = yes
 test-xfail-tst-audit4 = yes
 test-xfail-tst-audit5 = yes
@@ -474,7 +467,6 @@ endif
 ifeq ($(config-machine)-$(config-os),i686-gnu-gnu)
 test-xfail-tst-posix_fallocate64 = yes
 test-xfail-test-fesetexcept-traps = yes
-test-xfail-test-canon = yes
 endif
 
 

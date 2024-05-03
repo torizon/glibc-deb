@@ -1,4 +1,4 @@
-glibc (2.39-1) UNRELEASED; urgency=medium
+glibc (2.39-1) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * New upstream release.
@@ -44,7 +44,7 @@ glibc (2.39-1) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/submitted-net.diff: Refresh.
   * debian/testsuite-xfail-debian.mk: Update hurd results.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 03 Feb 2024 12:26:30 +0100
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 May 2024 00:35:25 +0200
 
 glibc (2.38-7) unstable; urgency=medium
 

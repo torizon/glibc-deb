@@ -13,6 +13,8 @@ glibc (2.38-7) unstable; urgency=medium
     libc.abilist on hurd-amd64.
   * debian/patches/hurd-i386/local-usr.diff: Also update libc.abilist on
     hurd-amd64.
+  * debian/patches/hurd-i386/git-AT_NO_AUTOMOUNT.diff: Stop mapping
+    AT_NO_AUTOMOUNT to O_NOTRANS.
 
   [ Aurelien Jarno ]
   * debian/patches/any/git-test-epoll.diff: improve test-epoll robustness

@@ -1,3 +1,10 @@
+glibc (2.38-9) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/rules: build with gcc-13.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 23:24:38 +0200
+
 glibc (2.38-8) unstable; urgency=medium
 
   [ Aurelien Jarno ]

@@ -1,4 +1,4 @@
-glibc (2.38-8) UNRELEASED; urgency=medium
+glibc (2.38-8) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/arm64/local-remove-aarch64-bits-math-vector-h.diff:
@@ -6,7 +6,7 @@ glibc (2.38-8) UNRELEASED; urgency=medium
     generic one is used instead. Addresses: #1070441, #1070443, #1070444,
     #1070446.
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 22:25:38 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 22:34:15 +0200
 
 glibc (2.38-7) unstable; urgency=medium
 

@@ -2,6 +2,8 @@ glibc (2.38-9) UNRELEASED; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/rules: build with gcc-13.
+  * debian/tests/control: re-enable autopkgtest on arm64, the memory
+    consumption should be lower with gcc-13.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 23:24:38 +0200
 

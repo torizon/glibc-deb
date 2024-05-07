@@ -623,9 +623,6 @@ endif
 # riscv64
 ######################################################################
 ifeq ($(config-machine)-$(config-os),riscv64-linux-gnu)
-test-xfail-tst-resolv-res_init = yes
-test-xfail-tst-resolv-res_init-thread = yes
-test-xfail-tst-resolv-threads = yes
 endif
 
 

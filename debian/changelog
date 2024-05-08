@@ -8,6 +8,10 @@ glibc (2.38-9) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-bin.{install,lintian-overrides}: move ldconfig to
     /usr/sbin.
 
+  [ M. Buecher ]
+  * debian/local/usr_sbin/locale-gen: enhance to support referencing locales
+    in /usr/local/share/i18n/locales through copy.  Closes: #1066887
+
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 23:24:38 +0200
 
 glibc (2.38-8) unstable; urgency=medium

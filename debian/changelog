@@ -1,4 +1,4 @@
-glibc (2.38-9) UNRELEASED; urgency=medium
+glibc (2.38-9) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/rules: build with gcc-13.
@@ -13,7 +13,7 @@ glibc (2.38-9) UNRELEASED; urgency=medium
   * debian/local/usr_sbin/locale-gen: enhance to support referencing locales
     in /usr/local/share/i18n/locales through copy.  Closes: #1066887
 
- -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 23:24:38 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 May 2024 15:59:00 +0200
 
 glibc (2.38-8) unstable; urgency=medium
 

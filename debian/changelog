@@ -1,3 +1,12 @@
+glibc (2.38-10) UNRELEASED; urgency=medium
+
+  * debian/control.in/main, debian/rules.d/control.mk: build-depends on
+    g++$(DEB_GCC_VERSION)-for-host instead of listing cross-build-dependency
+    per architecture. Also depends on g++$(DEB_GCC_VERSION)-multilib instead
+    of hardcoding the version.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 May 2024 17:55:47 +0200
+
 glibc (2.38-9) unstable; urgency=medium
 
   [ Aurelien Jarno ]

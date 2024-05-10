@@ -1,5 +1,26 @@
 GIT update of https://sourceware.org/git/glibc.git/release/2.38/master from glibc-2.38
 
+diff --git a/Makeconfig b/Makeconfig
+index 77d7fd14df..3f8acff459 100644
+--- a/Makeconfig
++++ b/Makeconfig
+@@ -586,10 +586,13 @@ link-libc-rpath-link = -Wl,-rpath-link=$(rpath-link)
+ # before the expansion of LDLIBS-* variables).
+ 
+ # Tests use -Wl,-rpath instead of -Wl,-rpath-link for
+-# build-hardcoded-path-in-tests.
++# build-hardcoded-path-in-tests.  Add -Wl,--disable-new-dtags to force
++# DT_RPATH instead of DT_RUNPATH which only applies to DT_NEEDED entries
++# in the executable and doesn't applies to DT_NEEDED entries in shared
++# libraries which are loaded via DT_NEEDED entries in the executable.
+ ifeq (yes,$(build-hardcoded-path-in-tests))
+-link-libc-tests-rpath-link = $(link-libc-rpath)
+-link-test-modules-rpath-link = $(link-libc-rpath)
++link-libc-tests-rpath-link = $(link-libc-rpath) -Wl,--disable-new-dtags
++link-test-modules-rpath-link = $(link-libc-rpath) -Wl,--disable-new-dtags
+ else
+ link-libc-tests-rpath-link = $(link-libc-rpath-link)
+ link-test-modules-rpath-link =
 diff --git a/NEWS b/NEWS
 index 872bc8907b..6768c2da6f 100644
 --- a/NEWS
@@ -2329,6 +2350,48 @@ index 1d60c51f5e..5d0ab30de6 100644
        if (n >= 0)
  	status = gaih_getanswer_noaaaa (alt_dns_packet_buffer, n,
  					&abuf, pat, errnop, herrnop, ttlp);
+diff --git a/resolv/res_nameinquery.c b/resolv/res_nameinquery.c
+index 24172700e1..ca56bc9283 100644
+--- a/resolv/res_nameinquery.c
++++ b/resolv/res_nameinquery.c
+@@ -84,6 +84,7 @@
+ 
+ #include <arpa/nameser.h>
+ #include <resolv.h>
++#include <resolv/resolv-internal.h>
+ 
+ /* Author: paul vixie, 29may94.  */
+ int
+@@ -91,7 +92,7 @@ __libc_res_nameinquery (const char *name, int type, int class,
+                         const unsigned char *buf, const unsigned char *eom)
+ {
+   const unsigned char *cp = buf + HFIXEDSZ;
+-  int qdcount = ntohs (((HEADER *) buf)->qdcount);
++  int qdcount = ntohs (((UHEADER *) buf)->qdcount);
+ 
+   while (qdcount-- > 0)
+     {
+diff --git a/resolv/res_queriesmatch.c b/resolv/res_queriesmatch.c
+index 13a6936c47..ba1c1d0c0c 100644
+--- a/resolv/res_queriesmatch.c
++++ b/resolv/res_queriesmatch.c
+@@ -83,6 +83,7 @@
+  */
+ 
+ #include <resolv.h>
++#include <resolv/resolv-internal.h>
+ 
+ /* Author: paul vixie, 29may94.  */
+ int
+@@ -102,7 +103,7 @@ __libc_res_queriesmatch (const unsigned char *buf1, const unsigned char *eom1,
+      order.  We can compare it with the second buffer's QDCOUNT
+      value without doing this.  */
+   int qdcount = ((HEADER *) buf1)->qdcount;
+-  if (qdcount != ((HEADER *) buf2)->qdcount)
++  if (qdcount != ((UHEADER *) buf2)->qdcount)
+     return 0;
+ 
+   qdcount = htons (qdcount);
 diff --git a/resolv/tst-resolv-noaaaa-vc.c b/resolv/tst-resolv-noaaaa-vc.c
 new file mode 100644
 index 0000000000..9f5aebd99f

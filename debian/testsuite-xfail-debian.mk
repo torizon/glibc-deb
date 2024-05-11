@@ -214,6 +214,14 @@ test-xfail-tst-minsigstksz-5 = yes
 
 # See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=106458
 test-xfail-tst-scratch_buffer = yes
+
+# See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=111709
+test-xfail-test-double-fma = yes
+test-xfail-test-double-ldouble-fma = yes
+test-xfail-test-float32x-float64-fma = yes
+test-xfail-test-float32x-fma = yes
+test-xfail-test-float64-fma = yes
+test-xfail-test-ldouble-fma = yes
 endif
 
 

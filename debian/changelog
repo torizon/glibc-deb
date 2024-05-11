@@ -1,3 +1,11 @@
+glibc (2.38-11) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/testsuite-xfail-debian.mk: ignore a few math failures due to GCC
+    13 on hppa.  Closes: #1070875.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 May 2024 11:50:34 +0200
+
 glibc (2.38-10) unstable; urgency=medium
 
   * debian/control.in/main, debian/rules.d/control.mk: build-depends on

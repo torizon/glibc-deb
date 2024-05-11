@@ -46,6 +46,54 @@ glibc (2.39-1) experimental; urgency=medium
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 04 May 2024 00:35:25 +0200
 
+glibc (2.38-11) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/testsuite-xfail-debian.mk: ignore a few math failures due to GCC
+    13 on hppa.  Closes: #1070875.
+  * debian/patches/any/submitted-static-*.diff: add proposed patches to fix
+    various missing math function in libm.a.  Closes: #1070872.
+  * debian/testsuite-xfail-debian.mk: mark tst-support_descriptors as XFAIL,
+    due to sbuild bug #1070003.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 May 2024 23:17:18 +0200
+
+glibc (2.38-10) unstable; urgency=medium
+
+  * debian/control.in/main, debian/rules.d/control.mk: build-depends on
+    g++$(DEB_GCC_VERSION)-for-host instead of listing cross-build-dependency
+    per architecture. Also depends on g++$(DEB_GCC_VERSION)-multilib instead
+    of hardcoding the version.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 May 2024 17:59:41 +0200
+
+glibc (2.38-9) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/rules: build with gcc-13.
+  * debian/tests/control: re-enable autopkgtest on arm64, the memory
+    consumption should be lower with gcc-13.
+  * debian/testsuite-xfail-debian.mk: remove now fixed riscv64 XFAILs.
+  * debian/debhelper.in/libc-bin.{install,lintian-overrides}: move ldconfig to
+    /usr/sbin.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
+
+  [ M. Buecher ]
+  * debian/local/usr_sbin/locale-gen: enhance to support referencing locales
+    in /usr/local/share/i18n/locales through copy.  Closes: #1066887
+
+ -- Aurelien Jarno <aurel32@debian.org>  Fri, 10 May 2024 15:59:00 +0200
+
+glibc (2.38-8) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/patches/arm64/local-remove-aarch64-bits-math-vector-h.diff:
+    temporarily remove aarch64 specific bits/math-vector.h file, so that the
+    generic one is used instead. Addresses: #1070441, #1070443, #1070444,
+    #1070446.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 06 May 2024 22:34:15 +0200
+
 glibc (2.38-7) unstable; urgency=medium
 
   [ Samuel Thibault ]
@@ -61,6 +109,8 @@ glibc (2.38-7) unstable; urgency=medium
     libc.abilist on hurd-amd64.
   * debian/patches/hurd-i386/local-usr.diff: Also update libc.abilist on
     hurd-amd64.
+  * debian/patches/hurd-i386/git-AT_NO_AUTOMOUNT.diff: Stop mapping
+    AT_NO_AUTOMOUNT to O_NOTRANS.
 
   [ Aurelien Jarno ]
   * debian/patches/any/git-test-epoll.diff: improve test-epoll robustness

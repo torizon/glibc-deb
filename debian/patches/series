@@ -23,6 +23,8 @@ arm/local-sigaction.diff
 arm/unsubmitted-ldso-multilib.diff
 arm/local-arm-futex.diff
 
+arm64/local-remove-aarch64-bits-math-vector-h.diff
+
 hppa/local-inlining.diff
 
 # Committed for 2.40
@@ -93,3 +95,8 @@ any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
 any/git-test-epoll.diff
+any/submitted-static-copysignf128.diff
+any/submitted-static-fmod-fmodf.diff
+any/submitted-static-frexpf128.diff
+any/submitted-static-isnanf128.diff
+any/submitted-static-modf128.diff

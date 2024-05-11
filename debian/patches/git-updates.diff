@@ -8,6 +8,45 @@ index 0000000000..d4e33f2df3
 @@ -0,0 +1,2 @@
 +For the GNU C Library Security Advisories, see the git master branch:
 +https://sourceware.org/git/?p=glibc.git;a=tree;f=advisories;hb=HEAD
+diff --git a/Makeconfig b/Makeconfig
+index 85e00cef94..522182abdc 100644
+--- a/Makeconfig
++++ b/Makeconfig
+@@ -586,10 +586,13 @@ link-libc-rpath-link = -Wl,-rpath-link=$(rpath-link)
+ # before the expansion of LDLIBS-* variables).
+ 
+ # Tests use -Wl,-rpath instead of -Wl,-rpath-link for
+-# build-hardcoded-path-in-tests.
++# build-hardcoded-path-in-tests.  Add -Wl,--disable-new-dtags to force
++# DT_RPATH instead of DT_RUNPATH which only applies to DT_NEEDED entries
++# in the executable and doesn't applies to DT_NEEDED entries in shared
++# libraries which are loaded via DT_NEEDED entries in the executable.
+ ifeq (yes,$(build-hardcoded-path-in-tests))
+-link-libc-tests-rpath-link = $(link-libc-rpath)
+-link-test-modules-rpath-link = $(link-libc-rpath)
++link-libc-tests-rpath-link = $(link-libc-rpath) -Wl,--disable-new-dtags
++link-test-modules-rpath-link = $(link-libc-rpath) -Wl,--disable-new-dtags
+ else
+ link-libc-tests-rpath-link = $(link-libc-rpath-link)
+ link-test-modules-rpath-link =
+diff --git a/Makefile b/Makefile
+index 7052b46df8..2e351c0321 100644
+--- a/Makefile
++++ b/Makefile
+@@ -577,6 +577,13 @@ $(objpfx)lint-makefiles.out: scripts/lint-makefiles.sh
+ 	$(SHELL) $< "$(PYTHON)" `pwd` > $@ ; \
+ 	$(evaluate-test)
+ 
++# Link libc.a as a whole to verify that it does not contain multiple
++# definitions of any symbols.
++tests-special += $(objpfx)link-static-libc.out
++$(objpfx)link-static-libc.out:
++	$(LINK.o) $(whole-archive) -r $(objpfx)libc.a -o /dev/null > $@ 2>&1; \
++	$(evaluate-test)
++
+ # Print test summary for tests in $1 .sum file;
+ # $2 is optional test identifier.
+ # Fail if there are unexpected failures in the test results.
 diff --git a/advisories/GLIBC-SA-2023-0001 b/advisories/GLIBC-SA-2023-0001
 deleted file mode 100644
 index 3d19c91b6a..0000000000
@@ -522,6 +561,65 @@ index 2f502c8b0d..451932dd03 100644
  
  enum dso_sort_algorithm _dl_dso_sort_algo;
  
+diff --git a/elf/dl-tunables.c b/elf/dl-tunables.c
+index 03e1a68675..614ac9c047 100644
+--- a/elf/dl-tunables.c
++++ b/elf/dl-tunables.c
+@@ -32,6 +32,7 @@
+ #include <ldsodefs.h>
+ #include <array_length.h>
+ #include <dl-minimal-malloc.h>
++#include <dl-symbol-redir-ifunc.h>
+ 
+ #define TUNABLES_INTERNAL 1
+ #include "dl-tunables.h"
+@@ -223,6 +224,7 @@ parse_tunables_string (const char *valstring, struct tunable_toset_t *tunables)
+ 	    {
+ 	      tunables[ntunables++] =
+ 		(struct tunable_toset_t) { cur, value, p - value };
++
+ 	      break;
+ 	    }
+ 	}
+@@ -234,23 +236,27 @@ parse_tunables_string (const char *valstring, struct tunable_toset_t *tunables)
+ static void
+ parse_tunables (const char *valstring)
+ {
+-  struct tunable_toset_t tunables[tunables_list_size];
+-  int ntunables = parse_tunables_string (valstring, tunables);
+-  if (ntunables == -1)
++  struct tunable_toset_t tunables[tunables_list_size] = { 0 };
++  if (parse_tunables_string (valstring, tunables) == -1)
+     {
+       _dl_error_printf (
+         "WARNING: ld.so: invalid GLIBC_TUNABLES `%s': ignored.\n", valstring);
+       return;
+     }
+ 
+-  for (int i = 0; i < ntunables; i++)
+-    if (!tunable_initialize (tunables[i].t, tunables[i].value,
+-			     tunables[i].len))
+-      _dl_error_printf ("WARNING: ld.so: invalid GLIBC_TUNABLES value `%.*s' "
+-		       "for option `%s': ignored.\n",
+-		       (int) tunables[i].len,
+-		       tunables[i].value,
+-		       tunables[i].t->name);
++  for (int i = 0; i < tunables_list_size; i++)
++    {
++      if (tunables[i].t == NULL)
++	continue;
++
++      if (!tunable_initialize (tunables[i].t, tunables[i].value,
++			       tunables[i].len))
++	_dl_error_printf ("WARNING: ld.so: invalid GLIBC_TUNABLES value `%.*s' "
++			  "for option `%s': ignored.\n",
++			  (int) tunables[i].len,
++			  tunables[i].value,
++			  tunables[i].t->name);
++    }
+ }
+ 
+ /* Initialize the tunables list from the environment.  For now we only use the
 diff --git a/elf/elf.h b/elf/elf.h
 index 455731663c..1c394c64cd 100644
 --- a/elf/elf.h
@@ -825,6 +923,104 @@ index 0000000000..6d3031dc5f
 +  AFTER_TLSDESC_CALL ();
 +  return ret;
 +}
+diff --git a/elf/tst-tunables.c b/elf/tst-tunables.c
+index 095b5c81d9..dff34ed748 100644
+--- a/elf/tst-tunables.c
++++ b/elf/tst-tunables.c
+@@ -17,6 +17,10 @@
+    <https://www.gnu.org/licenses/>.  */
+ 
+ #include <array_length.h>
++/* The test uses the tunable_list size, which is only exported for
++   ld.so.  This will result in a copy of tunable_list, which is ununsed by
++   the test itself.  */
++#define TUNABLES_INTERNAL 1
+ #include <dl-tunables.h>
+ #include <getopt.h>
+ #include <intprops.h>
+@@ -24,12 +28,13 @@
+ #include <stdlib.h>
+ #include <support/capture_subprocess.h>
+ #include <support/check.h>
++#include <support/support.h>
+ 
+ static int restart;
+ #define CMDLINE_OPTIONS \
+   { "restart", no_argument, &restart, 1 },
+ 
+-static const struct test_t
++static struct test_t
+ {
+   const char *name;
+   const char *value;
+@@ -284,6 +289,29 @@ static const struct test_t
+     0,
+     0,
+   },
++  /* Also check for repeated tunables with a count larger than the total number
++     of tunables.  */
++  {
++    "GLIBC_TUNABLES",
++    NULL,
++    2,
++    0,
++    0,
++  },
++  {
++    "GLIBC_TUNABLES",
++    NULL,
++    1,
++    0,
++    0,
++  },
++  {
++    "GLIBC_TUNABLES",
++    NULL,
++    0,
++    0,
++    0,
++  },
+ };
+ 
+ static int
+@@ -327,6 +355,37 @@ do_test (int argc, char *argv[])
+     spargv[i] = NULL;
+   }
+ 
++  /* Create a tunable line with the duplicate values with a total number
++     larger than the different number of tunables.  */
++  {
++    enum { tunables_list_size = array_length (tunable_list) };
++    const char *value = "";
++    for (int i = 0; i < tunables_list_size; i++)
++      value = xasprintf ("%sglibc.malloc.check=2%c",
++			 value,
++			 i == (tunables_list_size - 1) ? '\0' : ':');
++    tests[33].value = value;
++  }
++  /* Same as before, but the last tunable values is differen than the
++     rest.  */
++  {
++    enum { tunables_list_size = array_length (tunable_list) };
++    const char *value = "";
++    for (int i = 0; i < tunables_list_size - 1; i++)
++      value = xasprintf ("%sglibc.malloc.check=2:", value);
++    value = xasprintf ("%sglibc.malloc.check=1", value);
++    tests[34].value = value;
++  }
++  /* Same as before, but with an invalid last entry.  */
++  {
++    enum { tunables_list_size = array_length (tunable_list) };
++    const char *value = "";
++    for (int i = 0; i < tunables_list_size - 1; i++)
++      value = xasprintf ("%sglibc.malloc.check=2:", value);
++    value = xasprintf ("%sglibc.malloc.check=1=1", value);
++    tests[35].value = value;
++  }
++
+   for (int i = 0; i < array_length (tests); i++)
+     {
+       snprintf (nteststr, sizeof nteststr, "%d", i);
 diff --git a/iconvdata/Makefile b/iconvdata/Makefile
 index ea019ce5c0..7196a8744b 100644
 --- a/iconvdata/Makefile
@@ -3262,6 +3458,18 @@ index 2081eeb4d4..fe95037be3 100644
      }
  
    if (IS_THUNDERX (midr))
+diff --git a/sysdeps/aarch64/multiarch/memset_generic.S b/sysdeps/aarch64/multiarch/memset_generic.S
+index 81748bdbce..e125a5ed85 100644
+--- a/sysdeps/aarch64/multiarch/memset_generic.S
++++ b/sysdeps/aarch64/multiarch/memset_generic.S
+@@ -33,3 +33,7 @@
+ #endif
+ 
+ #include <../memset.S>
++
++#if IS_IN (rtld)
++strong_alias (memset, __memset_generic)
++#endif
 diff --git a/sysdeps/aarch64/preconfigure b/sysdeps/aarch64/preconfigure
 index d9bd1f8558..19657b627b 100644
 --- a/sysdeps/aarch64/preconfigure
@@ -4106,6 +4314,45 @@ index 84e6686eba..f2139fc172 100644
  float128: 1
  ldouble: 1
  
+diff --git a/sysdeps/i386/i586/memcpy.S b/sysdeps/i386/i586/memcpy.S
+index 3e26f112d6..79856d498a 100644
+--- a/sysdeps/i386/i586/memcpy.S
++++ b/sysdeps/i386/i586/memcpy.S
+@@ -26,7 +26,7 @@
+ #define LEN	SRC+4
+ 
+         .text
+-#if defined PIC && IS_IN (libc)
++#if defined SHARED && IS_IN (libc)
+ ENTRY (__memcpy_chk)
+ 	movl	12(%esp), %eax
+ 	cmpl	%eax, 16(%esp)
+diff --git a/sysdeps/i386/i686/memmove.S b/sysdeps/i386/i686/memmove.S
+index f230359ad6..effd958120 100644
+--- a/sysdeps/i386/i686/memmove.S
++++ b/sysdeps/i386/i686/memmove.S
+@@ -29,7 +29,7 @@
+ #define SRC	DEST+4
+ #define LEN	SRC+4
+ 
+-#if defined PIC && IS_IN (libc)
++#if defined SHARED && IS_IN (libc)
+ ENTRY_CHK (__memmove_chk)
+ 	movl	12(%esp), %eax
+ 	cmpl	%eax, 16(%esp)
+diff --git a/sysdeps/i386/i686/memset.S b/sysdeps/i386/i686/memset.S
+index f02f5a6df7..ab06771ea0 100644
+--- a/sysdeps/i386/i686/memset.S
++++ b/sysdeps/i386/i686/memset.S
+@@ -27,7 +27,7 @@
+ #define LEN	CHR+4
+ 
+         .text
+-#if defined PIC && IS_IN (libc)
++#if defined SHARED && IS_IN (libc)
+ ENTRY_CHK (__memset_chk)
+ 	movl	12(%esp), %eax
+ 	cmpl	%eax, 16(%esp)
 diff --git a/sysdeps/i386/i686/multiarch/memrchr-c.c b/sysdeps/i386/i686/multiarch/memrchr-c.c
 index ef7bbbe792..20bfdf3af3 100644
 --- a/sysdeps/i386/i686/multiarch/memrchr-c.c
@@ -4885,6 +5132,15 @@ index 2f66f10d72..ea103e5970 100644
  # define __WORDSIZE32_PTRDIFF_LONG	0
  #endif
 +#define __WORDSIZE_TIME64_COMPAT32	1
+diff --git a/sysdeps/sparc/sparc64/rtld-memset.c b/sysdeps/sparc/sparc64/rtld-memset.c
+index 55f3835790..a19202a620 100644
+--- a/sysdeps/sparc/sparc64/rtld-memset.c
++++ b/sysdeps/sparc/sparc64/rtld-memset.c
+@@ -1 +1,4 @@
+ #include <string/memset.c>
++#if IS_IN(rtld)
++strong_alias (memset, __memset_ultra1)
++#endif
 diff --git a/sysdeps/sparc/utmp-size.h b/sysdeps/sparc/utmp-size.h
 new file mode 100644
 index 0000000000..8f21ebe1b6
@@ -9047,6 +9303,23 @@ index 9984c3ca0f..97839a2248 100644
        4 VEC stores and store 4 * VEC at a time until done.  */
  
  #include <sysdep.h>
+diff --git a/sysdeps/x86_64/multiarch/wcsncat-evex.S b/sysdeps/x86_64/multiarch/wcsncat-evex.S
+index 392215950a..10bfb0a531 100644
+--- a/sysdeps/x86_64/multiarch/wcsncat-evex.S
++++ b/sysdeps/x86_64/multiarch/wcsncat-evex.S
+@@ -1,9 +1,9 @@
+-#ifndef WCSCAT
+-# define WCSCAT	__wcsncat_evex
++#ifndef WCSNCAT
++# define WCSNCAT	__wcsncat_evex
+ #endif
+ 
+ #define USE_AS_WCSCPY
+ #define USE_AS_STRCAT
+ 
+-#define STRNCAT	WCSCAT
++#define STRNCAT	WCSNCAT
+ #include "strncat-evex.S"
 diff --git a/sysdeps/x86_64/tst-gnu2-tls2mod1.S b/sysdeps/x86_64/tst-gnu2-tls2mod1.S
 new file mode 100644
 index 0000000000..1d636669ba

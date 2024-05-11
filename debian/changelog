@@ -3,6 +3,8 @@ glibc (2.39-2) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/patches/any/submitted-static-exp10.diff: add proposed patch to fix
     missing exp10 math function in libm.a on i386 and m68k.
+  * debian/control.in/libc, debian/rules.d/control.mk, debian/sysdeps/ia64.mk:
+    remove support for ia64, it is not supported upstream anymore.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 May 2024 23:31:20 +0200
 

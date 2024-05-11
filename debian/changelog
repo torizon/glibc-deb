@@ -3,6 +3,8 @@ glibc (2.38-11) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/testsuite-xfail-debian.mk: ignore a few math failures due to GCC
     13 on hppa.  Closes: #1070875.
+  * debian/patches/any/submitted-static-*.diff: add proposed patches to fix
+    various missing math function in libm.a.  Closes: #1070872.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 11 May 2024 11:50:34 +0200
 

@@ -100,3 +100,4 @@ any/submitted-static-fmod-fmodf.diff
 any/submitted-static-frexpf128.diff
 any/submitted-static-isnanf128.diff
 any/submitted-static-modf128.diff
+any/submitted-static-exp10.diff

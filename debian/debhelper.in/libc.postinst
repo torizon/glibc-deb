@@ -181,6 +181,14 @@ then
     if [ "$TELINIT" = "yes" ]; then
         telinit u 2>/dev/null || true ; sleep 1
     fi
+
+    # Emit triggers to allow depending packages to restart themselves if
+    # needed.  The triggers are called with "--no-await", as packages with the
+    # triggers-awaited state do not satisfy dependencies.
+    dpkg-trigger --no-await libc-upgrade
+    if [ -n "$preversion" ] && dpkg --compare-versions "$preversion" lt DEB_VERSION_UPSTREAM; then
+        dpkg-trigger --no-await libc-major-upgrade
+    fi
 fi
 
 #DEBHELPER#

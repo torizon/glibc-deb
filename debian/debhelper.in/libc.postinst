@@ -170,6 +170,13 @@ then
         else
             echo "Error: Could not restart systemd, systemd binary not working" >&2
         fi
+    elif ! command -v telinit >/dev/null; then
+        # There is not telinit binary:
+        TELINIT=no
+    elif readlink $(command -v telinit) | grep -q systemctl; then
+        # Systemd's telinit tends to do bad things (#1063147, #1071462), so
+        # just ignore that case:
+        TELINIT=no
     fi
     if [ "$TELINIT" = "yes" ]; then
         telinit u 2>/dev/null || true ; sleep 1

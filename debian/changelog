@@ -10,7 +10,10 @@ glibc (2.38-12) UNRELEASED; urgency=medium
 
   [ Dominik Stadler ]
   * debian/local/usr_sbin/update-locale: improve error reporting in
-    update-locale.  Closes: #1071084.
+   update-locale.  Closes: #1071084.
+
+  [ Bjarni Ingi Gislason ]
+  * debian/local/manpages/gencat.1: editorial fixes.  Closes: #1071549.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 19:40:58 +0200
 

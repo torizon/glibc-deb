@@ -1,3 +1,11 @@
+glibc (2.39-3) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/patches/arm64/local-remove-aarch64-bits-math-vector-h.diff: drop,
+    buggy packages should be fixed instead.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 23:24:08 +0200
+
 glibc (2.39-2) experimental; urgency=medium
 
   [ Aurelien Jarno ]

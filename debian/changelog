@@ -3,6 +3,7 @@ glibc (2.38-12) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/debhelper.in/libc.postinst: do not try to call telinit if it is
     provided by systemd, it is just broken.  Closes: #1071462.
+  * debian/debhelper.in/libc.postinst: test for $DPKG_ROOT first.
 
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 19:40:58 +0200
 

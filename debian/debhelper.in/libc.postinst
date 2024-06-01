@@ -151,11 +151,11 @@ then
     # assumes anything else is going to not fail at behaving like
     # sysvinit:
     TELINIT=yes
-    if ischroot 2>/dev/null; then
-        # Don't bother trying to re-exec init from a chroot:
-        TELINIT=no
-    elif [ -n "${DPKG_ROOT:-}" ]; then
+    if [ -n "${DPKG_ROOT:-}" ]; then
         # Do not re-exec init if we are operating on a chroot from outside:
+        TELINIT=no
+    elif ischroot 2>/dev/null; then
+        # Don't bother trying to re-exec init from a chroot:
         TELINIT=no
     elif [ -d /run/systemd/system ]; then
         # Restart systemd on upgrade, but carefully.

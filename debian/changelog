@@ -8,6 +8,10 @@ glibc (2.38-12) UNRELEASED; urgency=medium
     upgrade and libc-major-upgrade on major glibc upgrade. This interface
     should be used by depending packages to restart themselves if needed.
 
+  [ Dominik Stadler ]
+  * debian/local/usr_sbin/update-locale: improve error reporting in
+    update-locale.  Closes: #1071084.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 19:40:58 +0200
 
 glibc (2.38-11) unstable; urgency=medium

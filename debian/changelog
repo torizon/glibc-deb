@@ -1,4 +1,4 @@
-glibc (2.38-12) UNRELEASED; urgency=medium
+glibc (2.38-12) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/debhelper.in/libc.postinst: do not try to call telinit if it is
@@ -16,7 +16,7 @@ glibc (2.38-12) UNRELEASED; urgency=medium
   [ Bjarni Ingi Gislason ]
   * debian/local/manpages/gencat.1: editorial fixes.  Closes: #1071549.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 19:40:58 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 01 Jun 2024 23:16:35 +0200
 
 glibc (2.38-11) unstable; urgency=medium
 

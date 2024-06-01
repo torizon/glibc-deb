@@ -7,6 +7,7 @@ glibc (2.38-12) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc.postinst: emit libc-upgrade trigger on every
     upgrade and libc-major-upgrade on major glibc upgrade. This interface
     should be used by depending packages to restart themselves if needed.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
   [ Dominik Stadler ]
   * debian/local/usr_sbin/update-locale: improve error reporting in

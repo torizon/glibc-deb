@@ -1,4 +1,3 @@
-lib*/ld*.so*
 RTLDDIR/ld*.so* /usrRTLDDIR
 SLIBDIR/ld*.so* /usrSLIBDIR
 SLIBDIR/libm.so.* /usrSLIBDIR

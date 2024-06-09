@@ -1,3 +1,20 @@
+glibc (2.39-3.1) experimental; urgency=medium
+
+  * Non-maintainer upload acked by Aurelien Jarno.
+  * Same diff as the 2.38-12.1 upload to unstable.
+  * Move all aliased files including the dynamic loader to /usr. (DEP17,
+    Closes: #1061248)
+    + Install a protective diversion for the dynamic loader to avoid accidental
+      deletion (DEP17 P1 M8).
+    + Manage the dynamic loader symlink via maintainer scripts and triggers
+      in multilib packages to avoid interaction of Replaces and /usr-move.
+    + Avoid a versioned dependency on base-files.
+      - Continue managing toplevel multilib aliasing links for the time being.
+      - Install protective diversions for aliasing symlinks that base-files
+        would also install in case libc is upgraded first. (DEP17 P9 M4)
+
+ -- Helmut Grohne <helmut@subdivi.de>  Thu, 06 Jun 2024 09:18:03 +0200
+
 glibc (2.39-3) experimental; urgency=medium
 
   [ Aurelien Jarno ]

@@ -2,6 +2,7 @@ glibc (2.38-13) UNRELEASED; urgency=medium
 
   * debian/debhelper.in/libc-udeb.install.hurd-amd64: Complete DEP17.
   * debian/debhelper.in/libc-udeb.install.hurd-i386: Complete DEP17.
+  * debian/patches/hurd-i386/git-xattr.diff: Fix xattr corner cases.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 09 Jun 2024 23:01:58 +0200
 

@@ -5,6 +5,8 @@ glibc (2.38-14) UNRELEASED; urgency=medium
     Closes: #1074607.
   * debian/control.in/libc: add breaks against systemd and sysvinit versions
     not using the libc-upgrade trigger.
+  * debian/control.in/libc: add breaks against base-files version not
+    providing /usr-merge aliasing symlinks.  Closes: #1074368.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 01 Jul 2024 22:37:23 +0200
 

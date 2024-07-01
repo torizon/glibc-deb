@@ -1,3 +1,13 @@
+glibc (2.38-14) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/debhelper.in/libc.postinst: drop code to restart init systems.
+    Closes: #1074607.
+  * debian/control.in/libc: add breaks against systemd and sysvinit versions
+    not using the libc-upgrade trigger.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 01 Jul 2024 22:37:23 +0200
+
 glibc (2.38-13) unstable; urgency=medium
 
   * debian/debhelper.in/libc-udeb.install.hurd-amd64: Complete DEP17.

@@ -47,6 +47,88 @@ index 7052b46df8..2e351c0321 100644
  # Print test summary for tests in $1 .sum file;
  # $2 is optional test identifier.
  # Fail if there are unexpected failures in the test results.
+diff --git a/NEWS b/NEWS
+index 1b89f9c010..2a40238d0a 100644
+--- a/NEWS
++++ b/NEWS
+@@ -5,6 +5,77 @@ See the end for copying conditions.
+ Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
+ using `glibc' in the "product" field.
+ 
++Version 2.39.1
++
++Security related changes:
++
++The following CVEs were fixed in this release:
++
++  GLIBC-SA-2024-0004:
++    ISO-2022-CN-EXT: fix out-of-bound writes when writing escape
++    sequence (CVE-2024-2961)
++
++  GLIBC-SA-2024-0005:
++    nscd: Stack-based buffer overflow in netgroup cache (CVE-2024-33599)
++
++  GLIBC-SA-2024-0006:
++    nscd: Null pointer crash after notfound response (CVE-2024-33600)
++
++  GLIBC-SA-2024-0007:
++    nscd: netgroup cache may terminate daemon on memory allocation
++    failure (CVE-2024-33601)
++
++  GLIBC-SA-2024-0008:
++    nscd: netgroup cache assumes NSS callback uses in-buffer strings
++    (CVE-2024-33602)
++
++The following bugs are resolved with this release:
++
++  [19622] network: Support aliasing with struct sockaddr
++  [30701] time: getutxent misbehaves on 32-bit x86 when _TIME_BITS=64
++  [30994] REP MOVSB performance suffers from page aliasing on Zen 4
++  [31339] libc: arm32 loader crash after cleanup in 2.36
++  [31325] mips: clone3 is wrong for o32
++  [31335] math: Compile glibc with -march=x86-64-v3 should disable FMA4
++    multi-arch version
++  [31402] libc: clone (NULL, NULL, ...) clobbers %r7 register on
++    s390{,x}
++  [31479] libc: Missing #include <sys/rseq.h> in sched_getcpu.c may
++    result in a loss of rseq acceleration
++  [31316] build: Fails test misc/tst-dirname "Didn't expect signal from
++    child: got `Illegal instruction'" on non SSE CPUs
++  [31371] x86-64: APX and Tile registers aren't preserved in ld.so 
++    trampoline
++  [31372] dynamic-link: _dl_tlsdesc_dynamic doesn't preserve all caller-
++    saved registers
++  [31429] build: Glibc failed to build with -march=x86-64-v3
++  [31501] dynamic-link: _dl_tlsdesc_dynamic_xsavec may clobber %rbx
++  [31640] dynamic-link: POWER10 ld.so crashes in
++    elf_machine_load_address with GCC 14
++  [31676] Configuring with CC="gcc -march=x86-64-v3"
++    --with-rtld-early-cflags=-march=x86-64 results in linker failure
++  [31677] nscd: nscd: netgroup cache: invalid memcpy under low
++    memory/storage conditions
++  [31678] nscd: nscd: Null pointer dereferences after failed netgroup
++    cache insertion
++  [31679] nscd: nscd: netgroup cache may terminate daemon on memory
++    allocation failure
++  [31680] nscd: nscd: netgroup cache assumes NSS callback uses in-buffer
++    strings
++  [31686] dynamic-link: Stack-based buffer overflow in
++    parse_tunables_string
++  [31695] libc: pidfd_spawn/pidfd_spawnp leak an fd if clone3 succeeds
++  [31719] dynamic-link: --enable-hardcoded-path-in-tests doesn't work
++    with -Wl,--enable-new-dtags
++  [31782] Test build failure with recent GCC trunk
++    (x86/tst-cpu-features-supports.c:69:3: error: parameter to builtin
++    not valid: avx5124fmaps)
++  [31798] pidfd_getpid.c is miscompiled by GCC 6.4
++  [31867] build: "CPU ISA level is lower than required" on SSE2-free
++    CPUs
++  [31883] build: ISA level support configure check relies on bashism /
++    is otherwise broken for arithmetic
++
+ Version 2.39
+ 
+ Major new features:
 diff --git a/advisories/GLIBC-SA-2023-0001 b/advisories/GLIBC-SA-2023-0001
 deleted file mode 100644
 index 3d19c91b6a..0000000000
@@ -582,6 +664,26 @@ index 2f502c8b0d..451932dd03 100644
 +uint64_t _dl_hwcap4;
  
  enum dso_sort_algorithm _dl_dso_sort_algo;
+ 
+diff --git a/elf/dl-tls.c b/elf/dl-tls.c
+index 7b3dd9ab60..670dbc42fc 100644
+--- a/elf/dl-tls.c
++++ b/elf/dl-tls.c
+@@ -819,7 +819,14 @@ _dl_update_slotinfo (unsigned long int req_modid, size_t new_gen)
+ 		 dtv entry free it.  Note: this is not AS-safe.  */
+ 	      /* XXX Ideally we will at some point create a memory
+ 		 pool.  */
+-	      free (dtv[modid].pointer.to_free);
++	      /* Avoid calling free on a null pointer.  Some mallocs
++		 incorrectly use dynamic TLS, and depending on how the
++		 free function was compiled, it could call
++		 __tls_get_addr before the null pointer check in the
++		 free implementation.  Checking here papers over at
++		 least some dynamic TLS usage by interposed mallocs.  */
++	      if (dtv[modid].pointer.to_free != NULL)
++		free (dtv[modid].pointer.to_free);
+ 	      dtv[modid].pointer.val = TLS_DTV_UNALLOCATED;
+ 	      dtv[modid].pointer.to_free = NULL;
  
 diff --git a/elf/dl-tunables.c b/elf/dl-tunables.c
 index 03e1a68675..614ac9c047 100644
@@ -1492,6 +1594,19 @@ index c5eacedd6a..1c7587d9c1 100644
  extern int utime (const char *__file,
  		  const struct utimbuf *__file_times)
       __THROW __nonnull ((1));
+diff --git a/localedata/locales/ssy_ER b/localedata/locales/ssy_ER
+index 05d94c9f10..43a16e0f54 100644
+--- a/localedata/locales/ssy_ER
++++ b/localedata/locales/ssy_ER
+@@ -106,7 +106,7 @@ country_ab3   "ERI"
+ country_num   232
+ country_car   "ER"
+ % country_isbn  unknown, Need ISO 2108
+-# https://en.wikipedia.org/wiki/Saho_language has "Saaho" as the endonym but CLDR has "Saho"
++% https://en.wikipedia.org/wiki/Saho_language has "Saaho" as the endonym but CLDR has "Saho"
+ lang_name     "Saho"
+ lang_ab       ""
+ lang_term     "ssy"
 diff --git a/login/Makefile b/login/Makefile
 index 1e22008a61..f91190e3dc 100644
 --- a/login/Makefile
@@ -1554,6 +1669,499 @@ index 0000000000..1b7f7ff042
 +}
 +
 +#include <support/test-driver.c>
+diff --git a/malloc/Makefile b/malloc/Makefile
+index c83ade5f10..cc14cf66c9 100644
+--- a/malloc/Makefile
++++ b/malloc/Makefile
+@@ -24,60 +24,95 @@ include ../Makeconfig
+ 
+ dist-headers := malloc.h
+ headers := $(dist-headers) obstack.h mcheck.h
+-tests := mallocbug tst-malloc tst-valloc tst-calloc tst-obstack \
+-	 tst-malloc-check tst-mallocfork tst-trim1 \
+-	 tst-malloc-usable tst-realloc tst-reallocarray tst-posix_memalign \
+-	 tst-pvalloc tst-pvalloc-fortify tst-memalign tst-mallopt \
+-	 tst-malloc-backtrace tst-malloc-thread-exit \
+-	 tst-malloc-thread-fail tst-malloc-fork-deadlock \
+-	 tst-mallocfork2 \
+-	 tst-mallocfork3 \
+-	 tst-interpose-nothread \
+-	 tst-interpose-thread \
+-	 tst-alloc_buffer \
+-	 tst-free-errno \
+-	 tst-malloc-tcache-leak \
+-	 tst-malloc_info tst-mallinfo2 \
+-	 tst-malloc-too-large \
+-	 tst-malloc-stats-cancellation \
+-	 tst-tcfree1 tst-tcfree2 tst-tcfree3 \
+-	 tst-safe-linking \
+-	 tst-mallocalign1 \
+-	 tst-memalign-2 \
+-	 tst-memalign-3 \
+-	 tst-aligned-alloc
++tests := \
++  mallocbug \
++  tst-aligned-alloc \
++  tst-aligned-alloc-random \
++  tst-alloc_buffer \
++  tst-calloc \
++  tst-free-errno \
++  tst-interpose-nothread \
++  tst-interpose-thread \
++  tst-malloc \
++  tst-malloc-alternate-path \
++  tst-malloc-backtrace \
++  tst-malloc-check \
++  tst-malloc-fork-deadlock \
++  tst-malloc-random \
++  tst-malloc-stats-cancellation \
++  tst-malloc-tcache-leak \
++  tst-malloc-thread-exit \
++  tst-malloc-thread-fail \
++  tst-malloc-too-large \
++  tst-malloc-usable \
++  tst-malloc_info tst-mallinfo2 \
++  tst-mallocalign1 \
++  tst-mallocfork \
++  tst-mallocfork2 \
++  tst-mallocfork3 \
++  tst-mallopt \
++  tst-memalign \
++  tst-memalign-2 \
++  tst-memalign-3 \
++  tst-obstack \
++  tst-posix_memalign \
++  tst-pvalloc \
++  tst-pvalloc-fortify \
++  tst-realloc \
++  tst-reallocarray \
++  tst-safe-linking \
++  tst-tcfree1 tst-tcfree2 tst-tcfree3 \
++  tst-trim1 \
++  tst-valloc \
++# tests
+ 
+ tests-static := \
+-	 tst-interpose-static-nothread \
+-	 tst-interpose-static-thread \
+-	 tst-aligned-alloc-static
++  tst-aligned-alloc-static \
++  tst-interpose-static-nothread \
++  tst-interpose-static-thread \
++# tests-static
+ 
+ # Test for the malloc_set_state symbol removed in glibc 2.25.
+ ifeq ($(have-GLIBC_2.23)$(build-shared),yesyes)
+-tests += tst-mallocstate tst-compathooks-off tst-compathooks-on
++tests += \
++  tst-compathooks-off \
++  tst-compathooks-on \
++  tst-mallocstate \
++# tests
+ endif
+ 
+ tests-internal := tst-scratch_buffer
+ 
+ # The dynarray framework is only available inside glibc.
+ tests-internal += \
+-	 tst-dynarray \
+-	 tst-dynarray-fail \
+-	 tst-dynarray-at-fail \
++  tst-dynarray \
++  tst-dynarray-at-fail \
++  tst-dynarray-fail \
++# tests-internal
+ 
+-tests += tst-malloc-usable-tunables tst-mxfast
++tests += \
++  tst-malloc-usable-tunables \
++  tst-mxfast \
++# tests
+ 
+ tests += $(tests-static)
+ test-srcs = tst-mtrace
+ 
+ # These tests either are run with MALLOC_CHECK_=3 by default or do not work
+ # with MALLOC_CHECK_=3 because they expect a specific failure.
+-tests-exclude-malloc-check = tst-malloc-check tst-malloc-usable \
+-	tst-mxfast tst-safe-linking \
+-	tst-compathooks-off tst-compathooks-on tst-memalign-2 tst-memalign-3 \
+-	tst-mallocfork2 \
+-	tst-mallocfork3 \
+-	tst-malloc-tcache-leak
++tests-exclude-malloc-check = \
++  tst-compathooks-off \
++  tst-compathooks-on \
++  tst-malloc-check \
++  tst-malloc-tcache-leak \
++  tst-malloc-usable \
++  tst-mallocfork2 \
++  tst-mallocfork3 \
++  tst-memalign-2 \
++  tst-memalign-3 \
++  tst-mxfast \
++  tst-safe-linking \
++# tests-exclude-malloc-check
+ 
+ # Run all tests with MALLOC_CHECK_=3
+ tests-malloc-check = $(filter-out $(tests-exclude-malloc-check) \
+@@ -87,18 +122,19 @@ tests-malloc-check = $(filter-out $(tests-exclude-malloc-check) \
+ # the Transparent Huge Pages support (1) or automatic huge page support (2).
+ # We need exclude some tests that define the ENV vars.
+ tests-exclude-hugetlb1 = \
+-	tst-compathooks-off \
+-	tst-compathooks-on \
+-	tst-interpose-nothread \
+-	tst-interpose-thread \
+-	tst-interpose-static-nothread \
+-	tst-interpose-static-thread \
+-	tst-malloc-usable \
+-	tst-malloc-usable-tunables \
+-	tst-mallocstate \
+-	tst-malloc-tcache-leak \
+-	tst-mallocfork2 \
+-	tst-mallocfork3
++  tst-compathooks-off \
++  tst-compathooks-on \
++  tst-interpose-nothread \
++  tst-interpose-static-nothread \
++  tst-interpose-static-thread \
++  tst-interpose-thread \
++  tst-malloc-tcache-leak \
++  tst-malloc-usable \
++  tst-malloc-usable-tunables \
++  tst-mallocfork2 \
++  tst-mallocfork3 \
++  tst-mallocstate \
++# tests-exclude-hugetlb1
+ # The tst-free-errno relies on the used malloc page size to mmap an
+ # overlapping region.
+ tests-exclude-hugetlb2 = \
+@@ -114,22 +150,25 @@ ifeq ($(have-GLIBC_2.23)$(build-shared),yesyes)
+ # Tests that don't play well with mcheck.  They are either bugs in mcheck or
+ # the tests expect specific internal behavior that is changed due to linking to
+ # libmcheck.a.
+-tests-exclude-mcheck = tst-mallocstate \
+-	tst-safe-linking \
+-	tst-malloc-backtrace \
+-	tst-malloc-fork-deadlock \
+-	tst-malloc-stats-cancellation \
+-	tst-malloc-tcache-leak \
+-	tst-malloc-thread-exit \
+-	tst-malloc-thread-fail \
+-	tst-malloc-usable-tunables \
+-	tst-malloc_info \
+-	tst-compathooks-off tst-compathooks-on \
+-	tst-memalign-2 \
+-	tst-memalign-3 \
+-	tst-mxfast \
+-	tst-mallocfork2 \
+-	tst-mallocfork3
++tests-exclude-mcheck = \
++  tst-compathooks-off \
++  tst-compathooks-on \
++  tst-malloc-backtrace \
++  tst-malloc-fork-deadlock \
++  tst-malloc-stats-cancellation \
++  tst-malloc-tcache-leak \
++  tst-malloc-thread-exit \
++  tst-malloc-thread-fail \
++  tst-malloc-usable-tunables \
++  tst-malloc_info \
++  tst-mallocfork2 \
++  tst-mallocfork3 \
++  tst-mallocstate \
++  tst-memalign-2 \
++  tst-memalign-3 \
++  tst-mxfast \
++  tst-safe-linking \
++# tests-exclude-mcheck
+ 
+ tests-mcheck = $(filter-out $(tests-exclude-mcheck) $(tests-static), $(tests))
+ endif
+@@ -157,12 +196,18 @@ extra-libs-others = $(extra-libs)
+ 
+ # Helper objects for some tests.
+ extra-test-objs += \
++  tst-aligned_alloc-lib.so \
+   tst-interpose-aux-nothread.o \
+   tst-interpose-aux-thread.o \
++# extra-test-objs
+ 
+ test-extras = \
+   tst-interpose-aux-nothread \
+   tst-interpose-aux-thread \
++# test-extras
++
++modules-names = \
++  tst-aligned_alloc-lib
+ 
+ libmemusage-routines = memusage
+ libmemusage-inhibit-o = $(filter-out .os,$(object-suffixes))
+@@ -370,3 +415,9 @@ tst-mallocstate-malloc-check-ENV = LD_PRELOAD=$(objpfx)libc_malloc_debug.so
+ # libc_malloc_debug.so.
+ $(objpfx)tst-mallocstate: $(objpfx)libc_malloc_debug.so
+ $(objpfx)tst-mallocstate-malloc-check: $(objpfx)libc_malloc_debug.so
++
++$(objpfx)tst-aligned-alloc-random.out: $(objpfx)tst-aligned_alloc-lib.so
++$(objpfx)tst-malloc-random.out: $(objpfx)tst-aligned_alloc-lib.so
++
++tst-aligned-alloc-random-ENV = LD_PRELOAD=$(objpfx)tst-aligned_alloc-lib.so
++tst-malloc-random-ENV = LD_PRELOAD=$(objpfx)tst-aligned_alloc-lib.so
+diff --git a/malloc/tst-aligned-alloc-random.c b/malloc/tst-aligned-alloc-random.c
+new file mode 100644
+index 0000000000..f2825ce38f
+--- /dev/null
++++ b/malloc/tst-aligned-alloc-random.c
+@@ -0,0 +1,43 @@
++/* Test for randomized malloc that calls aligned_alloc
++   Copyright (C) 2024 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include <stdlib.h>
++#include <support/check.h>
++#include <time.h>
++
++static int
++do_test (void)
++{
++  void *p1;
++  int i;
++
++  srandom (time (NULL));
++
++  for (i = 0; i < 1024; i++)
++  {
++    size_t size = random () & 0xffff;
++
++    p1 = malloc (size);
++    TEST_VERIFY (p1 != NULL);
++  }
++
++  return 0;
++}
++
++
++#include <support/test-driver.c>
+diff --git a/malloc/tst-aligned_alloc-lib.c b/malloc/tst-aligned_alloc-lib.c
+new file mode 100644
+index 0000000000..0205df5acf
+--- /dev/null
++++ b/malloc/tst-aligned_alloc-lib.c
+@@ -0,0 +1,72 @@
++/* Module used for improved aligned_alloc testing.
++   Copyright (C) 2024 Free Software Foundation, Inc.
++   Copyright The GNU Toolchain Authors.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public License as
++   published by the Free Software Foundation; either version 2.1 of the
++   License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; see the file COPYING.LIB.  If
++   not, see <https://www.gnu.org/licenses/>.  */
++
++#include <array_length.h>
++#include <libc-symbols.h>
++#include <stdlib.h>
++
++extern void *__libc_malloc (size_t size);
++extern void *__libc_calloc (size_t n, size_t size);
++
++int aligned_alloc_count = 0;
++int libc_malloc_count = 0;
++int libc_calloc_count = 0;
++
++/* Get a random alignment value.  Biased towards the smaller values.  Must be
++   a power of 2. */
++static size_t get_random_alignment (void)
++{
++  size_t aligns[] = {
++    1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384
++  };
++
++  return aligns[random () % array_length (aligns)];
++}
++
++static void *get_random_alloc (size_t size)
++{
++  void *retval;
++  size_t align;
++
++  switch (random() % 3)
++  {
++    case 1:
++      align = get_random_alignment ();
++      retval = aligned_alloc (align, size);
++      aligned_alloc_count++;
++      break;
++    case 2:
++      retval = __libc_calloc (1, size);
++      libc_calloc_count++;
++      break;
++    default:
++      retval = __libc_malloc (size);
++      libc_malloc_count++;
++      break;
++  }
++
++  return retval;
++}
++
++
++void * __random_malloc (size_t size)
++{
++  return get_random_alloc (size);
++}
++strong_alias (__random_malloc, malloc)
+diff --git a/malloc/tst-malloc-alternate-path.c b/malloc/tst-malloc-alternate-path.c
+new file mode 100644
+index 0000000000..43ae916815
+--- /dev/null
++++ b/malloc/tst-malloc-alternate-path.c
+@@ -0,0 +1,72 @@
++/* Test that malloc uses mmap when sbrk or brk fails.
++   Copyright (C) 2024 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++/* This test sets up an obstruction to ensure that brk/sbrk fails to
++   grow the heap, then verifies that malloc uses mmap for allocations
++   instead.  */
++
++#include <unistd.h>
++#include <sys/mman.h>
++#include <stdlib.h>
++#include <libc-pointer-arith.h>
++#include <support/check.h>
++#include <stddef.h>
++#include <stdalign.h>
++
++#define LARGE_SIZE (10 * (1 << 20)) // 10 MB
++static long page_size;
++
++static int
++do_test (void)
++{
++  /* Get current program break.  */
++  void *current_brk = sbrk (0);
++
++  page_size = sysconf (_SC_PAGESIZE);
++
++  /* Round up to the next page boundary.  */
++  void *next_page_boundary = PTR_ALIGN_UP (current_brk, page_size);
++
++  /* Place a mapping using mmap at the next page boundary.  */
++  void *obstruction_addr
++  = mmap (next_page_boundary, page_size, PROT_READ,
++    MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED, -1, 0);
++
++  /* Check if memory obstruction is set up correctly.  */
++  TEST_VERIFY_EXIT (obstruction_addr == next_page_boundary);
++
++  /* Try to extend the heap beyond the obstruction using sbrk */
++  int *ptr = sbrk (page_size);
++  TEST_VERIFY_EXIT (ptr == (void *) -1);
++
++  /* Attempt multiple small allocations using malloc.  */
++  for (size_t i = 0; i < page_size / alignof (max_align_t); i++)
++    {
++      TEST_VERIFY (malloc (alignof (max_align_t)));
++    }
++
++  /* Attempt to allocate a large block of memory using malloc.  */
++  TEST_VERIFY_EXIT (malloc (LARGE_SIZE) != NULL);
++
++  /* Check if malloc changed current program break.  */
++  TEST_VERIFY_EXIT (current_brk == sbrk (0));
++
++  return 0;
++}
++
++#include <support/test-driver.c>
+diff --git a/malloc/tst-malloc-random.c b/malloc/tst-malloc-random.c
+new file mode 100644
+index 0000000000..762b70c918
+--- /dev/null
++++ b/malloc/tst-malloc-random.c
+@@ -0,0 +1,20 @@
++/* Test malloc with random calls to aligned_alloc and calloc.
++
++   Copyright (C) 2024 Free Software Foundation, Inc.
++   This file is part of the GNU C Library.
++
++   The GNU C Library is free software; you can redistribute it and/or
++   modify it under the terms of the GNU Lesser General Public
++   License as published by the Free Software Foundation; either
++   version 2.1 of the License, or (at your option) any later version.
++
++   The GNU C Library is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++   Lesser General Public License for more details.
++
++   You should have received a copy of the GNU Lesser General Public
++   License along with the GNU C Library; if not, see
++   <https://www.gnu.org/licenses/>.  */
++
++#include "tst-malloc.c"
+diff --git a/malloc/tst-malloc.c b/malloc/tst-malloc.c
+index a7491d3d00..f7a6e4654c 100644
+--- a/malloc/tst-malloc.c
++++ b/malloc/tst-malloc.c
+@@ -18,7 +18,9 @@
+ #include <errno.h>
+ #include <malloc.h>
+ #include <stdio.h>
++#include <stdlib.h>
+ #include <libc-diag.h>
++#include <time.h>
+ 
+ static int errors = 0;
+ 
+@@ -35,6 +37,8 @@ do_test (void)
+   void *p, *q;
+   int save;
+ 
++  srandom (time (NULL));
++
+   errno = 0;
+ 
+   DIAG_PUSH_NEEDS_COMMENT;
 diff --git a/misc/sys/cdefs.h b/misc/sys/cdefs.h
 index 520231dbea..399ee7d24c 100644
 --- a/misc/sys/cdefs.h
@@ -2116,6 +2724,104 @@ index edbb7b4392..1f44ee1145 100644
  /* PID is like waitpid.  Other args are like wait3.  */
  extern __pid_t wait4 (__pid_t __pid, int *__stat_loc, int __options,
  		      struct rusage *__usage) __THROWNL;
+diff --git a/posix/tst-spawn2.c b/posix/tst-spawn2.c
+index bb507204a2..b2bad3f1f7 100644
+--- a/posix/tst-spawn2.c
++++ b/posix/tst-spawn2.c
+@@ -26,6 +26,7 @@
+ #include <stdio.h>
+ 
+ #include <support/check.h>
++#include <support/descriptors.h>
+ #include <tst-spawn.h>
+ 
+ int
+@@ -38,38 +39,53 @@ do_test (void)
+   char * const args[] = { 0 };
+   PID_T_TYPE pid = -1;
+ 
+-  int ret = POSIX_SPAWN (&pid, program, 0, 0, args, environ);
+-  if (ret != ENOENT)
+-    {
+-      errno = ret;
+-      FAIL_EXIT1 ("posix_spawn: %m");
+-    }
+-
+-  /* POSIX states the value returned on pid variable in case of an error
+-     is not specified.  GLIBC will update the value iff the child
+-     execution is successful.  */
+-  if (pid != -1)
+-    FAIL_EXIT1 ("posix_spawn returned pid != -1 (%i)", (int) pid);
+-
+-  /* Check if no child is actually created.  */
+-  TEST_COMPARE (WAITID (P_ALL, 0, NULL, WEXITED), -1);
+-  TEST_COMPARE (errno, ECHILD);
+-
+-  /* Same as before, but with posix_spawnp.  */
+-  char *args2[] = { (char*) program, 0 };
+-
+-  ret = POSIX_SPAWNP (&pid, args2[0], 0, 0, args2, environ);
+-  if (ret != ENOENT)
+-    {
+-      errno = ret;
+-      FAIL_EXIT1 ("posix_spawnp: %m");
+-    }
+-
+-  if (pid != -1)
+-    FAIL_EXIT1 ("posix_spawnp returned pid != -1 (%i)", (int) pid);
+-
+-  TEST_COMPARE (WAITID (P_ALL, 0, NULL, WEXITED), -1);
+-  TEST_COMPARE (errno, ECHILD);
++  {
++    struct support_descriptors *descrs = support_descriptors_list ();
++
++    int ret = POSIX_SPAWN (&pid, program, 0, 0, args, environ);
++    if (ret != ENOENT)
++      {
++	errno = ret;
++	FAIL_EXIT1 ("posix_spawn: %m");
++      }
++
++    /* POSIX states the value returned on pid variable in case of an error
++       is not specified.  GLIBC will update the value iff the child
++       execution is successful.  */
++    if (pid != -1)
++      FAIL_EXIT1 ("posix_spawn returned pid != -1 (%i)", (int) pid);
++
++    /* Check if no child is actually created.  */
++    TEST_COMPARE (WAITID (P_ALL, 0, NULL, WEXITED), -1);
++    TEST_COMPARE (errno, ECHILD);
++
++    /* Also check if there is no leak descriptors.  */
++    support_descriptors_check (descrs);
++    support_descriptors_free (descrs);
++  }
++
++  {
++    /* Same as before, but with posix_spawnp.  */
++    char *args2[] = { (char*) program, 0 };
++
++    struct support_descriptors *descrs = support_descriptors_list ();
++
++    int ret = POSIX_SPAWNP (&pid, args2[0], 0, 0, args2, environ);
++    if (ret != ENOENT)
++      {
++	errno = ret;
++	FAIL_EXIT1 ("posix_spawnp: %m");
++      }
++
++    if (pid != -1)
++      FAIL_EXIT1 ("posix_spawnp returned pid != -1 (%i)", (int) pid);
++
++    TEST_COMPARE (WAITID (P_ALL, 0, NULL, WEXITED), -1);
++    TEST_COMPARE (errno, ECHILD);
++
++    support_descriptors_check (descrs);
++    support_descriptors_free (descrs);
++  }
+ 
+   return 0;
+ }
 diff --git a/resolv/netdb.h b/resolv/netdb.h
 index 14228b0d95..b7f473fafe 100644
 --- a/resolv/netdb.h
@@ -5109,6 +5815,55 @@ index 84e6686eba..f2139fc172 100644
  float128: 1
  ldouble: 1
  
+diff --git a/sysdeps/i386/fpu/w_exp10_compat.c b/sysdeps/i386/fpu/w_exp10_compat.c
+index b53455386e..49a0e03385 100644
+--- a/sysdeps/i386/fpu/w_exp10_compat.c
++++ b/sysdeps/i386/fpu/w_exp10_compat.c
+@@ -1,3 +1,8 @@
+ /* i386 provides an optimized __ieee754_exp10.  */
+-#define NO_COMPAT_NEEDED 1
+-#include <math/w_exp10_compat.c>
++#ifdef SHARED
++# define NO_COMPAT_NEEDED 1
++# include <math/w_exp10_compat.c>
++#else
++# include <math-type-macros-double.h>
++# include <w_exp10_template.c>
++#endif
+diff --git a/sysdeps/i386/fpu/w_fmod_compat.c b/sysdeps/i386/fpu/w_fmod_compat.c
+index 5ac9995ffd..528bfc2a13 100644
+--- a/sysdeps/i386/fpu/w_fmod_compat.c
++++ b/sysdeps/i386/fpu/w_fmod_compat.c
+@@ -7,8 +7,9 @@
+ # define LIBM_SVID_COMPAT 1
+ # undef compat_symbol
+ # define compat_symbol(a, b, c, d)
+-#endif
+-#include <math/w_fmod_compat.c>
+-#ifdef SHARED
++# include <math/w_fmod_compat.c>
+ libm_alias_double (__fmod_compat, fmod)
++#else
++#include <math-type-macros-double.h>
++#include <w_fmod_template.c>
+ #endif
+diff --git a/sysdeps/i386/fpu/w_fmodf_compat.c b/sysdeps/i386/fpu/w_fmodf_compat.c
+index cc417e07d3..5a61693e51 100644
+--- a/sysdeps/i386/fpu/w_fmodf_compat.c
++++ b/sysdeps/i386/fpu/w_fmodf_compat.c
+@@ -7,8 +7,9 @@
+ # define LIBM_SVID_COMPAT 1
+ # undef compat_symbol
+ # define compat_symbol(a, b, c, d)
+-#endif
+-#include <math/w_fmodf_compat.c>
+-#ifdef SHARED
++# include <math/w_fmodf_compat.c>
+ libm_alias_float (__fmod_compat, fmod)
++#else
++#include <math-type-macros-float.h>
++#include <w_fmod_template.c>
+ #endif
 diff --git a/sysdeps/i386/i586/memcpy.S b/sysdeps/i386/i586/memcpy.S
 index 3e26f112d6..79856d498a 100644
 --- a/sysdeps/i386/i586/memcpy.S
@@ -5166,6 +5921,93 @@ index d9dae04171..e123f87435 100644
  
  END (__memrchr_sse2)
 -strong_alias (__memrchr_sse2, __GI___memrchr)
+ #endif
+diff --git a/sysdeps/ieee754/float128/s_isnanf128.c b/sysdeps/ieee754/float128/s_isnanf128.c
+index 59f71533ce..b73a4e80d7 100644
+--- a/sysdeps/ieee754/float128/s_isnanf128.c
++++ b/sysdeps/ieee754/float128/s_isnanf128.c
+@@ -11,7 +11,11 @@
+ #include "../ldbl-128/s_isnanl.c"
+ #if !IS_IN (libm)
+ #include <float128-abi.h>
++#ifdef SHARED
+ hidden_ver (__isnanf128_impl, __isnanf128)
++#else
++strong_alias (__isnanf128_impl, __isnanf128)
++#endif
+ _weak_alias (__isnanf128_impl, isnanl)
+ versioned_symbol (libc, __isnanf128_impl, __isnanf128, GLIBC_2_34);
+ #if (SHLIB_COMPAT (libc, FLOAT128_VERSION_M, GLIBC_2_34))
+diff --git a/sysdeps/ieee754/ldbl-64-128/s_copysignl.c b/sysdeps/ieee754/ldbl-64-128/s_copysignl.c
+index 11b42d04ba..80137847d3 100644
+--- a/sysdeps/ieee754/ldbl-64-128/s_copysignl.c
++++ b/sysdeps/ieee754/ldbl-64-128/s_copysignl.c
+@@ -1,10 +1,10 @@
+ #include <math_ldbl_opt.h>
+ #include <libm-alias-ldouble.h>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ # undef libm_alias_ldouble
+ # define libm_alias_ldouble(from, to)
+ #endif
+ #include <sysdeps/ieee754/ldbl-128/s_copysignl.c>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ long_double_symbol (libc, __copysignl, copysignl);
+ #endif
+diff --git a/sysdeps/ieee754/ldbl-64-128/s_frexpl.c b/sysdeps/ieee754/ldbl-64-128/s_frexpl.c
+index 73ac41e40c..f5f7d349f7 100644
+--- a/sysdeps/ieee754/ldbl-64-128/s_frexpl.c
++++ b/sysdeps/ieee754/ldbl-64-128/s_frexpl.c
+@@ -1,10 +1,10 @@
+ #include <math_ldbl_opt.h>
+ #include <libm-alias-ldouble.h>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ # undef libm_alias_ldouble
+ # define libm_alias_ldouble(from, to)
+ #endif
+ #include <sysdeps/ieee754/ldbl-128/s_frexpl.c>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ long_double_symbol (libc, __frexpl, frexpl);
+ #endif
+diff --git a/sysdeps/ieee754/ldbl-64-128/s_modfl.c b/sysdeps/ieee754/ldbl-64-128/s_modfl.c
+index 7d7aeae111..ba3d31334a 100644
+--- a/sysdeps/ieee754/ldbl-64-128/s_modfl.c
++++ b/sysdeps/ieee754/ldbl-64-128/s_modfl.c
+@@ -1,10 +1,10 @@
+ #include <math_ldbl_opt.h>
+ #include <libm-alias-ldouble.h>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ # undef libm_alias_ldouble
+ # define libm_alias_ldouble(from, to)
+ #endif
+ #include <sysdeps/ieee754/ldbl-128/s_modfl.c>
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ long_double_symbol (libc, __modfl, modfl);
+ #endif
+diff --git a/sysdeps/ieee754/ldbl-opt/s_ldexpl.c b/sysdeps/ieee754/ldbl-opt/s_ldexpl.c
+index 1afbe7d8ad..932cc4341c 100644
+--- a/sysdeps/ieee754/ldbl-opt/s_ldexpl.c
++++ b/sysdeps/ieee754/ldbl-opt/s_ldexpl.c
+@@ -17,13 +17,13 @@
+    License along with the GNU C Library; if not, see
+    <https://www.gnu.org/licenses/>.  */
+ 
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ # define declare_mgen_alias(f,t)
+ #endif
+ #include <math-type-macros-ldouble.h>
+ #include <s_ldexp_template.c>
+ 
+-#if IS_IN (libc)
++#if IS_IN (libc) && defined SHARED
+ long_double_symbol (libc, __ldexpl, ldexpl);
+ long_double_symbol (libc, __wrap_scalbnl, scalbnl);
  #endif
 diff --git a/sysdeps/loongarch/fpu/e_scalbf.c b/sysdeps/loongarch/fpu/e_scalbf.c
 index 9f05485236..7c0395fbb5 100644
@@ -5315,6 +6157,54 @@ index 0000000000..6ecbfe7c86
 +#define __WORDSIZE_TIME64_COMPAT32	1
 +#define __WORDSIZE32_SIZE_ULONG		0
 +#define __WORDSIZE32_PTRDIFF_LONG	0
+diff --git a/sysdeps/m68k/m680x0/fpu/w_exp10_compat.c b/sysdeps/m68k/m680x0/fpu/w_exp10_compat.c
+index 0d3e718626..350f2e4b4d 100644
+--- a/sysdeps/m68k/m680x0/fpu/w_exp10_compat.c
++++ b/sysdeps/m68k/m680x0/fpu/w_exp10_compat.c
+@@ -1,3 +1,8 @@
+ /* m68k provides an optimized __ieee754_exp10.  */
+-#define NO_COMPAT_NEEDED 1
+-#include <math/w_exp10_compat.c>
++#ifdef SHARED
++# define NO_COMPAT_NEEDED 1
++# include <math/w_exp10_compat.c>
++#else
++# include <math-type-macros-double.h>
++# include <w_exp10_template.c>
++#endif
+diff --git a/sysdeps/m68k/m680x0/fpu/w_fmod_compat.c b/sysdeps/m68k/m680x0/fpu/w_fmod_compat.c
+index 527d4fbed2..57f38091e6 100644
+--- a/sysdeps/m68k/m680x0/fpu/w_fmod_compat.c
++++ b/sysdeps/m68k/m680x0/fpu/w_fmod_compat.c
+@@ -7,8 +7,9 @@
+ # define LIBM_SVID_COMPAT 1
+ # undef compat_symbol
+ # define compat_symbol(a, b, c, d)
+-#endif
+ #include <math/w_fmod_compat.c>
+-#ifdef SHARED
+ libm_alias_double (__fmod_compat, fmod)
++#else
++#include <math-type-macros-double.h>
++#include <w_fmod_template.c>
+ #endif
+diff --git a/sysdeps/m68k/m680x0/fpu/w_fmodf_compat.c b/sysdeps/m68k/m680x0/fpu/w_fmodf_compat.c
+index 5043586b91..88db07f443 100644
+--- a/sysdeps/m68k/m680x0/fpu/w_fmodf_compat.c
++++ b/sysdeps/m68k/m680x0/fpu/w_fmodf_compat.c
+@@ -7,8 +7,9 @@
+ # define LIBM_SVID_COMPAT 1
+ # undef compat_symbol
+ # define compat_symbol(a, b, c, d)
+-#endif
+-#include <math/w_fmodf_compat.c>
+-#ifdef SHARED
++# include <math/w_fmodf_compat.c>
+ libm_alias_float (__fmod_compat, fmod)
++#else
++#include <math-type-macros-float.h>
++#include <w_fmod_template.c>
+ #endif
 diff --git a/sysdeps/m68k/utmp-size.h b/sysdeps/m68k/utmp-size.h
 new file mode 100644
 index 0000000000..5946685819
@@ -6377,10 +7267,18 @@ index e3d758b163..ea2a58ecb1 100644
    GLRO(dl_fpu_control) = auxv_values[AT_FPUCW];
    _dl_random = (void *) auxv_values[AT_RANDOM];
 diff --git a/sysdeps/unix/sysv/linux/dl-sysdep.c b/sysdeps/unix/sysv/linux/dl-sysdep.c
-index ad3692d738..e1b14e9eb3 100644
+index ad3692d738..a8ec2d7c18 100644
 --- a/sysdeps/unix/sysv/linux/dl-sysdep.c
 +++ b/sysdeps/unix/sysv/linux/dl-sysdep.c
-@@ -197,6 +197,8 @@ _dl_show_auxv (void)
+@@ -40,6 +40,7 @@
+ #include <sys/utsname.h>
+ #include <tls.h>
+ #include <unistd.h>
++#include <dl-symbol-redir-ifunc.h>
+ 
+ #include <dl-machine.h>
+ #include <dl-hwcap-check.h>
+@@ -197,6 +198,8 @@ _dl_show_auxv (void)
  	  [AT_SYSINFO_EHDR - 2] =	{ "SYSINFO_EHDR:      0x", hex },
  	  [AT_RANDOM - 2] =		{ "RANDOM:            0x", hex },
  	  [AT_HWCAP2 - 2] =		{ "HWCAP2:            0x", hex },
@@ -7255,6 +8153,40 @@ index 7562875ee2..ea103e5970 100644
 -# define __WORDSIZE_TIME64_COMPAT32	0
  #endif
 +#define __WORDSIZE_TIME64_COMPAT32	1
+diff --git a/sysdeps/unix/sysv/linux/spawni.c b/sysdeps/unix/sysv/linux/spawni.c
+index e8ed2babb9..f57e92815e 100644
+--- a/sysdeps/unix/sysv/linux/spawni.c
++++ b/sysdeps/unix/sysv/linux/spawni.c
+@@ -449,13 +449,22 @@ __spawnix (int *pid, const char *file,
+ 	 caller to actually collect it.  */
+       ec = args.err;
+       if (ec > 0)
+-	/* There still an unlikely case where the child is cancelled after
+-	   setting args.err, due to a positive error value.  Also there is
+-	   possible pid reuse race (where the kernel allocated the same pid
+-	   to an unrelated process).  Unfortunately due synchronization
+-	   issues where the kernel might not have the process collected
+-	   the waitpid below can not use WNOHANG.  */
+-	__waitpid (new_pid, NULL, 0);
++	{
++	  /* There still an unlikely case where the child is cancelled after
++	     setting args.err, due to a positive error value.  Also there is
++	     possible pid reuse race (where the kernel allocated the same pid
++	     to an unrelated process).  Unfortunately due synchronization
++	     issues where the kernel might not have the process collected
++	     the waitpid below can not use WNOHANG.  */
++	  __waitid (use_pidfd ? P_PIDFD : P_PID,
++		    use_pidfd ? args.pidfd : new_pid,
++		    NULL,
++		    WEXITED);
++	  /* For pidfd we need to also close the file descriptor for the case
++	     where execve fails.  */
++	  if (use_pidfd)
++	    __close_nocancel_nostatus (args.pidfd);
++	}
+     }
+   else
+     ec = errno;
 diff --git a/sysdeps/unix/sysv/linux/sys/epoll.h b/sysdeps/unix/sysv/linux/sys/epoll.h
 index 9b51e3bd14..fc8dce45c8 100644
 --- a/sysdeps/unix/sysv/linux/sys/epoll.h
@@ -7791,7 +8723,7 @@ index 70f652bca1..3f40aa76f9 100644
 -# define __WORDSIZE_TIME64_COMPAT32	0
  #endif
 diff --git a/sysdeps/x86/configure b/sysdeps/x86/configure
-index 1f4c2d67fd..d28d9bcb29 100644
+index 1f4c2d67fd..04c6ba3e6c 100644
 --- a/sysdeps/x86/configure
 +++ b/sysdeps/x86/configure
 @@ -98,6 +98,7 @@ printf "%s\n" "$libc_cv_have_x86_lahf_sahf" >&6; }
@@ -7802,7 +8734,7 @@ index 1f4c2d67fd..d28d9bcb29 100644
    fi
    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for MOVBE instruction support" >&5
  printf %s "checking for MOVBE instruction support... " >&6; }
-@@ -120,8 +121,47 @@ printf "%s\n" "$libc_cv_have_x86_movbe" >&6; }
+@@ -120,8 +121,53 @@ printf "%s\n" "$libc_cv_have_x86_movbe" >&6; }
    if test $libc_cv_have_x86_movbe = yes; then
      printf "%s\n" "#define HAVE_X86_MOVBE 1" >>confdefs.h
  
@@ -7824,8 +8756,12 @@ index 1f4c2d67fd..d28d9bcb29 100644
 +libc_cv_have_x86_isa_level=3
 +#elif MINIMUM_X86_ISA_LEVEL == 2
 +libc_cv_have_x86_isa_level=2
-+#else
++#elif defined __x86_64__
 +libc_cv_have_x86_isa_level=baseline
++#elif MINIMUM_X86_ISA_LEVEL == 1
++libc_cv_have_x86_isa_level=1
++#else
++libc_cv_have_x86_isa_level=0
 +#endif
 +EOF
 +		 eval `${CC-cc} $CFLAGS $CPPFLAGS $ISAFLAG -I$srcdir -E conftest.c | grep libc_cv_have_x86_isa_level`
@@ -7833,8 +8769,10 @@ index 1f4c2d67fd..d28d9bcb29 100644
  fi
 +{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $libc_cv_have_x86_isa_level" >&5
 +printf "%s\n" "$libc_cv_have_x86_isa_level" >&6; }
-+else
++elif test $base_machine = x86_64; then
 +  libc_cv_have_x86_isa_level=baseline
++else
++  libc_cv_have_x86_isa_level=0
 +fi
 +if test $libc_cv_have_x86_isa_level = baseline; then
 +  printf "%s\n" "#define MINIMUM_X86_ISA_LEVEL 1" >>confdefs.h
@@ -7851,7 +8789,7 @@ index 1f4c2d67fd..d28d9bcb29 100644
  enable-x86-isa-level = $libc_cv_include_x86_isa_level"
  
 diff --git a/sysdeps/x86/configure.ac b/sysdeps/x86/configure.ac
-index 437a50623b..5b0acd03d2 100644
+index 437a50623b..8a259d3971 100644
 --- a/sysdeps/x86/configure.ac
 +++ b/sysdeps/x86/configure.ac
 @@ -72,6 +72,7 @@ if test $libc_cv_include_x86_isa_level = yes; then
@@ -7862,7 +8800,7 @@ index 437a50623b..5b0acd03d2 100644
    fi
    AC_CACHE_CHECK([for MOVBE instruction support],
  		 libc_cv_have_x86_movbe, [dnl
-@@ -81,8 +82,36 @@ if test $libc_cv_include_x86_isa_level = yes; then
+@@ -81,8 +82,42 @@ if test $libc_cv_include_x86_isa_level = yes; then
      fi])
    if test $libc_cv_have_x86_movbe = yes; then
      AC_DEFINE(HAVE_X86_MOVBE)
@@ -7880,14 +8818,20 @@ index 437a50623b..5b0acd03d2 100644
 +libc_cv_have_x86_isa_level=3
 +#elif MINIMUM_X86_ISA_LEVEL == 2
 +libc_cv_have_x86_isa_level=2
-+#else
++#elif defined __x86_64__
 +libc_cv_have_x86_isa_level=baseline
++#elif MINIMUM_X86_ISA_LEVEL == 1
++libc_cv_have_x86_isa_level=1
++#else
++libc_cv_have_x86_isa_level=0
 +#endif
 +EOF
 +		 eval `${CC-cc} $CFLAGS $CPPFLAGS $ISAFLAG -I$srcdir -E conftest.c | grep libc_cv_have_x86_isa_level`
 +		 rm -rf conftest*])
-+else
++elif test $base_machine = x86_64; then
 +  libc_cv_have_x86_isa_level=baseline
++else
++  libc_cv_have_x86_isa_level=0
 +fi
 +if test $libc_cv_have_x86_isa_level = baseline; then
 +  AC_DEFINE_UNQUOTED(MINIMUM_X86_ISA_LEVEL, 1)
@@ -8293,10 +9237,29 @@ index b9bf3115b6..cd7bd27cf3 100644
    unsigned int xsave_state_full_size;
    /* Data cache size for use in memory and string routines, typically
 diff --git a/sysdeps/x86/isa-level.h b/sysdeps/x86/isa-level.h
-index 11fe1ca90c..2c7f74212b 100644
+index 11fe1ca90c..03c1fe2bf5 100644
 --- a/sysdeps/x86/isa-level.h
 +++ b/sysdeps/x86/isa-level.h
-@@ -61,8 +61,10 @@
+@@ -35,7 +35,17 @@
+ # define __X86_ISA_V1 0
+ #endif
+ 
+-#if __X86_ISA_V1 && defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16               \
++#ifdef __x86_64__
++# ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
++#  define __GCC_HAVE_SYNC_COMPARE_AND_SWAP
++# endif
++#else
++# ifdef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_8
++#  define __GCC_HAVE_SYNC_COMPARE_AND_SWAP
++# endif
++#endif
++
++#if __X86_ISA_V1 && defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP		      \
+     && defined HAVE_X86_LAHF_SAHF && defined __POPCNT__ && defined __SSE3__   \
+     && defined __SSSE3__ && defined __SSE4_1__ && defined __SSE4_2__
+ /* NB: ISAs in x86-64 ISA level v2 are used.  */
+@@ -61,8 +71,10 @@
  # define __X86_ISA_V4 0
  #endif
  
@@ -11367,6 +12330,45 @@ index 0000000000..1d636669ba
 +	.local	saved_rsi
 +	.comm	saved_rsi,8,8
 +	.section	.note.GNU-stack,"",@progbits
+diff --git a/sysdeps/x86_64/tst-shstk-legacy-1e-static.sh b/sysdeps/x86_64/tst-shstk-legacy-1e-static.sh
+index 46f1233757..0a9a164a3e 100755
+--- a/sysdeps/x86_64/tst-shstk-legacy-1e-static.sh
++++ b/sysdeps/x86_64/tst-shstk-legacy-1e-static.sh
+@@ -26,7 +26,7 @@ ${common_objpfx}elf/tst-shstk-legacy-1e-static
+ status=$?
+ if test $status -eq 77; then
+   exit 77
+-elif test $status == 139; then
++elif test $status -eq 139; then
+   exit 0
+ else
+   exit 1
+diff --git a/sysdeps/x86_64/tst-shstk-legacy-1e.sh b/sysdeps/x86_64/tst-shstk-legacy-1e.sh
+index 31212453d9..3dec5623e4 100755
+--- a/sysdeps/x86_64/tst-shstk-legacy-1e.sh
++++ b/sysdeps/x86_64/tst-shstk-legacy-1e.sh
+@@ -28,7 +28,7 @@ ${test_program_prefix} \
+ status=$?
+ if test $status -eq 77; then
+   exit 77
+-elif test $status == 139; then
++elif test $status -eq 139; then
+   exit 0
+ else
+   exit 1
+diff --git a/sysdeps/x86_64/tst-shstk-legacy-1g.sh b/sysdeps/x86_64/tst-shstk-legacy-1g.sh
+index e84087068e..249831e816 100755
+--- a/sysdeps/x86_64/tst-shstk-legacy-1g.sh
++++ b/sysdeps/x86_64/tst-shstk-legacy-1g.sh
+@@ -28,7 +28,7 @@ ${test_program_prefix} \
+ status=$?
+ if test $status -eq 77; then
+   exit 77
+-elif test $status == 139; then
++elif test $status -eq 139; then
+   exit 0
+ else
+   exit 1
 diff --git a/sysvipc/sys/msg.h b/sysvipc/sys/msg.h
 index d0388b0522..4178ad9955 100644
 --- a/sysvipc/sys/msg.h

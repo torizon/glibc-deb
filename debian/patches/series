@@ -92,9 +92,3 @@ any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
 any/git-test-epoll.diff
-any/submitted-static-copysignf128.diff
-any/submitted-static-fmod-fmodf.diff
-any/submitted-static-frexpf128.diff
-any/submitted-static-isnanf128.diff
-any/submitted-static-modf128.diff
-any/submitted-static-exp10.diff

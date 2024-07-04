@@ -27,8 +27,7 @@ hppa/local-inlining.diff
 
 # Committed for 2.40
 hurd-i386/git-context.diff
-
-# 2.40
+hurd-i386/git-xattr.diff
 hurd-i386/git-proc_getchildren_rusage.diff
 hurd-i386/git-AT_NO_AUTOMOUNT.diff
 

@@ -15,6 +15,42 @@ glibc (2.39-3.1) experimental; urgency=medium
 
  -- Helmut Grohne <helmut@subdivi.de>  Thu, 06 Jun 2024 09:18:03 +0200
 
+glibc (2.38-14) unstable; urgency=medium
+
+  [ Aurelien Jarno ]
+  * debian/debhelper.in/libc.postinst: drop code to restart init systems.
+    Closes: #1074607.
+  * debian/control.in/libc: add breaks against systemd and sysvinit versions
+    not using the libc-upgrade trigger.
+  * debian/control.in/libc: add breaks against base-files version not
+    providing /usr-merge aliasing symlinks.  Closes: #1074368.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Thu, 04 Jul 2024 21:53:20 +0200
+
+glibc (2.38-13) unstable; urgency=medium
+
+  * debian/debhelper.in/libc-udeb.install.hurd-amd64: Complete DEP17.
+  * debian/debhelper.in/libc-udeb.install.hurd-i386: Complete DEP17.
+  * debian/patches/hurd-i386/git-xattr.diff: Fix xattr corner cases.
+
+ -- Samuel Thibault <sthibault@debian.org>  Mon, 10 Jun 2024 22:25:19 +0200
+
+glibc (2.38-12.1) unstable; urgency=medium
+
+  * Non-maintainer upload acked by Aurelien Jarno.
+  * Move all aliased files including the dynamic loader to /usr. (DEP17,
+    Closes: #1061248)
+    + Install a protective diversion for the dynamic loader to avoid accidental
+      deletion (DEP17 P1 M8).
+    + Manage the dynamic loader symlink via maintainer scripts and triggers
+      in multilib packages to avoid interaction of Replaces and /usr-move.
+    + Avoid a versioned dependency on base-files.
+      - Continue managing toplevel multilib aliasing links for the time being.
+      - Install protective diversions for aliasing symlinks that base-files
+        would also install in case libc is upgraded first. (DEP17 P9 M4)
+
+ -- Helmut Grohne <helmut@subdivi.de>  Thu, 06 Jun 2024 09:18:03 +0200
+
 glibc (2.39-3) experimental; urgency=medium
 
   [ Aurelien Jarno ]

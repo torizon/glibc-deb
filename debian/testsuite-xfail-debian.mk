@@ -401,6 +401,15 @@ test-xfail-tst-initgroups1 = yes
 test-xfail-tst-initgroups2 = yes
 test-xfail-tst-sprintf-fortify-rdonly = yes
 
+# new in 2.40
+test-xfail-tst-recursive-tls = yes
+test-xfail-tst-malloc-alternate-path = yes
+test-xfail-tst-malloc-alternate-path-malloc-check = yes
+test-xfail-tst-malloc-alternate-path-malloc-hugetlb1 = yes
+test-xfail-tst-malloc-alternate-path-malloc-hugetlb2 = yes
+test-xfail-tst-malloc-alternate-path-mcheck = yes
+test-xfail-tst-shutdown = yes
+
 # actually never succeded
 test-xfail-tst-create_format1 = yes
 test-xfail-tst-getcwd-abspath = yes

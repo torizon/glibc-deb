@@ -1,5 +1,6 @@
 glibc (2.39-4) UNRELEASED; urgency=medium
 
+  [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - debian/patches/any/submitted-static-copysignf128.diff: upstreamed.
     - debian/patches/any/submitted-static-fmod-fmodf.diff: upstreamed.
@@ -7,6 +8,9 @@ glibc (2.39-4) UNRELEASED; urgency=medium
     - debian/patches/any/submitted-static-isnanf128.diff: upstreamed.
     - debian/patches/any/submitted-static-modf128.diff: upstreamed.
     - debian/patches/any/submitted-static-exp10.diff: upstreamed.
+
+  [ Samuel Thibault ]
+  * debian/testsuite-xfail-debian.mk: Update for upcoming 2.40.
 
  -- Aurelien Jarno <aurel32@debian.org>  Thu, 04 Jul 2024 22:09:52 +0200
 

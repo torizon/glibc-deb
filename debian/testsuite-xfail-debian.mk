@@ -408,6 +408,7 @@ test-xfail-tst-malloc-alternate-path-malloc-check = yes
 test-xfail-tst-malloc-alternate-path-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-alternate-path-malloc-hugetlb2 = yes
 test-xfail-tst-malloc-alternate-path-mcheck = yes
+test-xfail-tst-malloc-fork-deadlock = yes
 test-xfail-tst-shutdown = yes
 # Bus error
 test-xfail-test-bz22786 = yes

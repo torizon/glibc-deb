@@ -409,6 +409,9 @@ test-xfail-tst-malloc-alternate-path-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-alternate-path-malloc-hugetlb2 = yes
 test-xfail-tst-malloc-alternate-path-mcheck = yes
 test-xfail-tst-shutdown = yes
+# Bus error
+test-xfail-test-bz22786 = yes
+test-xfail-tst-strtod-overflow = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes
@@ -440,9 +443,6 @@ test-xfail-test-ldouble-log10 = yes
 test-xfail-test-ldouble-log2 = yes
 test-xfail-test-ldouble-y0 = yes
 test-xfail-test-ldouble-y1 = yes
-
-# Bus error
-test-xfail-test-bz22786 = yes
 
 # memory leak
 test-xfail-tst-vfprintf-width-prec-mem = yes

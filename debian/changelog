@@ -3,6 +3,7 @@ glibc (2.38-15) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-udeb.install.hurd-amd64: Fix missing libhurduser.
   * debian/debhelper.in/libc-udeb.install.hurd-i386: Fix missing libhurduser.
   * debian/patches/hurd-i386/git-intr-msg-clobber.diff: Fix restoring message to be retried.
+  * debian/patches/hurd-i386/local-intr-msg-clobber.diff: Fix message-retry overwrite.
 
  -- Samuel Thibault <sthibault@debian.org>  Sun, 07 Jul 2024 18:52:16 +0200
 

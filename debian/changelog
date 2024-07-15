@@ -1,4 +1,4 @@
-glibc (2.39-4) UNRELEASED; urgency=medium
+glibc (2.39-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
@@ -16,7 +16,7 @@ glibc (2.39-4) UNRELEASED; urgency=medium
   * debian/patches/hurd-i386/git-intr-msg-clobber.diff: Fix restoring message to be retried.
   * debian/patches/hurd-i386/local-intr-msg-clobber.diff: Fix message-retry overwrite.
 
- -- Aurelien Jarno <aurel32@debian.org>  Thu, 04 Jul 2024 22:09:52 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 15 Jul 2024 21:20:54 +0200
 
 glibc (2.39-3.1) experimental; urgency=medium
 

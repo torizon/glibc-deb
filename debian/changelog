@@ -1,3 +1,10 @@
+glibc (2.39-5) UNRELEASED; urgency=medium
+
+  * debian/patches/hurd-i386/git-pthread_self.diff: Fix pthread_self() without
+    libpthread.
+
+ -- Samuel Thibault <sthibault@debian.org>  Wed, 17 Jul 2024 14:16:31 +0200
+
 glibc (2.39-4) unstable; urgency=medium
 
   [ Aurelien Jarno ]

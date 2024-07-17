@@ -31,6 +31,7 @@ hurd-i386/git-xattr.diff
 hurd-i386/git-proc_getchildren_rusage.diff
 hurd-i386/git-AT_NO_AUTOMOUNT.diff
 hurd-i386/git-intr-msg-clobber.diff
+hurd-i386/git-pthread_self.diff
 
 hurd-i386/local-intr-msg-clobber.diff
 hurd-i386/local-enable-ldconfig.diff

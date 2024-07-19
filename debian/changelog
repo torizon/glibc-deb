@@ -1,7 +1,12 @@
 glibc (2.39-5) UNRELEASED; urgency=medium
 
+  [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-pthread_self{,.2}.diff: Fix pthread_self()
     without libpthread.
+
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch:
+    - Fixes stdlib/tst-swapcontext2 test on hppa.  Closes: #1076512.
 
  -- Samuel Thibault <sthibault@debian.org>  Wed, 17 Jul 2024 14:16:31 +0200
 

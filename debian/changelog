@@ -1,3 +1,24 @@
+glibc (2.40-1) UNRELEASED; urgency=medium
+
+  [ Aurelien Jarno ]
+  * New upstream release.
+    - debian/symbols.wildcards: add 2.40.
+    - debian/patches/hurd-i386/git-context.diff: upstreamed.
+    - debian/patches/hurd-i386/git-xattr.diff: upstreamed.
+    - debian/patches/hurd-i386/git-proc_getchildren_rusage.diff: upstreamed.
+    - debian/patches/hurd-i386/git-AT_NO_AUTOMOUNT.diff: upstreamed.
+    - debian/patches/hurd-i386/git-intr-msg-clobber.diff: upstreamed.
+    - debian/patches/hurd-i386/git-pthread_self.diff: upstreamed.
+    - debian/patches/hurd-i386/git-pthread_self.2.diff: upstreamed.
+    - debian/patches/hurd-i386/tg-sysvshm.diff: rebased.
+    - debian/patches/hurd-i386/tg-sendmsg-SCM_CREDS.diff: rebased.
+    - debian/patches/hurd-i386/local-exec_filename.diff: rebased.
+    - debian/patches/all/local-remove-manual.diff: refreshed.
+    - debian/patches/any/local-cross.patch: refreshed.
+    - debian/patches/any/git-test-epoll.diff: upstreamed.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 21 Jul 2024 20:49:24 +0200
+
 glibc (2.39-5) UNRELEASED; urgency=medium
 
   [ Samuel Thibault ]

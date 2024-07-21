@@ -20,7 +20,7 @@ Samuel Thibault  <samuel.thibault@ens-lyon.org>
  hurd/Makefile               |    2 
  sysdeps/mach/hurd/recvmsg.c |  137 ++++++++++++++++++++++++++++++++++++++++++++
  sysdeps/mach/hurd/sendmsg.c |   36 +++++++++++
- 3 files changed, 174 insertions(+), 1 deletion(-)
+ 3 files changed, 175 insertions(+)
 
 --- a/sysdeps/mach/hurd/recvmsg.c
 +++ b/sysdeps/mach/hurd/recvmsg.c
@@ -248,12 +248,12 @@ Samuel Thibault  <samuel.thibault@ens-lyon.org>
    if (addr)
 --- a/hurd/Makefile
 +++ b/hurd/Makefile
-@@ -29,7 +29,7 @@
- # The RPC interfaces go in a separate library.
+@@ -45,6 +45,8 @@ inline-headers = \
  interface-library := libhurduser
- user-interfaces		:= $(addprefix hurd/,\
--				       auth startup \
-+				       auth auth_request auth_reply startup \
- 				       process process_request \
- 				       msg msg_reply msg_request \
- 				       exec exec_startup crash interrupt \
+ user-interfaces := \
+   hurd/auth \
++  hurd/auth_reply \
++  hurd/auth_request \
+   hurd/crash \
+   hurd/exec \
+   hurd/exec_startup \

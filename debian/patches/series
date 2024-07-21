@@ -25,15 +25,6 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
-# Committed for 2.40
-hurd-i386/git-context.diff
-hurd-i386/git-xattr.diff
-hurd-i386/git-proc_getchildren_rusage.diff
-hurd-i386/git-AT_NO_AUTOMOUNT.diff
-hurd-i386/git-intr-msg-clobber.diff
-hurd-i386/git-pthread_self.diff
-hurd-i386/git-pthread_self.2.diff
-
 hurd-i386/local-intr-msg-clobber.diff
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff
@@ -95,4 +86,3 @@ any/local-bootstrap-headers.diff
 any/local-cudacc-float128.diff
 any/local-test-install.diff
 any/local-cross.patch
-any/git-test-epoll.diff

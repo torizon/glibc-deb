@@ -11,7 +11,7 @@ Build-Depends: gettext, dpkg (>= 1.18.7), dpkg-dev (>= 1.17.14), xz-utils, file,
  g++-13-for-host, g++-13-multilib [amd64 i386 mips mipsel mipsn32 mipsn32el mips64 mips64el mipsr6 mipsr6el mipsn32r6 mipsn32r6el mips64r6 mips64r6el powerpc ppc64 s390x sparc sparc64 x32] <!nobiarch>,
  python3:native,
  libidn2-0 (>= 2.0.5~) <!nocheck>,
- libc-bin (>= 2.39) <cross>,
+ libc-bin (>= 2.40) <cross>,
  libgd-dev <!stage1 !stage2>,
 Build-Depends-Indep: perl, po-debconf (>= 1.0)
 Rules-Requires-Root: no
@@ -49,7 +49,7 @@ Priority: optional
 Multi-Arch: foreign
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: manpages, manpages-dev
-Suggests: libc-devtools (>> 2.39)
+Suggests: libc-devtools (>> 2.40)
 Build-Profiles: <!stage1>
 Description: GNU C Library: Development binaries
  This package contains utility programs related to the GNU C Library
@@ -115,7 +115,7 @@ Package: locales
 Architecture: all
 Section: localization
 Priority: standard
-Depends: libc-bin (>> 2.39), libc-l10n (>> 2.39), ${misc:Depends}, debconf | debconf-2.0
+Depends: libc-bin (>> 2.40), libc-l10n (>> 2.40), ${misc:Depends}, debconf | debconf-2.0
 Build-Profiles: <!stage1>
 Description: GNU C Library: National Language (locale) data [support]
  Machine-readable data files, shared objects and programs used by the
@@ -132,7 +132,7 @@ Architecture: any
 Section: localization
 Priority: optional
 Multi-Arch: foreign
-Depends: libc-l10n (>> 2.39), ${misc:Depends}
+Depends: libc-l10n (>> 2.40), ${misc:Depends}
 Build-Profiles: <!stage1>
 Description: GNU C Library: Precompiled locale data
  This package contains the precompiled locale data for all supported locales.
@@ -164,7 +164,7 @@ Recommends: libidn2-0 (>= 2.0.5~)
 Suggests: glibc-doc, debconf | debconf-2.0, libc-l10n, locales [!hurd-any], libnss-nis, libnss-nisplus
 Provides: libc6-sparcv9b [sparc sparc64], libc0.3-i686 [hurd-i386], libc6-i686 [i386]
 Conflicts: libc6-i686 [i386], libc6.1-alphaev67 [alpha]
-Breaks: nscd (<< 2.39), locales (<< 2.39), locales-all (<< 2.39), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
+Breaks: nscd (<< 2.40), locales (<< 2.40), locales-all (<< 2.40), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
 Replaces: libc6-amd64 [amd64],
           libc6-i386 [i386],
           libc0.3-i686 [hurd-i386],
@@ -236,7 +236,7 @@ Recommends: libidn2-0 (>= 2.0.5~)
 Suggests: glibc-doc, debconf | debconf-2.0, libc-l10n, locales [!hurd-any], libnss-nis, libnss-nisplus
 Provides: libc6-sparcv9b [sparc sparc64], libc0.3-i686 [hurd-i386], libc6-i686 [i386]
 Conflicts: libc6-i686 [i386], libc6.1-alphaev67 [alpha]
-Breaks: nscd (<< 2.39), locales (<< 2.39), locales-all (<< 2.39), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
+Breaks: nscd (<< 2.40), locales (<< 2.40), locales-all (<< 2.40), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
 Replaces: libc6-amd64 [amd64],
           libc6-i386 [i386],
           libc0.3-i686 [hurd-i386],
@@ -308,7 +308,7 @@ Recommends: libidn2-0 (>= 2.0.5~)
 Suggests: glibc-doc, debconf | debconf-2.0, libc-l10n, locales [!hurd-any], libnss-nis, libnss-nisplus
 Provides: libc6-sparcv9b [sparc sparc64], libc0.3-i686 [hurd-i386], libc6-i686 [i386]
 Conflicts: libc6-i686 [i386], libc6.1-alphaev67 [alpha]
-Breaks: nscd (<< 2.39), locales (<< 2.39), locales-all (<< 2.39), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
+Breaks: nscd (<< 2.40), locales (<< 2.40), locales-all (<< 2.40), gnumach-image-1.8-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-486-dbg (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486 (<< 2:1.8+git20210923~), gnumach-image-1.8-xen-486-dbg (<< 2:1.8+git20210923~), hurd (<< 1:0.9.git20220301-2), python3-iptables (<< 1.0.0-2), fakechroot (<< 2.19-3.5), tinydns (<< 1:1.05-14), chrony (<< 4.2-3~), valgrind (<< 1:3.19.0-1~), firefox (<< 91~), firefox-esr (<< 91~), systemd (<< 256~rc4-1~), sysvinit (<< 3.09-2~), base-files (<< 13.3~)
 Replaces: libc6-amd64 [amd64],
           libc6-i386 [i386],
           libc0.3-i686 [hurd-i386],

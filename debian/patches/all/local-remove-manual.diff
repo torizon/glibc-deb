@@ -197,8 +197,8 @@ so that no target depends on manual/*.texi files.
 +	$(ETAGS) -o $@ $^
 --- a/stdio-common/Makefile
 +++ b/stdio-common/Makefile
-@@ -318,7 +318,7 @@
-   # generated
+@@ -335,7 +335,7 @@
+ endif
  endif # $(run-built-tests)
  
 -tests-special += $(objpfx)tst-errno-manual.out
@@ -219,7 +219,7 @@ so that no target depends on manual/*.texi files.
  	mkdir -p $(hurd-objpfx)bits
 --- a/elf/Makefile
 +++ b/elf/Makefile
-@@ -2782,9 +2782,8 @@
+@@ -2833,9 +2833,8 @@
  		$(objpfx)tst-ro-dynamic-mod.os
  
  $(objpfx)tst-rtld-list-diagnostics.out: tst-rtld-list-diagnostics.py \

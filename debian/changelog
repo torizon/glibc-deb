@@ -7,6 +7,7 @@ glibc (2.39-5) UNRELEASED; urgency=medium
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fixes stdlib/tst-swapcontext2 test on hppa.  Closes: #1076512.
+  * debian/rules.d/tarball.mk: remove useless code.
 
  -- Samuel Thibault <sthibault@debian.org>  Wed, 17 Jul 2024 14:16:31 +0200
 

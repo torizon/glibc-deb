@@ -2,7 +2,6 @@ GLIBC_GIT = https://sourceware.org/git/glibc.git
 GLIBC_BRANCH = release/$(DEB_VERSION_UPSTREAM)/master
 GLIBC_TAG = glibc-$(DEB_VERSION_UPSTREAM)
 GLIBC_CHECKOUT = glibc-checkout
-GLIBC_DIR = glibc-$(DEB_VERSION_UPSTREAM)
 DEB_ORIG_UNCOMPRESSED = ../glibc_$(DEB_VERSION_UPSTREAM).orig.tar
 DEB_ORIG = $(DEB_ORIG_UNCOMPRESSED).xz
 GIT_UPDATES_DIFF = debian/patches/git-updates.diff
@@ -13,7 +12,6 @@ get-orig-source: $(DEB_ORIG)
 $(DEB_ORIG):
 	dh_testdir
 	git clone --bare $(GLIBC_GIT) $(GLIBC_CHECKOUT)
-	mkdir -p $(GLIBC_DIR)
 	git archive -v --format=tar --prefix=$(GLIBC_TAG)/ --remote=$(GLIBC_CHECKOUT) -o $(DEB_ORIG_UNCOMPRESSED) $(GLIBC_TAG)
 	rm -rf $(GLIBC_CHECKOUT)
 	tar --delete $(GLIBC_TAG)/manual -f $(DEB_ORIG_UNCOMPRESSED)

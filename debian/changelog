@@ -1,4 +1,4 @@
-glibc (2.39-5) UNRELEASED; urgency=medium
+glibc (2.39-5) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/patches/hurd-i386/git-pthread_self{,.2}.diff: Fix pthread_self()
@@ -13,7 +13,7 @@ glibc (2.39-5) UNRELEASED; urgency=medium
   * debian/control.in/main: build-depends on g++13-for-host (>= 13.3.0-3) on
     arm64 to ensure PAC/BTI support in GCC.
 
- -- Samuel Thibault <sthibault@debian.org>  Wed, 17 Jul 2024 14:16:31 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 22 Jul 2024 22:58:49 +0200
 
 glibc (2.39-4) unstable; urgency=medium
 

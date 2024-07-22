@@ -1,4 +1,4 @@
-glibc (2.40-1) UNRELEASED; urgency=medium
+glibc (2.40-1) experimental; urgency=medium
 
   [ Aurelien Jarno ]
   * New upstream release.
@@ -17,7 +17,7 @@ glibc (2.40-1) UNRELEASED; urgency=medium
     - debian/patches/any/local-cross.patch: refreshed.
     - debian/patches/any/git-test-epoll.diff: upstreamed.
 
- -- Aurelien Jarno <aurel32@debian.org>  Sun, 21 Jul 2024 20:49:24 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Mon, 22 Jul 2024 07:14:59 +0200
 
 glibc (2.39-5) UNRELEASED; urgency=medium
 

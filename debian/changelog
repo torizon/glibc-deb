@@ -1,10 +1,10 @@
-glibc (2.39-6) UNRELEASED; urgency=medium
+glibc (2.39-6) unstable; urgency=medium
 
   [ Aurelien Jarno ]
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fixes elf/check-localplt test on power* with recent binutils.
 
- -- Aurelien Jarno <aurel32@debian.org>  Tue, 23 Jul 2024 19:08:32 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 23 Jul 2024 19:09:58 +0200
 
 glibc (2.39-5) unstable; urgency=medium
 

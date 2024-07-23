@@ -2904,6 +2904,52 @@ index 787cc36df2..fd6fff4bb2 100644
  /* Receive the oldest from highest priority messages in message queue
     MQDES, stop waiting if ABS_TIMEOUT expires.  */
  extern ssize_t mq_timedreceive (mqd_t __mqdes, char *__restrict __msg_ptr,
+diff --git a/scripts/localplt.awk b/scripts/localplt.awk
+index fe79ca01ab..621ae7d8e8 100644
+--- a/scripts/localplt.awk
++++ b/scripts/localplt.awk
+@@ -10,7 +10,8 @@ BEGIN {
+ }
+ 
+ FILENAME != lastfile {
+-  if (lastfile && jmprel_offset == 0 && rela_offset == 0 && rel_offset == 0) {
++  if (lastfile && jmprel_offset == 0 && rela_offset == 0 && rel_offset == 0 \
++      && relr_offset == 0) {
+     print FILENAME ": *** failed to find expected output (readelf -WSdr)";
+     result = 2;
+   }
+@@ -22,6 +23,7 @@ FILENAME != lastfile {
+   jmprel_offset = 0;
+   rela_offset = 0;
+   rel_offset = 0;
++  relr_offset = 0;
+   pltrelsz = -1;
+   delete section_offset_by_address;
+ }
+@@ -77,6 +79,8 @@ in_relocs && relocs_offset == rel_offset && NF >= 5 {
+   }
+ }
+ 
++# No need to handle DT_RELR (all packed relocations are relative).
++
+ in_relocs { next }
+ 
+ $1 == "Relocation" && $2 == "section" && $5 == "offset" {
+@@ -121,4 +125,14 @@ $2 == "(REL)" {
+   }
+   next
+ }
++
++$2 == "(RELR)" {
++  relr_addr = strtonum($3);
++  if (relr_addr in section_offset_by_address) {
++    relr_offset = section_offset_by_address[relr_addr];
++  } else {
++    print FILENAME ": *** DT_RELR does not match any section's address";
++    result = 2;
++  }
++}
+ END { exit(result) }
 diff --git a/signal/signal.h b/signal/signal.h
 index f37499ce60..8e07b041b1 100644
 --- a/signal/signal.h

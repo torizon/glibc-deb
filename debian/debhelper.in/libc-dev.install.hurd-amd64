@@ -11,6 +11,7 @@ usr/lib/*/libhurduser.a
 usr/lib/*/libm.a
 usr/lib/*/libmachuser.a
 usr/lib/*/libmcheck.a
+usr/lib/*/libmvec.a
 usr/lib/*/libpthread.a
 usr/lib/*/libpthread2.a
 usr/lib/*/libpthread_syms.a

@@ -25,6 +25,10 @@ arm/local-arm-futex.diff
 
 hppa/local-inlining.diff
 
+# Committed for 2.41
+hurd-i386/git-fault-64bit.diff
+hurd-i386/git-pthread_symbols.diff
+
 hurd-i386/local-intr-msg-clobber.diff
 hurd-i386/local-enable-ldconfig.diff
 hurd-i386/tg-sysvshm.diff

@@ -59,8 +59,8 @@ Samuel Thibault  <samuel.thibault@ens-lyon.org>
 +		    int ngroups, __gid_t groups[ngroups])
 +{
 +  error_t err;
-+  size_t neuids = CMGROUP_MAX, nauids = CMGROUP_MAX;
-+  size_t negids = CMGROUP_MAX, nagids = CMGROUP_MAX;
++  mach_msg_type_number_t neuids = CMGROUP_MAX, nauids = CMGROUP_MAX;
++  mach_msg_type_number_t negids = CMGROUP_MAX, nagids = CMGROUP_MAX;
 +  __uid_t euids_buf[neuids], auids_buf[nauids];
 +  __gid_t egids_buf[negids], agids_buf[nagids];
 +  __uid_t *euids = euids_buf, *auids = auids_buf;
@@ -70,7 +70,7 @@ Samuel Thibault  <samuel.thibault@ens-lyon.org>
 +  mach_msg_type_number_t pi_size = 0;
 +  int flags = PI_FETCH_TASKINFO;
 +  char *tw = NULL;
-+  size_t tw_size = 0;
++  mach_msg_type_number_t tw_size = 0;
 +  unsigned i;
 +
 +  err = __mach_port_mod_refs (mach_task_self (), rendezvous,

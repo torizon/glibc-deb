@@ -38,6 +38,7 @@ hurd-i386/git-pthread_self.2.diff
 hurd-i386/git-fault-64bit.diff
 hurd-i386/git-pthread_symbols.diff
 hurd-i386/git-tst-aligned-alloc-random-thread.diff
+hurd-i386/git-tst-aligned-alloc-random-thread-mcheck.diff
 
 hurd-i386/local-intr-msg-clobber.diff
 hurd-i386/local-enable-ldconfig.diff

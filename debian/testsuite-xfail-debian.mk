@@ -292,10 +292,6 @@ test-xfail-tst-sprofil = yes
 test-xfail-tst-timer4 = yes
 test-xfail-tst-timer5 = yes
 
-# Needs LFS support
-#test-xfail-test-lfs = yes
-test-xfail-tst-tzset = yes
-
 # want /proc/self/fd
 # TODO: make them use FD_TO_FILENAME_PREFIX from <arch-fd_to_filename.h>
 test-xfail-tst-if_index-long = yes
@@ -310,6 +306,7 @@ test-xfail-tst-open-tmpfile = yes
 
 # Missing RLIMIT_AS/overcommit enforcement
 tests-unsupported += test-bz22786 tst-strtod-overflow bug18240
+tests-unsupported += test-lfs tst-tzset
 
 # new in 2.22
 test-xfail-tst-prelink = yes

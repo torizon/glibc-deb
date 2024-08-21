@@ -3,6 +3,7 @@ glibc (2.39-8) UNRELEASED; urgency=medium
   * debian/debhelper.in/libc-dev.install.hurd-amd64: Add missing libm-2.39.a.
   * debian/patches/hurd-i386/git-tst-aligned-alloc-random-thread{,-mcheck}.diff:
     Link threading tests with $(shared-thread-library).
+  * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
 
  -- Samuel Thibault <sthibault@debian.org>  Tue, 20 Aug 2024 01:39:34 +0200
 

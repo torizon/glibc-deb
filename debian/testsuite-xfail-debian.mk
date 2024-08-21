@@ -308,6 +308,9 @@ test-xfail-tst-support-open-dev-null-range = yes
 test-xfail-tst-spawn5 = yes
 test-xfail-tst-open-tmpfile = yes
 
+# Missing RLIMIT_AS/overcommit enforcement
+tests-unsupported += test-bz22786 tst-strtod-overflow bug18240
+
 # new in 2.22
 test-xfail-tst-prelink = yes
 test-xfail-tst-tls-atexit = yes
@@ -410,9 +413,6 @@ test-xfail-tst-malloc-alternate-path-malloc-hugetlb2 = yes
 test-xfail-tst-malloc-alternate-path-mcheck = yes
 test-xfail-tst-malloc-fork-deadlock = yes
 test-xfail-tst-shutdown = yes
-# Bus error
-test-xfail-test-bz22786 = yes
-test-xfail-tst-strtod-overflow = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes
@@ -457,9 +457,6 @@ test-xfail-tst-malloc-too-large = yes
 test-xfail-tst-malloc-too-large-malloc-check = yes
 test-xfail-tst-malloc-too-large-malloc-hugetlb1 = yes
 test-xfail-tst-malloc-too-large-malloc-hugetlb2 = yes
-
-# Bus error
-test-xfail-bug18240 = yes
 
 # cmsg bug
 test-xfail-tst-cmsghdr = yes

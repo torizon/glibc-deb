@@ -9,10 +9,10 @@ index 0000000000..d4e33f2df3
 +For the GNU C Library Security Advisories, see the git master branch:
 +https://sourceware.org/git/?p=glibc.git;a=tree;f=advisories;hb=HEAD
 diff --git a/NEWS b/NEWS
-index 31281ac408..b9eb4a558b 100644
+index 31281ac408..10a125bc66 100644
 --- a/NEWS
 +++ b/NEWS
-@@ -5,6 +5,16 @@ See the end for copying conditions.
+@@ -5,6 +5,17 @@ See the end for copying conditions.
  Please send GNU C library bug reports via <https://sourceware.org/bugzilla/>
  using `glibc' in the "product" field.
  
@@ -24,6 +24,7 @@ index 31281ac408..b9eb4a558b 100644
 +  [31968] mremap implementation in C does not handle arguments correctly
 +  [31890] resolv: Allow short error responses to match any DNS query
 +  [31968] mremap implementation in C does not handle arguments correctly
++  [32026] strerror/strsignal TLS not handled correctly for secondary namespaces
 +  [32052] Name space violation in fortify wrappers
 +
  Version 2.40
@@ -447,6 +448,20 @@ index b8f8a829ca..0000000000
 -  scripts/process-advisories.sh news
 -
 -and copy the content into the NEWS file.
+diff --git a/include/libc-internal.h b/include/libc-internal.h
+index 87ac591835..1ef43ffe67 100644
+--- a/include/libc-internal.h
++++ b/include/libc-internal.h
+@@ -53,6 +53,9 @@ extern __typeof (__profile_frequency) __profile_frequency attribute_hidden;
+    is not for an audit module, not loaded via dlmopen, and not loaded
+    via static dlopen either).  */
+ extern _Bool __libc_initial attribute_hidden;
++#else
++/* The static libc is always the initial namespace.  */
++# define __libc_initial ((_Bool) 1)
+ #endif
+ 
+ #endif /* _LIBC_INTERNAL  */
 diff --git a/libio/bits/stdio2.h b/libio/bits/stdio2.h
 index 91a80dd7c6..4b8bc35bdf 100644
 --- a/libio/bits/stdio2.h
@@ -1395,6 +1410,123 @@ index 8f31fa49e6..1dff405c27 100644
  
  # This test needs libdl.
  ifeq (yes,$(build-shared))
+diff --git a/string/strerror_l.c b/string/strerror_l.c
+index 15cce261e6..70456e5bb4 100644
+--- a/string/strerror_l.c
++++ b/string/strerror_l.c
+@@ -20,7 +20,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ #include <tls-internal.h>
+-
++#include <libc-internal.h>
+ 
+ static const char *
+ translate (const char *str, locale_t loc)
+@@ -31,6 +31,12 @@ translate (const char *str, locale_t loc)
+   return res;
+ }
+ 
++static char *
++unknown_error (locale_t loc)
++{
++  return (char *) translate ("Unknown error", loc);
++}
++
+ 
+ /* Return a string describing the errno code in ERRNUM.  */
+ char *
+@@ -40,18 +46,25 @@ __strerror_l (int errnum, locale_t loc)
+   char *err = (char *) __get_errlist (errnum);
+   if (__glibc_unlikely (err == NULL))
+     {
+-      struct tls_internal_t *tls_internal = __glibc_tls_internal ();
+-      free (tls_internal->strerror_l_buf);
+-      if (__asprintf (&tls_internal->strerror_l_buf, "%s%d",
+-		      translate ("Unknown error ", loc), errnum) > 0)
+-	err = tls_internal->strerror_l_buf;
+-      else
++      if (__libc_initial)
+ 	{
+-	  /* The memory was freed above.  */
+-	  tls_internal->strerror_l_buf = NULL;
+-	  /* Provide a fallback translation.  */
+-	  err = (char *) translate ("Unknown error", loc);
++	  struct tls_internal_t *tls_internal = __glibc_tls_internal ();
++	  free (tls_internal->strerror_l_buf);
++	  if (__asprintf (&tls_internal->strerror_l_buf, "%s%d",
++			  translate ("Unknown error ", loc), errnum) > 0)
++	    err = tls_internal->strerror_l_buf;
++	  else
++	    {
++	      /* The memory was freed above.  */
++	      tls_internal->strerror_l_buf = NULL;
++	      /* Provide a fallback translation.  */
++	      err = unknown_error (loc);
++	    }
+ 	}
++      else
++	/* Secondary namespaces use a different malloc, so cannot
++	   participate in the buffer management.  */
++	err = unknown_error (loc);
+     }
+   else
+     err = (char *) translate (err, loc);
+diff --git a/string/strsignal.c b/string/strsignal.c
+index 3114601564..d9b0365468 100644
+--- a/string/strsignal.c
++++ b/string/strsignal.c
+@@ -21,6 +21,7 @@
+ #include <string.h>
+ #include <libintl.h>
+ #include <tls-internal.h>
++#include <libc-internal.h>
+ 
+ /* Return a string describing the meaning of the signal number SIGNUM.  */
+ char *
+@@ -30,21 +31,28 @@ strsignal (int signum)
+   if (desc != NULL)
+     return _(desc);
+ 
+-  struct tls_internal_t *tls_internal = __glibc_tls_internal ();
+-  free (tls_internal->strsignal_buf);
++  if (__libc_initial)
++    {
++      struct tls_internal_t *tls_internal = __glibc_tls_internal ();
++      free (tls_internal->strsignal_buf);
+ 
+-  int r;
++      int r;
+ #ifdef SIGRTMIN
+-  if (signum >= SIGRTMIN && signum <= SIGRTMAX)
+-    r = __asprintf (&tls_internal->strsignal_buf, _("Real-time signal %d"),
+-		    signum - SIGRTMIN);
+-  else
++      if (signum >= SIGRTMIN && signum <= SIGRTMAX)
++	r = __asprintf (&tls_internal->strsignal_buf, _("Real-time signal %d"),
++			signum - SIGRTMIN);
++      else
+ #endif
+-    r = __asprintf (&tls_internal->strsignal_buf, _("Unknown signal %d"),
+-		    signum);
+-
+-  if (r == -1)
+-    tls_internal->strsignal_buf = NULL;
+-
+-  return tls_internal->strsignal_buf;
++	r = __asprintf (&tls_internal->strsignal_buf, _("Unknown signal %d"),
++			signum);
++
++      if (r >= 0)
++	return tls_internal->strsignal_buf;
++      else
++	tls_internal->strsignal_buf = NULL;
++    }
++  /* Fall through on asprintf error, and for !__libc_initial:
++     secondary namespaces use a different malloc and cannot
++     participate in the buffer management.  */
++  return _("Unknown signal");
+ }
 diff --git a/string/test-Xncmp-nonarray.c b/string/test-Xncmp-nonarray.c
 new file mode 100644
 index 0000000000..9f3a3ca75d
@@ -1723,6 +1855,89 @@ index 0000000000..499bef2041
 +}
 +
 +#include <support/test-driver.c>
+diff --git a/string/test-strchr.c b/string/test-strchr.c
+index c795eac6fa..72b17af687 100644
+--- a/string/test-strchr.c
++++ b/string/test-strchr.c
+@@ -255,6 +255,69 @@ check1 (void)
+     check_result (impl, s, c, exp_result);
+ }
+ 
++static void
++check2 (void)
++{
++  CHAR *s = (CHAR *) (buf1 + getpagesize () - 4 * sizeof (CHAR));
++  CHAR *s_begin = (CHAR *) (buf1 + getpagesize () - 64);
++#ifndef USE_FOR_STRCHRNUL
++  CHAR *exp_result = NULL;
++#else
++  CHAR *exp_result = s + 1;
++#endif
++  CHAR val = 0x12;
++  for (; s_begin != s; ++s_begin)
++    *s_begin = val;
++
++  s[0] = val + 1;
++  s[1] = 0;
++  s[2] = val + 1;
++  s[3] = val + 1;
++
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++  s[3] = val;
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++  exp_result = s;
++  s[0] = val;
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++
++  s[3] = val + 1;
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++
++  s[0] = val + 1;
++  s[1] = val + 1;
++  s[2] = val + 1;
++  s[3] = val + 1;
++  s[4] = val;
++  exp_result = s + 4;
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++  s[4] = 0;
++#ifndef USE_FOR_STRCHRNUL
++  exp_result = NULL;
++#else
++  exp_result = s + 4;
++#endif
++  {
++    FOR_EACH_IMPL (impl, 0)
++      check_result (impl, s, val, exp_result);
++  }
++}
++
+ int
+ test_main (void)
+ {
+@@ -263,7 +326,7 @@ test_main (void)
+   test_init ();
+ 
+   check1 ();
+-
++  check2 ();
+   printf ("%20s", "");
+   FOR_EACH_IMPL (impl, 0)
+     printf ("\t%s", impl->name);
 diff --git a/string/test-strncmp-nonarray.c b/string/test-strncmp-nonarray.c
 new file mode 100644
 index 0000000000..581e52d01b
@@ -2058,6 +2273,28 @@ index a6de3793e4..4f12955875 100644
  
  #endif /* !dl_machine_h */
  
+diff --git a/sysdeps/x86_64/multiarch/strchr-evex-base.S b/sysdeps/x86_64/multiarch/strchr-evex-base.S
+index 04e2c0e79e..3a0b7c9d64 100644
+--- a/sysdeps/x86_64/multiarch/strchr-evex-base.S
++++ b/sysdeps/x86_64/multiarch/strchr-evex-base.S
+@@ -124,13 +124,13 @@ L(page_cross):
+ 	VPCMPNE	%VMM(1), %VMM(0), %k1
+ 	VPTEST	%VMM(1), %VMM(1), %k0{%k1}
+ 	KMOV	%k0, %VRAX
+-# ifdef USE_AS_WCSCHR
++	sar	%cl, %VRAX
++#ifdef USE_AS_WCSCHR
+ 	sub	$VEC_MATCH_MASK, %VRAX
+-# else
++#else
+ 	inc	%VRAX
+-# endif
++#endif
+ 	/* Ignore number of character for alignment adjustment.  */
+-	shr	%cl, %VRAX
+ 	jz	L(align_more)
+ 
+ 	bsf	%VRAX, %VRAX
 diff --git a/sysdeps/x86_64/x32/dl-machine.h b/sysdeps/x86_64/x32/dl-machine.h
 deleted file mode 100644
 index c35cee9261..0000000000

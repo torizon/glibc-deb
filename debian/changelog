@@ -7,6 +7,9 @@ glibc (2.40-2) UNRELEASED; urgency=medium
   * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
   * debian/testsuite-xfail-debian.mk: Update hurd xfails.
 
+  [ Aurelien Jarno ]
+  * debian/patches/git-updates.diff: update from upstream stable branch.
+
  -- Aurelien Jarno <aurel32@debian.org>  Sun, 25 Aug 2024 17:53:26 +0200
 
 glibc (2.40-1) experimental; urgency=medium

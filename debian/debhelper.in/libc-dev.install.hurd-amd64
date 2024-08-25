@@ -8,6 +8,7 @@ usr/lib/*/libcrt_nonshared.a
 usr/lib/*/libdl.a
 usr/lib/*/libg.a
 usr/lib/*/libhurduser.a
+usr/lib/*/libm-*.a
 usr/lib/*/libm.a
 usr/lib/*/libmachuser.a
 usr/lib/*/libmcheck.a

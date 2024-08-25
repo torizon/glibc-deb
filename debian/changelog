@@ -1,3 +1,14 @@
+glibc (2.40-2) UNRELEASED; urgency=medium
+
+  [ Samuel Thibault ]
+  * debian/debhelper.in/libc-dev.install.hurd-amd64: Add missing libm-2.39.a.
+  * debian/patches/hurd-i386/git-tst-aligned-alloc-random-thread{,-mcheck}.diff:
+    Link threading tests with $(shared-thread-library).
+  * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
+  * debian/testsuite-xfail-debian.mk: Update hurd xfails.
+
+ -- Aurelien Jarno <aurel32@debian.org>  Sun, 25 Aug 2024 17:53:26 +0200
+
 glibc (2.40-1) experimental; urgency=medium
 
   [ Aurelien Jarno ]
@@ -18,16 +29,6 @@ glibc (2.40-1) experimental; urgency=medium
     - debian/patches/any/git-test-epoll.diff: upstreamed.
 
  -- Aurelien Jarno <aurel32@debian.org>  Mon, 22 Jul 2024 07:14:59 +0200
-
-glibc (2.39-8) UNRELEASED; urgency=medium
-
-  * debian/debhelper.in/libc-dev.install.hurd-amd64: Add missing libm-2.39.a.
-  * debian/patches/hurd-i386/git-tst-aligned-alloc-random-thread{,-mcheck}.diff:
-    Link threading tests with $(shared-thread-library).
-  * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
-  * debian/testsuite-xfail-debian.mk: Update hurd xfails.
-
- -- Samuel Thibault <sthibault@debian.org>  Tue, 20 Aug 2024 01:39:34 +0200
 
 glibc (2.39-7) unstable; urgency=medium
 

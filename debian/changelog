@@ -1,6 +1,7 @@
 glibc (2.40-3) UNRELEASED; urgency=medium
 
   * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
+  * debian/testsuite-xfail-debian.mk: Update hurd xfails.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 26 Aug 2024 09:58:33 +0200
 

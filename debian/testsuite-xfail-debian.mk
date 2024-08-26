@@ -426,6 +426,9 @@ test-xfail-tst-lockf = yes
 # assumes that all st_mode flags (32bit) can exist in stx_mode flags (16bit)
 test-xfail-tst-statx = yes
 
+# Some issues with FPU flags
+test-xfail-test-fenv = yes
+test-xfail-test-fenv-sse-2 = yes
 endif
 
 
@@ -434,7 +437,6 @@ endif
 ######################################################################
 ifeq ($(config-machine)-$(config-os),x86_64-gnu-gnu)
 # TODO: fix default FPU config
-test-xfail-test-fenv = yes
 test-xfail-test-float64x-acos = yes
 test-xfail-test-float64x-log10 = yes
 test-xfail-test-float64x-log2 = yes

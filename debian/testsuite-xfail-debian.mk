@@ -307,6 +307,9 @@ test-xfail-tst-open-tmpfile = yes
 # Missing RLIMIT_AS/overcommit enforcement
 tests-unsupported += test-bz22786 tst-strtod-overflow bug18240
 tests-unsupported += test-lfs tst-tzset
+tests-unsupported += tst-tls-allocation-failure-static-patched
+test-xfail-tst-vfprintf-width-prec-mem = yes
+test-xfail-tst-vfprintf-width-prec = yes
 
 # new in 2.22
 test-xfail-tst-prelink = yes
@@ -369,7 +372,6 @@ test-xfail-tst-itimer = yes
 test-xfail-tst-wait3 = yes
 test-xfail-tst-nss-compat1 = yes
 test-xfail-tst-dlinfo-phdr = yes
-test-xfail-tst-tls-allocation-failure-static-patched = yes
 
 # new in 2.35
 test-xfail-tst-compathooks-on = yes
@@ -386,10 +388,6 @@ test-xfail-tst-nss-gai-actions = yes
 test-xfail-tst-fcntl-lock = yes
 test-xfail-tst-fcntl-lock-lfs = yes
 test-xfail-tst-nss-gai-hv2-canonname = yes
-
-# missing RLIMIT_AS support
-test-xfail-tst-vfprintf-width-prec-mem = yes
-test-xfail-tst-vfprintf-width-prec = yes
 
 # new in 2.38
 test-xfail-tst-sprof-basic = yes

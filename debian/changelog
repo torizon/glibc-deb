@@ -8,6 +8,7 @@ glibc (2.40-3) UNRELEASED; urgency=medium
   * debian/rules: build with gcc-14.
   * debian/control.in/main: adjust g++-for-host version on arm64 to ensure
     PAC/BTI support.
+  * debian/patches/git-updates.diff: update from upstream stable branch.
 
  -- Samuel Thibault <sthibault@debian.org>  Mon, 26 Aug 2024 09:58:33 +0200
 

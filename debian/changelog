@@ -1,4 +1,4 @@
-glibc (2.40-3) UNRELEASED; urgency=medium
+glibc (2.40-3) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Avoid tests overflowing memory.
@@ -12,7 +12,7 @@ glibc (2.40-3) UNRELEASED; urgency=medium
   * debian/patches/any/git-iconv-*: backport iconv fixes and improvement from
     upstream master.  Closes: #328303, #1000652.
 
- -- Samuel Thibault <sthibault@debian.org>  Mon, 26 Aug 2024 09:58:33 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Tue, 24 Sep 2024 21:46:16 +0200
 
 glibc (2.40-2) unstable; urgency=medium
 

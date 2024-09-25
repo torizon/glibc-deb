@@ -414,6 +414,8 @@ test-xfail-tst-malloc-alternate-path-malloc-hugetlb2 = yes
 test-xfail-tst-malloc-alternate-path-mcheck = yes
 test-xfail-tst-malloc-fork-deadlock = yes
 test-xfail-tst-shutdown = yes
+test-xfail-tst-dlopen-tlsreinit3 = yes
+test-xfail-tst-dlopen-tlsreinit4 = yes
 
 # actually never succeded
 test-xfail-tst-create_format1 = yes

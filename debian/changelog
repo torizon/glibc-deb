@@ -7,6 +7,7 @@ glibc (2.40-4) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix memory corruption with ancient i386 binaries using stdio. Closes:
       #1080244.
+    - Drop debian/patches/sparc/submitted-sparc-clone.diff (merged).
 
  -- Samuel Thibault <sthibault@debian.org>  Wed, 25 Sep 2024 09:37:53 +0200
 

@@ -22,6 +22,7 @@ alpha/submitted-makecontext.diff
 arm/local-sigaction.diff
 arm/unsubmitted-ldso-multilib.diff
 arm/local-arm-futex.diff
+arm/git-hwcap2-constants.diff
 
 hppa/local-inlining.diff
 

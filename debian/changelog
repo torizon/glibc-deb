@@ -7,6 +7,7 @@ glibc (2.40-4) UNRELEASED; urgency=medium
   * debian/patches/git-updates.diff: update from upstream stable branch:
     - Fix memory corruption with ancient i386 binaries using stdio. Closes:
       #1080244.
+    - Fix FTBFS with gcc-14 on hppa.  Closes: #1084052.
     - Drop debian/patches/sparc/submitted-sparc-clone.diff (merged).
   * debian/patches/arm/git-hwcap2-constants.diff: backport for upstream to
     support HWCAP2 values on arm32.  Closes: #1086502.

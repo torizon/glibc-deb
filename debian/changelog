@@ -1,4 +1,4 @@
-glibc (2.40-4) UNRELEASED; urgency=medium
+glibc (2.40-4) unstable; urgency=medium
 
   [ Samuel Thibault ]
   * debian/testsuite-xfail-debian.mk: Update hurd xfails.
@@ -16,7 +16,7 @@ glibc (2.40-4) UNRELEASED; urgency=medium
   * debian/control: add Recommends: libc-dev (= ${binary:Version}) to
     libc-devtools.  Closes: #1087881.
 
- -- Samuel Thibault <sthibault@debian.org>  Wed, 25 Sep 2024 09:37:53 +0200
+ -- Aurelien Jarno <aurel32@debian.org>  Sat, 23 Nov 2024 14:57:03 +0100
 
 glibc (2.40-3) unstable; urgency=medium
 

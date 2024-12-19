@@ -70,7 +70,6 @@ powerpc/local-powerpc8xx-dcbz.diff
 sh4/local-fpscr_values.diff
 
 all/local-alias-et_EE.diff
-all/local-remove-manual.diff
 all/local-ru_RU.diff
 all/local-ldd.diff
 

@@ -1,3 +1,10 @@
+glibc (2.40-4+toradex1) bookworm; urgency=medium
+
+  * debian/rules: build with gcc-12
+  * revert commits incompatible with Debian 12
+
+ -- Leonardo Held <leonardo.held@toradex.com>  Mon, 30 Dec 2024 10:54:00 -0300
+
 glibc (2.40-4) unstable; urgency=medium
 
   [ Samuel Thibault ]
